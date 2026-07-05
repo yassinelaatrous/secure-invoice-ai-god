@@ -12,6 +12,20 @@ import re
 import os
 from typing import Dict, Optional
 from datetime import datetime
+from pydantic import BaseModel, Field
+
+# ─── Configuration de Gemini API ──────────────────────────────────────────
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
+class InvoiceDetails(BaseModel):
+    fournisseur: Optional[str] = Field(None, description="Nom commercial du fournisseur/émetteur de la facture (ex: Orange, STEG, AWS)")
+    numero: Optional[str] = Field(None, description="Numéro unique de la facture")
+    date_facture: Optional[str] = Field(None, description="Date d'émission au format AAAA-MM-JJ")
+    ht: Optional[float] = Field(None, description="Montant hors taxes (HT)")
+    tva: Optional[float] = Field(None, description="Montant de la TVA")
+    ttc: Optional[float] = Field(None, description="Montant total toutes taxes comprises (TTC)")
+    iban: Optional[str] = Field(None, description="IBAN complet pour le paiement")
+    devise: Optional[str] = Field("TND", description="Devise de la facture (TND, EUR, USD)")
 
 # ─── Vérification de la disponibilité de Tesseract ────────────────────────
 TESSERACT_AVAILABLE = False
@@ -354,6 +368,54 @@ def fallback_extract(filename: str) -> Dict:
     }
 
 
+def extract_with_gemini(image_path: str) -> Optional[Dict]:
+    """
+    Extrait les données de facture de manière intelligente à l'aide de l'API Gemini.
+    """
+    if not GEMINI_API_KEY:
+        print("[WARNING] GEMINI_API_KEY non configuré. Saut de l'extraction Gemini.")
+        return None
+
+    try:
+        from google import genai
+        from PIL import Image
+
+        print("[INFO] Lancement de l'extraction intelligente avec Gemini API...")
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        img = Image.open(image_path)
+
+        prompt = (
+            "Extrayez les informations de cette facture. "
+            "Remplissez les champs de manière extrêmement rigoureuse. "
+            "Ne devinez pas de fausses informations. "
+            "Si un montant ou une date n'est pas présent, laissez le champ à null. "
+            "Retournez le résultat strictement selon le schéma JSON demandé."
+        )
+
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[img, prompt],
+            config={
+                'response_mime_type': 'application/json',
+                'response_schema': InvoiceDetails,
+            }
+        )
+
+        if response.parsed:
+            data = response.parsed.model_dump()
+            data["source"] = "gemini_api"
+            data["confiance"] = 0.98
+            # Limiter pour l'API
+            data["texte_brut"] = f"[Gemini] Extraction reussie depuis : {os.path.basename(image_path)}"
+            print("[SUCCESS] Extraction Gemini reussie !")
+            return data
+
+    except Exception as e:
+        print(f"[ERROR] Echec de l'extraction Gemini : {e}")
+
+    return None
+
+
 # ─── Fonction principale d'extraction ─────────────────────────────────────
 
 def extract_invoice_data(image_path: str, filename: str = "") -> Dict:
@@ -361,9 +423,9 @@ def extract_invoice_data(image_path: str, filename: str = "") -> Dict:
     Point d'entrée principal pour l'extraction de données de facture.
     
     Stratégie :
-    1. Si Tesseract est disponible → extraction OCR réelle
-    2. Si l'OCR retourne peu de résultats → fallback intelligent
-    3. Si Tesseract n'est pas disponible → fallback directement
+    1. Si la clé Gemini API est configurée → extraction intelligente avec Gemini
+    2. Sinon, si Tesseract est disponible → extraction OCR réelle
+    3. Sinon → fallback intelligent
     
     Args:
         image_path: Chemin vers l'image uploadée
@@ -374,8 +436,12 @@ def extract_invoice_data(image_path: str, filename: str = "") -> Dict:
     """
     result = None
     
-    # Tentative 1 : OCR réel avec Tesseract
-    if TESSERACT_AVAILABLE:
+    # Tentative 1 : Gemini API (Intelligent)
+    if GEMINI_API_KEY:
+        result = extract_with_gemini(image_path)
+    
+    # Tentative 2 : OCR réel avec Tesseract
+    if result is None and TESSERACT_AVAILABLE:
         try:
             raw_text = extract_text_from_image(image_path)
             if raw_text and len(raw_text.strip()) > 20:
@@ -391,12 +457,13 @@ def extract_invoice_data(image_path: str, filename: str = "") -> Dict:
         except Exception as e:
             print(f"⚠️  Erreur lors de l'extraction OCR : {e}")
     
-    # Tentative 2 : Fallback intelligent
+    # Tentative 3 : Fallback intelligent
     if result is None:
         result = fallback_extract(filename or os.path.basename(image_path))
     
     # Ajouter des métadonnées
     result["tesseract_disponible"] = TESSERACT_AVAILABLE
+    result["gemini_utilise"] = (result.get("source") == "gemini_api")
     result["fichier_source"] = filename or os.path.basename(image_path)
     
     return result
