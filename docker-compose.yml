@@ -8,13 +8,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Persistance de la base SQLite et des uploads
-      - invoice_data:/app/backend
+      # Montage du dossier local pour utiliser le code à jour
+      - ./backend:/app/backend
     environment:
       - JWT_SECRET_KEY=secure-invoice-ai-secret-key-change-in-production
       - ENVIRONMENT=production
     restart: unless-stopped
-
-volumes:
-  invoice_data:
-    driver: local
