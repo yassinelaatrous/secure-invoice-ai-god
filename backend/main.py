@@ -7,6 +7,27 @@ from datetime import datetime
 import json
 from fastapi.staticfiles import StaticFiles
 
+# ─── Chargement des variables d'environnement (.env) ──────────────────────
+def load_env():
+    paths = [
+        os.path.join(os.path.dirname(__file__), ".env"),
+        os.path.join(os.path.dirname(__file__), "../.env")
+    ]
+    for p in paths:
+        if os.path.exists(p):
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            val = v.strip().strip("'\"")
+                            os.environ[k.strip()] = val
+            except Exception as e:
+                print(f"[WARNING] Erreur lors de la lecture de .env : {e}")
+
+load_env()
+
 from database import engine, Base, SessionLocal, init_db
 from database import Facture, AuditLog, Fournisseur, RegleConformite, Utilisateur
 from auth import authenticate_user, create_access_token, get_current_user, require_role

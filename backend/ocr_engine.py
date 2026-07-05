@@ -14,7 +14,26 @@ from typing import Dict, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-# ─── Configuration de Gemini API ──────────────────────────────────────────
+# ─── Chargement des variables d'environnement (.env) ──────────────────────
+def load_env():
+    paths = [
+        os.path.join(os.path.dirname(__file__), ".env"),
+        os.path.join(os.path.dirname(__file__), "../.env")
+    ]
+    for p in paths:
+        if os.path.exists(p):
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            val = v.strip().strip("'\"")
+                            os.environ[k.strip()] = val
+            except Exception as e:
+                print(f"[WARNING] Erreur lors de la lecture de .env : {e}")
+
+load_env()
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 class InvoiceDetails(BaseModel):
