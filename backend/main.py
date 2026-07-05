@@ -249,8 +249,16 @@ def toggle_regle(
 def get_fournisseurs(db: Session = Depends(get_db)):
     return db.query(Fournisseur).all()
 
-# Service du frontend si compilé
 frontend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend/dist"))
+print(f"[DEBUG] __file__ path: {__file__}")
+print(f"[DEBUG] Resolved frontend_path: {frontend_path}")
+print(f"[DEBUG] Does frontend_path exist? {os.path.exists(frontend_path)}")
+if os.path.exists(frontend_path):
+    print(f"[DEBUG] Frontend dist files: {os.listdir(frontend_path)}")
+else:
+    parent_dir = os.path.abspath(os.path.join(frontend_path, ".."))
+    print(f"[DEBUG] Parent dir '{parent_dir}' content: {os.listdir(parent_dir) if os.path.exists(parent_dir) else 'Not Found'}")
+
 if os.path.exists(frontend_path):
     app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
 
