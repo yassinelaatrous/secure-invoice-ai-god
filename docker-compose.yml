@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  # Application Secure Invoice AI (Backend + Frontend)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: secure-invoice-ai
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistance de la base SQLite et des uploads
+      - invoice_data:/app/backend
+    environment:
+      - JWT_SECRET_KEY=secure-invoice-ai-secret-key-change-in-production
+      - ENVIRONMENT=production
+    restart: unless-stopped
+
+volumes:
+  invoice_data:
+    driver: local
