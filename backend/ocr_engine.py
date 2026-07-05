@@ -59,6 +59,36 @@ def extract_text_from_image(image_path: str) -> str:
         return ""
 
 
+def normalize_date(date_str: str) -> Optional[str]:
+    """Normalise la date extraite au format standard AAAA-MM-JJ."""
+    if not date_str:
+        return None
+    # Remplacer les séparateurs par -
+    normalized = re.sub(r'[./]', '-', date_str.strip())
+    
+    # Tester le format YYYY-MM-DD
+    match_ymd = re.match(r'^(\d{4})-(\d{1,2})-(\d{1,2})$', normalized)
+    if match_ymd:
+        try:
+            year, month, day = map(int, match_ymd.groups())
+            return f"{year:04d}-{month:02d}-{day:02d}"
+        except ValueError:
+            pass
+            
+    # Tester le format DD-MM-YYYY ou DD-MM-YY
+    match_dmy = re.match(r'^(\d{1,2})-(\d{1,2})-(\d{2,4})$', normalized)
+    if match_dmy:
+        try:
+            day, month, year_val = map(int, match_dmy.groups())
+            if year_val < 100:
+                year_val += 2000
+            return f"{year_val:04d}-{month:02d}-{day:02d}"
+        except ValueError:
+            pass
+            
+    return date_str
+
+
 # ─── Analyse du texte extrait par regex ───────────────────────────────────
 
 def parse_invoice_text(text: str) -> Dict:
@@ -118,20 +148,35 @@ def parse_invoice_text(text: str) -> Dict:
     for pattern in date_patterns:
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
-            result["date_facture"] = match.group(1).strip()
+            result["date_facture"] = normalize_date(match.group(1).strip())
             champs_trouves += 1
             break
     
     # ── Montants financiers ────────────────────────────────────────
     def extract_amount(patterns, text_to_search):
-        """Extrait un montant numérique depuis le texte."""
+        """Extrait et nettoie un montant numérique depuis le texte."""
         for p in patterns:
             m = re.search(p, text_to_search, re.IGNORECASE)
             if m:
-                # Nettoyer le montant : remplacer virgule par point
-                amount_str = m.group(1).replace(",", ".").replace(" ", "")
+                amount_str = m.group(1).strip()
+                # Supprimer les espaces et devises
+                cleaned = re.sub(r'[^\d.,]', '', amount_str)
+                if not cleaned:
+                    continue
+                # Gérer les séparateurs de milliers et décimaux
+                if ',' in cleaned and '.' in cleaned:
+                    if cleaned.rfind(',') > cleaned.rfind('.'):
+                        cleaned = cleaned.replace('.', '').replace(',', '.')
+                    else:
+                        cleaned = cleaned.replace(',', '')
+                elif ',' in cleaned:
+                    parts = cleaned.split(',')
+                    if len(parts) == 2 and len(parts[1]) <= 2:
+                        cleaned = cleaned.replace(',', '.')
+                    else:
+                        cleaned = cleaned.replace(',', '')
                 try:
-                    return float(amount_str)
+                    return float(cleaned)
                 except ValueError:
                     continue
         return None
