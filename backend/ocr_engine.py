@@ -19,6 +19,10 @@ TESSERACT_AVAILABLE = False
 try:
     import pytesseract
     from PIL import Image
+    # Configurer le chemin Windows pour Tesseract
+    tesseract_win_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    if os.path.exists(tesseract_win_path):
+        pytesseract.pytesseract.tesseract_cmd = tesseract_win_path
     # Tester si Tesseract est réellement installé sur le système
     pytesseract.get_tesseract_version()
     TESSERACT_AVAILABLE = True
