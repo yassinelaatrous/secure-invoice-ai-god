@@ -378,11 +378,14 @@ def extract_with_gemini(image_path: str) -> Optional[Dict]:
 
     try:
         from google import genai
-        from PIL import Image
 
         print("[INFO] Lancement de l'extraction intelligente avec Gemini API...")
         client = genai.Client(api_key=GEMINI_API_KEY)
-        img = Image.open(image_path)
+        
+        # Téléverser le document (image ou PDF) via la Files API de Gemini
+        print(f"[INFO] Upload du document '{image_path}' vers Gemini Files API...")
+        uploaded_file = client.files.upload(file=image_path)
+        print(f"[INFO] Upload réussi. Nom distant : {uploaded_file.name}")
 
         prompt = (
             "Extrayez les informations de cette facture. "
@@ -392,23 +395,30 @@ def extract_with_gemini(image_path: str) -> Optional[Dict]:
             "Retournez le résultat strictement selon le schéma JSON demandé."
         )
 
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[img, prompt],
-            config={
-                'response_mime_type': 'application/json',
-                'response_schema': InvoiceDetails,
-            }
-        )
+        try:
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=[uploaded_file, prompt],
+                config={
+                    'response_mime_type': 'application/json',
+                    'response_schema': InvoiceDetails,
+                }
+            )
 
-        if response.parsed:
-            data = response.parsed.model_dump()
-            data["source"] = "gemini_api"
-            data["confiance"] = 0.98
-            # Limiter pour l'API
-            data["texte_brut"] = f"[Gemini] Extraction reussie depuis : {os.path.basename(image_path)}"
-            print("[SUCCESS] Extraction Gemini reussie !")
-            return data
+            if response.parsed:
+                data = response.parsed.model_dump()
+                data["source"] = "gemini_api"
+                data["confiance"] = 0.98
+                data["texte_brut"] = f"[Gemini] Extraction reussie depuis : {os.path.basename(image_path)}"
+                print("[SUCCESS] Extraction Gemini reussie !")
+                return data
+        finally:
+            # Nettoyer le fichier après traitement pour respecter la vie privée / sécurité
+            try:
+                print(f"[INFO] Nettoyage du fichier distant '{uploaded_file.name}'...")
+                client.files.delete(name=uploaded_file.name)
+            except Exception as clean_err:
+                print(f"[WARNING] Impossible de supprimer le fichier temporaire Gemini : {clean_err}")
 
     except Exception as e:
         print(f"[ERROR] Echec de l'extraction Gemini : {e}")
