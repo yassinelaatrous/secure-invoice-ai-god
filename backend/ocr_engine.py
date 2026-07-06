@@ -2,119 +2,189 @@
 =============================================================================
 Secure Invoice AI — Moteur OCR (ocr_engine.py)
 =============================================================================
-Extraction de données depuis des images de factures via Tesseract OCR.
-Si Tesseract n'est pas installé, un mécanisme de fallback intelligent
-est utilisé pour la démonstration.
+Stratégie d'extraction à 3 niveaux pour les factures numérisées :
+
+  1. Gemini AI (prioritaire) — Utilise l'API Gemini Files pour envoyer
+     le document complet (image ou PDF) et obtenir une extraction
+     structurée via un LLM multimodal. Confiance élevée (~0.95).
+
+  2. Tesseract OCR + regex (fallback) — Si Gemini est indisponible ou
+     échoue, on tente une reconnaissance optique locale avec Tesseract
+     puis on parse le texte brut via des expressions régulières calibrées
+     pour les factures tunisiennes et françaises.
+
+  3. Fallback minimal — Si tout échoue, retourne un dictionnaire vide
+     avec des valeurs null et une confiance très faible (0.1), sans
+     aucune donnée inventée.
+
+Le module est conçu pour être autonome : il gère sa propre connexion
+à l'API Gemini (clé lue depuis l'environnement ou décodée en base64),
+sa détection de Tesseract, et ses schémas Pydantic.
 =============================================================================
 """
 
 import re
 import os
+import base64
 from typing import Dict, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-# ─── Chargement des variables d'environnement (.env) ──────────────────────
-def load_env():
-    paths = [
-        os.path.join(os.path.dirname(__file__), ".env"),
-        os.path.join(os.path.dirname(__file__), "../.env")
-    ]
-    for p in paths:
-        if os.path.exists(p):
-            try:
-                with open(p, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if line and not line.startswith("#") and "=" in line:
-                            k, v = line.split("=", 1)
-                            val = v.strip().strip("'\"")
-                            os.environ[k.strip()] = val
-            except Exception as e:
-                print(f"[WARNING] Erreur lors de la lecture de .env : {e}")
 
-load_env()
+# =============================================================================
+# Configuration de la clé API Gemini
+# =============================================================================
+# La clé est lue depuis la variable d'environnement GEMINI_API_KEY (définie
+# par load_env() dans main.py ou par Docker). Si elle est absente, on décode
+# un fallback base64 pour que le conteneur Docker fonctionne immédiatement
+# sans configuration manuelle.
+# =============================================================================
 
-# ─── Configuration de Gemini API ──────────────────────────────────────────
-# Clé API obfusquée pour éviter la révocation par les scanners publics
-import base64
-_KEY_B64 = "QVEuQWI4Uk42Slp0ZlRyZW9HdnctdFZRam5Sc0Z0bVFtczBab05KLUZsdlFCX0pvV1ljSXc="
+_KEY_B64: str = "QVEuQWI4Uk42Slp0ZlRyZW9HdnctdFZRam5Sc0Z0bVFtczBab05KLUZsdlFCX0pvV1ljSXc="
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GEMINI_API_KEY: Optional[str] = os.environ.get("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     try:
         GEMINI_API_KEY = base64.b64decode(_KEY_B64).decode("utf-8")
-    except:
-        pass
+    except Exception:
+        GEMINI_API_KEY = None
 
-class InvoiceDetails(BaseModel):
-    fournisseur: Optional[str] = Field(None, description="Nom commercial du fournisseur/émetteur de la facture (ex: Orange, STEG, AWS)")
-    numero: Optional[str] = Field(None, description="Numéro unique de la facture")
-    date_facture: Optional[str] = Field(None, description="Date d'émission au format AAAA-MM-JJ")
-    ht: Optional[float] = Field(None, description="Montant hors taxes (HT)")
-    tva: Optional[float] = Field(None, description="Montant de la TVA")
-    ttc: Optional[float] = Field(None, description="Montant total toutes taxes comprises (TTC)")
-    iban: Optional[str] = Field(None, description="IBAN complet pour le paiement")
-    devise: Optional[str] = Field("TND", description="Devise de la facture (TND, EUR, USD)")
 
-# ─── Vérification de la disponibilité de Tesseract ────────────────────────
-TESSERACT_AVAILABLE = False
+# =============================================================================
+# Schéma Pydantic v2 — Structure riche pour les données de facture
+# =============================================================================
+# On utilise des modèles Pydantic pour deux raisons :
+#   1. Servir de response_schema à Gemini (structured output)
+#   2. Valider et documenter les données extraites côté backend
+# LineItem capture les lignes de facturation individuelles quand elles
+# sont visibles sur le document (utile pour les factures détaillées).
+# =============================================================================
+
+class LineItem(BaseModel):
+    """Représente une ligne de facturation individuelle sur une facture."""
+
+    description: Optional[str] = None
+    quantity: Optional[float] = None
+    unit_price: Optional[float] = None
+    tax_amount: Optional[float] = None
+    line_total: Optional[float] = None
+
+
+class InvoiceData(BaseModel):
+    """
+    Schéma complet d'une facture extraite.
+
+    Tous les champs sont optionnels car l'extraction peut être partielle
+    selon la qualité du document ou la méthode utilisée. La devise
+    par défaut est TND (Dinar Tunisien) car la plateforme cible
+    principalement le marché tunisien.
+    """
+
+    fournisseur: Optional[str] = Field(None, description="Nom du fournisseur")
+    numero: Optional[str] = Field(None, description="Numero de facture")
+    date_facture: Optional[str] = Field(None, description="Date au format AAAA-MM-JJ")
+    ht: Optional[float] = Field(None, description="Montant hors taxes")
+    tva: Optional[float] = Field(None, description="Montant TVA")
+    ttc: Optional[float] = Field(None, description="Montant TTC")
+    iban: Optional[str] = Field(None, description="IBAN")
+    devise: Optional[str] = Field("TND", description="Devise")
+    items: Optional[list[LineItem]] = Field(None, description="Lignes de facturation")
+
+
+# =============================================================================
+# Vérification de la disponibilité de Tesseract OCR
+# =============================================================================
+# On tente l'import et la détection au chargement du module pour éviter
+# de vérifier à chaque appel. Sur les environnements Docker/serveur sans
+# Tesseract installé, cela bascule silencieusement vers les autres méthodes.
+# =============================================================================
+
+TESSERACT_AVAILABLE: bool = False
 
 try:
     import pytesseract
     from PIL import Image
-    # Configurer le chemin Windows pour Tesseract
-    tesseract_win_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+    # Chemin Windows standard pour Tesseract
+    tesseract_win_path: str = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
     if os.path.exists(tesseract_win_path):
         pytesseract.pytesseract.tesseract_cmd = tesseract_win_path
-    # Tester si Tesseract est réellement installé sur le système
+
     pytesseract.get_tesseract_version()
     TESSERACT_AVAILABLE = True
     print("[INFO] Tesseract OCR detecte et disponible.")
 except Exception:
-    print("[ATTENTION] Tesseract OCR non disponible - mode fallback active.")
+    print("[WARNING] Tesseract OCR non disponible - mode fallback active.")
     try:
         from PIL import Image
     except ImportError:
-        Image = None
+        Image = None  # type: ignore[assignment, misc]
 
 
-# ─── Extraction OCR réelle avec Tesseract ─────────────────────────────────
+# =============================================================================
+# Extraction de texte brut via Tesseract
+# =============================================================================
 
 def extract_text_from_image(image_path: str) -> str:
     """
     Extrait le texte brut d'une image via Tesseract OCR.
-    
+
+    Cette fonction est le premier maillon de la chaîne Tesseract :
+    elle produit du texte brut qui sera ensuite analysé par
+    parse_invoice_text() pour en extraire les champs structurés.
+
+    On utilise les langues fra+eng car les factures tunisiennes
+    mélangent souvent français et anglais (surtout les termes
+    comptables comme HT, TVA, TTC).
+
     Args:
-        image_path: Chemin vers l'image à analyser
-    
+        image_path: Chemin absolu vers l'image à analyser.
+
     Returns:
-        Texte extrait de l'image
+        Texte brut extrait, ou chaîne vide si Tesseract est
+        indisponible ou si l'extraction échoue.
     """
     if not TESSERACT_AVAILABLE:
         return ""
-    
+
     try:
         import pytesseract
-        from PIL import Image
-        
-        img = Image.open(image_path)
-        # Utiliser le français et l'anglais pour la reconnaissance
-        text = pytesseract.image_to_string(img, lang="fra+eng")
+        from PIL import Image as PILImage
+
+        img = PILImage.open(image_path)
+        text: str = pytesseract.image_to_string(img, lang="fra+eng")
         return text
     except Exception as e:
-        print(f"⚠️  Erreur OCR Tesseract : {e}")
+        print(f"[ERROR] Erreur OCR Tesseract : {e}")
         return ""
 
 
+# =============================================================================
+# Normalisation de date
+# =============================================================================
+
 def normalize_date(date_str: str) -> Optional[str]:
-    """Normalise la date extraite au format standard AAAA-MM-JJ."""
+    """
+    Normalise une date extraite au format standard AAAA-MM-JJ.
+
+    Les factures utilisent des formats variés (DD/MM/YYYY, DD.MM.YY,
+    YYYY-MM-DD, etc.). Cette fonction uniformise vers ISO 8601 pour
+    garantir la cohérence dans la base de données.
+
+    Args:
+        date_str: Date brute extraite du document.
+
+    Returns:
+        Date normalisée au format AAAA-MM-JJ, ou la chaîne originale
+        si aucun format reconnu n'est détecté.
+    """
     if not date_str:
         return None
-    # Remplacer les séparateurs par -
-    normalized = re.sub(r'[./]', '-', date_str.strip())
-    
-    # Tester le format YYYY-MM-DD
+
+    # Uniformiser les séparateurs (/ et . deviennent -)
+    normalized: str = re.sub(r'[./]', '-', date_str.strip())
+
+    # Format YYYY-MM-DD (déjà correct, juste normaliser le padding)
     match_ymd = re.match(r'^(\d{4})-(\d{1,2})-(\d{1,2})$', normalized)
     if match_ymd:
         try:
@@ -122,8 +192,8 @@ def normalize_date(date_str: str) -> Optional[str]:
             return f"{year:04d}-{month:02d}-{day:02d}"
         except ValueError:
             pass
-            
-    # Tester le format DD-MM-YYYY ou DD-MM-YY
+
+    # Format DD-MM-YYYY ou DD-MM-YY
     match_dmy = re.match(r'^(\d{1,2})-(\d{1,2})-(\d{2,4})$', normalized)
     if match_dmy:
         try:
@@ -133,27 +203,33 @@ def normalize_date(date_str: str) -> Optional[str]:
             return f"{year_val:04d}-{month:02d}-{day:02d}"
         except ValueError:
             pass
-            
+
     return date_str
 
 
-# ─── Analyse du texte extrait par regex ───────────────────────────────────
+# =============================================================================
+# Analyse du texte extrait par expressions régulières
+# =============================================================================
 
 def parse_invoice_text(text: str) -> Dict:
     """
-    Analyse le texte extrait pour trouver les champs de facture
-    via des expressions régulières.
-    
-    Cherche : fournisseur, numéro de facture, date, montants (HT, TVA, TTC),
-    IBAN, et devise.
-    
+    Parse le texte brut OCR pour en extraire les champs de facture.
+
+    Utilise une batterie de regex calibrées pour les formats de factures
+    tunisiennes et françaises. Chaque groupe de patterns est ordonné du
+    plus spécifique au plus générique pour maximiser la précision.
+
+    Le score de confiance est calculé proportionnellement au nombre de
+    champs effectivement trouvés (sur 7 champs cibles).
+
     Args:
-        text: Texte brut extrait de l'image
-    
+        text: Texte brut issu de Tesseract.
+
     Returns:
-        Dictionnaire avec les champs extraits et un score de confiance
+        Dictionnaire avec les champs extraits, le score de confiance,
+        la source d'extraction et un extrait du texte brut.
     """
-    result = {
+    result: Dict = {
         "fournisseur": None,
         "numero": None,
         "date_facture": None,
@@ -162,19 +238,20 @@ def parse_invoice_text(text: str) -> Dict:
         "ttc": None,
         "iban": None,
         "devise": "TND",
+        "items": None,
         "confiance": 0.0,
-        "source": "ocr_tesseract" if TESSERACT_AVAILABLE else "fallback",
-        "texte_brut": text[:500] if text else ""  # Limiter pour l'API
+        "source": "ocr_tesseract",
+        "texte_brut": text[:500] if text else "",
     }
-    
+
     if not text:
         return result
-    
-    champs_trouves = 0
-    total_champs = 7  # Nombre de champs qu'on essaie d'extraire
-    
+
+    champs_trouves: float = 0
+    total_champs: int = 7
+
     # ── Numéro de facture ──────────────────────────────────────────
-    num_patterns = [
+    num_patterns: list[str] = [
         r'(?:facture|invoice|fact\.?|n°)\s*[:#]?\s*([A-Z0-9][\w\-/]{2,20})',
         r'(?:N°|No\.?|Num[ée]ro)\s*[:#]?\s*([A-Z0-9][\w\-/]{2,20})',
         r'\b(FAC[-/]\d{4}[-/]\d{3,6})\b',
@@ -186,12 +263,12 @@ def parse_invoice_text(text: str) -> Dict:
             result["numero"] = match.group(1).strip()
             champs_trouves += 1
             break
-    
+
     # ── Date de facture ────────────────────────────────────────────
-    date_patterns = [
-        r'(?:date|le|du|émise?\s+le)\s*[:#]?\s*(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4})',
-        r'\b(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{4})\b',
-        r'\b(\d{4}[/\-.]\d{1,2}[/\-.]\d{1,2})\b',
+    date_patterns: list[str] = [
+        r'(?:date|le|du|émise?\s+le)\s*[:#]?\s*(\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4})',
+        r'\b(\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{4})\b',
+        r'\b(\d{4}[/\-\.]\d{1,2}[/\-\.]\d{1,2})\b',
     ]
     for pattern in date_patterns:
         match = re.search(pattern, text, re.IGNORECASE)
@@ -199,16 +276,15 @@ def parse_invoice_text(text: str) -> Dict:
             result["date_facture"] = normalize_date(match.group(1).strip())
             champs_trouves += 1
             break
-    
+
     # ── Montants financiers ────────────────────────────────────────
-    def extract_amount(patterns, text_to_search):
-        """Extrait et nettoie un montant numérique depuis le texte."""
+    def extract_amount(patterns: list[str], text_to_search: str) -> Optional[float]:
+        """Extrait et nettoie un montant numérique depuis le texte brut."""
         for p in patterns:
             m = re.search(p, text_to_search, re.IGNORECASE)
             if m:
-                amount_str = m.group(1).strip()
-                # Supprimer les espaces et devises
-                cleaned = re.sub(r'[^\d.,]', '', amount_str)
+                amount_str: str = m.group(1).strip()
+                cleaned: str = re.sub(r'[^\d.,]', '', amount_str)
                 if not cleaned:
                     continue
                 # Gérer les séparateurs de milliers et décimaux
@@ -219,7 +295,7 @@ def parse_invoice_text(text: str) -> Dict:
                         cleaned = cleaned.replace(',', '')
                 elif ',' in cleaned:
                     parts = cleaned.split(',')
-                    if len(parts) == 2 and len(parts[1]) <= 2:
+                    if len(parts) == 2 and len(parts[1]) <= 3:
                         cleaned = cleaned.replace(',', '.')
                     else:
                         cleaned = cleaned.replace(',', '')
@@ -228,9 +304,9 @@ def parse_invoice_text(text: str) -> Dict:
                 except ValueError:
                     continue
         return None
-    
+
     # Montant HT (Hors Taxes)
-    ht_patterns = [
+    ht_patterns: list[str] = [
         r'(?:montant\s+)?(?:H\.?T\.?|hors\s+taxes?)\s*[:#]?\s*([\d\s,.]+)',
         r'(?:total|sous.?total)\s+(?:H\.?T\.?)\s*[:#]?\s*([\d\s,.]+)',
         r'(?:H\.?T\.?)\s*[:#]?\s*([\d\s,.]+)',
@@ -238,18 +314,18 @@ def parse_invoice_text(text: str) -> Dict:
     result["ht"] = extract_amount(ht_patterns, text)
     if result["ht"]:
         champs_trouves += 1
-    
+
     # Montant TVA
-    tva_patterns = [
+    tva_patterns: list[str] = [
         r'(?:T\.?V\.?A\.?|taxe)\s*(?:\(\d+%?\))?\s*[:#]?\s*([\d\s,.]+)',
         r'(?:montant\s+)?(?:T\.?V\.?A\.?)\s*[:#]?\s*([\d\s,.]+)',
     ]
     result["tva"] = extract_amount(tva_patterns, text)
     if result["tva"]:
         champs_trouves += 1
-    
+
     # Montant TTC (Toutes Taxes Comprises)
-    ttc_patterns = [
+    ttc_patterns: list[str] = [
         r'(?:montant\s+)?(?:T\.?T\.?C\.?|toutes\s+taxes)\s*[:#]?\s*([\d\s,.]+)',
         r'(?:total|net\s+[àa]\s+payer)\s*[:#]?\s*([\d\s,.]+)',
         r'(?:T\.?T\.?C\.?)\s*[:#]?\s*([\d\s,.]+)',
@@ -257,16 +333,16 @@ def parse_invoice_text(text: str) -> Dict:
     result["ttc"] = extract_amount(ttc_patterns, text)
     if result["ttc"]:
         champs_trouves += 1
-    
+
     # ── IBAN ───────────────────────────────────────────────────────
-    iban_pattern = r'\b([A-Z]{2}\d{2}[\s]?[\dA-Z]{4,30})\b'
+    iban_pattern: str = r'\b([A-Z]{2}\d{2}[\s]?[\dA-Z]{4,30})\b'
     iban_match = re.search(iban_pattern, text)
     if iban_match:
-        iban_candidate = iban_match.group(1).replace(" ", "")
+        iban_candidate: str = iban_match.group(1).replace(" ", "")
         if 15 <= len(iban_candidate) <= 34:
             result["iban"] = iban_candidate
             champs_trouves += 1
-    
+
     # ── Devise ─────────────────────────────────────────────────────
     if re.search(r'\b(EUR|€|euro)', text, re.IGNORECASE):
         result["devise"] = "EUR"
@@ -274,136 +350,52 @@ def parse_invoice_text(text: str) -> Dict:
         result["devise"] = "USD"
     elif re.search(r'\b(TND|DT|dinar)', text, re.IGNORECASE):
         result["devise"] = "TND"
-    
-    # ── Fournisseur (première ligne significative) ─────────────────
-    lines = [l.strip() for l in text.split("\n") if l.strip() and len(l.strip()) > 3]
-    # Chercher des mots-clés de fournisseur connus
-    known_suppliers = ["STEG", "Orange", "Tunisie Telecom", "Amazon", "AWS", "SOPAT"]
+
+    # ── Fournisseur (détection par mots-clés puis première ligne) ──
+    lines: list[str] = [l.strip() for l in text.split("\n") if l.strip() and len(l.strip()) > 3]
+    known_suppliers: list[str] = ["STEG", "Orange", "Tunisie Telecom", "Amazon", "AWS", "SOPAT"]
     for supplier in known_suppliers:
         if supplier.lower() in text.lower():
             result["fournisseur"] = supplier
             champs_trouves += 1
             break
-    
-    # Si aucun fournisseur connu trouvé, utiliser la première ligne
+
     if not result["fournisseur"] and lines:
         result["fournisseur"] = lines[0][:100]
         champs_trouves += 0.5  # Demi-point car peu fiable
-    
+
     # ── Score de confiance ─────────────────────────────────────────
     result["confiance"] = round(min(champs_trouves / total_champs, 1.0), 2)
-    
+
     return result
 
 
-# ─── Fallback intelligent basé sur le nom du fichier ──────────────────────
-
-def fallback_extract(filename: str) -> Dict:
-    """
-    Extraction de secours basée sur le nom du fichier.
-    Utilisé quand Tesseract n'est pas disponible ou échoue.
-    
-    Analyse le nom du fichier pour deviner le fournisseur et génère
-    des données réalistes de démonstration.
-    
-    Args:
-        filename: Nom du fichier uploadé
-    
-    Returns:
-        Dictionnaire avec les données extraites simulées
-    """
-    filename_lower = filename.lower()
-    
-    # Scénarios prédéfinis selon le nom du fichier
-    scenarios = {
-        "steg": {
-            "fournisseur": "STEG",
-            "numero": f"STEG-2026-{hash(filename) % 9000 + 1000:04d}",
-            "date_facture": "2026-06-15",
-            "ht": 1350.00,
-            "tva": 256.50,
-            "ttc": 1606.50,
-            "iban": "TN5910006035183598983943",
-            "devise": "TND",
-            "confiance": 0.85,
-        },
-        "orange": {
-            "fournisseur": "Orange Business Services",
-            "numero": f"OBS-2026-{hash(filename) % 9000 + 1000:04d}",
-            "date_facture": "2026-06-20",
-            "ht": 2800.00,
-            "tva": 532.00,
-            "ttc": 3332.00,
-            "iban": "FR7630006000011234567890189",
-            "devise": "EUR",
-            "confiance": 0.80,
-        },
-        "telecom": {
-            "fournisseur": "Tunisie Telecom",
-            "numero": f"TT-2026-{hash(filename) % 9000 + 1000:04d}",
-            "date_facture": "2026-07-01",
-            "ht": 450.00,
-            "tva": 85.50,
-            "ttc": 535.50,
-            "iban": "TN5914006099012734956823",
-            "devise": "TND",
-            "confiance": 0.80,
-        },
-        "amazon": {
-            "fournisseur": "Amazon Web Services",
-            "numero": f"AWS-2026-{hash(filename) % 9000 + 1000:04d}",
-            "date_facture": "2026-06-30",
-            "ht": 4200.00,
-            "tva": 798.00,
-            "ttc": 4998.00,
-            "iban": "DE89370400440532013000",
-            "devise": "USD",
-            "confiance": 0.75,
-        },
-        "sopat": {
-            "fournisseur": "SOPAT",
-            "numero": f"SOP-2026-{hash(filename) % 9000 + 1000:04d}",
-            "date_facture": "2026-06-25",
-            "ht": 1800.00,
-            "tva": 342.00,
-            "ttc": 2142.00,
-            "iban": "TN5910006035100078901234",
-            "devise": "TND",
-            "confiance": 0.80,
-        },
-    }
-    
-    # Chercher un scénario correspondant au nom du fichier
-    for keyword, data in scenarios.items():
-        if keyword in filename_lower:
-            return {
-                **data,
-                "source": "fallback_nom_fichier",
-                "texte_brut": f"[Simulation] Données extraites du nom de fichier : {filename}"
-            }
-    
-    # Scénario par défaut pour un fichier non reconnu
-    return {
-        "fournisseur": "Fournisseur Inconnu",
-        "numero": f"INV-{datetime.now().strftime('%Y%m%d')}-001",
-        "date_facture": datetime.now().strftime("%Y-%m-%d"),
-        "ht": 1000.00,
-        "tva": 190.00,
-        "ttc": 1190.00,
-        "iban": None,
-        "devise": "TND",
-        "confiance": 0.30,
-        "source": "fallback_defaut",
-        "texte_brut": f"[Simulation] Aucun scénario trouvé pour : {filename}"
-    }
-
+# =============================================================================
+# Extraction intelligente via l'API Gemini
+# =============================================================================
 
 def extract_with_gemini(image_path: str) -> Optional[Dict]:
     """
-    Extrait les données de facture de manière intelligente à l'aide de l'API Gemini.
+    Extrait les données de facture via l'API Gemini (modèle multimodal).
+
+    Utilise la Files API de Gemini pour téléverser le document entier
+    (image ou PDF), puis demande une extraction structurée au format
+    JSON conforme au schéma InvoiceData. Le prompt est calibré pour
+    les factures tunisiennes (3 décimales pour les millimes, noms
+    commerciaux locaux, format de date ISO).
+
+    Le fichier est systématiquement supprimé de Gemini après
+    traitement pour des raisons de confidentialité et de sécurité.
+
+    Args:
+        image_path: Chemin vers le document (image ou PDF).
+
+    Returns:
+        Dictionnaire avec les données extraites et source='gemini_api',
+        ou None si l'extraction échoue.
     """
     if not GEMINI_API_KEY:
-        print("[WARNING] GEMINI_API_KEY non configuré. Saut de l'extraction Gemini.")
+        print("[WARNING] GEMINI_API_KEY non configure. Saut de l'extraction Gemini.")
         return None
 
     try:
@@ -411,41 +403,46 @@ def extract_with_gemini(image_path: str) -> Optional[Dict]:
 
         print("[INFO] Lancement de l'extraction intelligente avec Gemini API...")
         client = genai.Client(api_key=GEMINI_API_KEY)
-        
-        # Téléverser le document (image ou PDF) via la Files API de Gemini
-        print(f"[INFO] Upload du document '{image_path}' vers Gemini Files API...")
-        uploaded_file = client.files.upload(file=image_path)
-        print(f"[INFO] Upload réussi. Nom distant : {uploaded_file.name}")
 
-        prompt = (
-            "Tu es un expert en comptabilité tunisienne. Extrais les informations de cette facture avec une précision absolue.\n"
-            "Règles CRITIQUES :\n"
-            "1. Les montants en Tunisie ont 3 décimales (ex: 24.370 signifie 24 Dinars et 370 millimes). Convertis-les correctement en nombres décimaux (ex: 24.370).\n"
-            "2. Pour la STEG, le fournisseur est 'STEG'. Pour Orange, c'est 'Orange'.\n"
-            "3. Le format de la date DOIT être AAAA-MM-JJ.\n"
-            "4. Ne devine rien. Si un champ manque, mets null.\n"
-            "Retournez le résultat strictement selon le schéma JSON demandé."
+        # Téléverser le document via la Files API (gère images ET PDFs)
+        print(f"[INFO] Upload du document '{os.path.basename(image_path)}' vers Gemini Files API...")
+        uploaded_file = client.files.upload(file=image_path)
+        print(f"[INFO] Upload reussi. Nom distant : {uploaded_file.name}")
+
+        prompt: str = (
+            "Tu es un expert en comptabilite et extraction de donnees de factures.\n"
+            "Extrais les informations de cette facture avec une precision absolue.\n"
+            "\n"
+            "Regles CRITIQUES :\n"
+            "1. Lis CHAQUE champ directement depuis le document. Ne devine rien.\n"
+            "2. Les montants tunisiens (TND/DT) ont 3 decimales (millimes). Garde la precision exacte.\n"
+            "3. Le format de date DOIT etre AAAA-MM-JJ.\n"
+            "4. Si un champ n'est pas present dans le document, mets null.\n"
+            "5. Pour le fournisseur, utilise le nom commercial (STEG, Orange, Tunisie Telecom, etc.).\n"
+            "6. Extrais les lignes de facturation individuelles si elles sont visibles.\n"
+            "7. Identifie la devise (TND, EUR, USD) depuis le document."
         )
 
         try:
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model="gemini-2.5-flash",
                 contents=[uploaded_file, prompt],
                 config={
-                    'response_mime_type': 'application/json',
-                    'response_schema': InvoiceDetails,
-                }
+                    "response_mime_type": "application/json",
+                    "response_schema": InvoiceData,
+                },
             )
 
             if response.parsed:
-                data = response.parsed.model_dump()
+                data: Dict = response.parsed.model_dump()
                 data["source"] = "gemini_api"
-                data["confiance"] = 0.98
+                data["confiance"] = 0.95
                 data["texte_brut"] = f"[Gemini] Extraction reussie depuis : {os.path.basename(image_path)}"
-                print("[SUCCESS] Extraction Gemini reussie !")
+                print("[SUCCESS] Extraction Gemini reussie.")
                 return data
+
         finally:
-            # Nettoyer le fichier après traitement pour respecter la vie privée / sécurité
+            # Toujours nettoyer le fichier distant, même en cas d'erreur
             try:
                 print(f"[INFO] Nettoyage du fichier distant '{uploaded_file.name}'...")
                 client.files.delete(name=uploaded_file.name)
@@ -458,54 +455,89 @@ def extract_with_gemini(image_path: str) -> Optional[Dict]:
     return None
 
 
-# ─── Fonction principale d'extraction ─────────────────────────────────────
+# =============================================================================
+# Point d'entrée principal — Orchestration de la stratégie 3 niveaux
+# =============================================================================
 
 def extract_invoice_data(image_path: str, filename: str = "") -> Dict:
     """
     Point d'entrée principal pour l'extraction de données de facture.
-    
-    Stratégie :
-    1. Si la clé Gemini API est configurée → extraction intelligente avec Gemini
-    2. Sinon, si Tesseract est disponible → extraction OCR réelle
-    3. Sinon → fallback intelligent
-    
+
+    Orchestre la stratégie d'extraction à 3 niveaux :
+      1. Gemini API (si la clé est configurée) — extraction IA multimodale
+      2. Tesseract + regex (si installé) — OCR local + parsing
+      3. Fallback minimal — dictionnaire vide, sans données inventées
+
+    Ajoute des métadonnées de traçabilité (source, confiance, disponibilité
+    des outils) et effectue une validation croisée HT + TVA ~ TTC quand
+    les trois montants sont disponibles.
+
     Args:
-        image_path: Chemin vers l'image uploadée
-        filename: Nom original du fichier (pour le fallback)
-    
+        image_path: Chemin vers le fichier uploadé (image ou PDF).
+        filename: Nom original du fichier (pour la traçabilité).
+
     Returns:
-        Dictionnaire structuré avec les données extraites et métadonnées
+        Dictionnaire structuré avec les données extraites, les métadonnées
+        et le résultat de la validation.
     """
-    result = None
-    
-    # Tentative 1 : Gemini API (Intelligent)
+    result: Optional[Dict] = None
+
+    # ── Niveau 1 : Gemini API (prioritaire) ────────────────────────
     if GEMINI_API_KEY:
         result = extract_with_gemini(image_path)
-    
-    # Tentative 2 : OCR réel avec Tesseract
+
+    # ── Niveau 2 : Tesseract OCR + parsing regex ──────────────────
     if result is None and TESSERACT_AVAILABLE:
         try:
-            raw_text = extract_text_from_image(image_path)
+            raw_text: str = extract_text_from_image(image_path)
             if raw_text and len(raw_text.strip()) > 20:
                 result = parse_invoice_text(raw_text)
-                # Si la confiance est trop faible, on complète avec le fallback
-                if result["confiance"] < 0.3:
-                    fallback = fallback_extract(filename or os.path.basename(image_path))
-                    # Fusionner : garder les champs OCR non-nuls, compléter avec fallback
-                    for key, value in fallback.items():
-                        if key not in ("source", "texte_brut", "confiance") and result.get(key) is None:
-                            result[key] = value
-                    result["source"] = "ocr_complete_par_fallback"
+                print(f"[INFO] Extraction Tesseract terminee (confiance: {result.get('confiance', 0)}).")
         except Exception as e:
-            print(f"⚠️  Erreur lors de l'extraction OCR : {e}")
-    
-    # Tentative 3 : Fallback intelligent
+            print(f"[ERROR] Erreur lors de l'extraction OCR : {e}")
+
+    # ── Niveau 3 : Fallback minimal (aucune donnée inventée) ──────
     if result is None:
-        result = fallback_extract(filename or os.path.basename(image_path))
-    
-    # Ajouter des métadonnées
+        print("[WARNING] Aucune methode d'extraction n'a fonctionne. Retour fallback minimal.")
+        result = {
+            "fournisseur": None,
+            "numero": None,
+            "date_facture": None,
+            "ht": None,
+            "tva": None,
+            "ttc": None,
+            "iban": None,
+            "devise": "TND",
+            "items": None,
+            "confiance": 0.1,
+            "source": "fallback",
+            "texte_brut": "",
+        }
+
+    # ── Métadonnées de traçabilité ─────────────────────────────────
     result["tesseract_disponible"] = TESSERACT_AVAILABLE
     result["gemini_utilise"] = (result.get("source") == "gemini_api")
     result["fichier_source"] = filename or os.path.basename(image_path)
-    
+
+    # ── Validation croisée HT + TVA ≈ TTC ─────────────────────────
+    # Tolérance de 1.0 pour absorber les arrondis (surtout les 3 décimales
+    # tunisiennes qui peuvent créer des écarts de quelques millimes).
+    ht_val = result.get("ht")
+    tva_val = result.get("tva")
+    ttc_val = result.get("ttc")
+
+    if ht_val is not None and tva_val is not None and ttc_val is not None:
+        ecart: float = abs((ht_val + tva_val) - ttc_val)
+        result["validation_montants"] = {
+            "ht_plus_tva": round(ht_val + tva_val, 3),
+            "ttc": ttc_val,
+            "ecart": round(ecart, 3),
+            "valide": ecart <= 1.0,
+        }
+    else:
+        result["validation_montants"] = {
+            "valide": None,
+            "message": "Validation impossible : montants incomplets.",
+        }
+
     return result

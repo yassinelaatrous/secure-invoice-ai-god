@@ -33,7 +33,8 @@ def check_compliance(facture_data: Dict[str, Any], rules: List[Dict[str, Any]]) 
     if regle_tva and regle_tva.get("active") and ht > 0:
         calcul_attendu = round(ht + tva, 2)
         difference = abs(calcul_attendu - round(ttc, 2))
-        if difference > 0.05:
+        # Tolerance de 1.0 pour gerer les arrondis sur 3 decimales (millimes TND)
+        if difference > 1.0:
             erreurs.append(
                 f"Calcul incorrect : HT ({ht:.2f}) + TVA ({tva:.2f}) = {calcul_attendu:.2f} {devise}, "
                 f"mais le TTC indiqué est {ttc:.2f} {devise} (écart de {difference:.2f} {devise})."

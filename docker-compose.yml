@@ -8,9 +8,15 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Montage du dossier local pour utiliser le code à jour
-      - ./backend:/app/backend
+      # Persister uniquement les uploads et la base de donnees
+      - uploads_data:/app/backend/uploads
+    env_file:
+      - ./backend/.env
     environment:
       - JWT_SECRET_KEY=secure-invoice-ai-secret-key-change-in-production
       - ENVIRONMENT=production
     restart: unless-stopped
+
+volumes:
+  uploads_data:
+    driver: local

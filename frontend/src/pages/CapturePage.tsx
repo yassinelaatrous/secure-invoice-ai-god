@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
-import { UploadCloud, CheckCircle, AlertCircle } from 'lucide-react';
+import { UploadCloud, CheckCircle, AlertCircle, Zap } from 'lucide-react';
 
 const CapturePage = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -60,11 +60,36 @@ const CapturePage = () => {
     }
   };
 
-  // Simulation pour la démo
-  const loadDemoFile = async (type: string) => {
-    // Créer un fichier factice pour l'upload
-    const dummyFile = new File(["dummy content"], `facture_${type}.pdf`, { type: "application/pdf" });
-    setFile(dummyFile);
+  const renderSourceBadge = () => {
+    if (!extractedData) return null;
+    const source = extractedData.source;
+    let label = 'Démo';
+    let icon = null;
+    let badgeClass = 'badge-outline';
+
+    if (source === 'gemini_api') {
+      label = 'Gemini AI';
+      icon = <Zap size={14} />;
+      badgeClass = 'badge-primary';
+    } else if (source === 'ocr_tesseract') {
+      label = 'Tesseract OCR';
+      badgeClass = 'badge-success';
+    }
+
+    const confiance = extractedData.confiance;
+
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+        <span className={`badge ${badgeClass}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+          {icon} {label}
+        </span>
+        {confiance != null && (
+          <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+            Confiance&nbsp;: {Math.round(confiance * 100)}%
+          </span>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -96,17 +121,10 @@ const CapturePage = () => {
             disabled={!file || loading}
             style={{ marginTop: '1rem' }}
           >
-            {loading ? "Extraction en cours..." : "Lancer l'OCR"}
+            {loading ? "Analyse IA en cours..." : "Lancer l'OCR"}
           </button>
 
-          <div className="demo-buttons" style={{ marginTop: '2rem' }}>
-            <p>Fichiers de test (Démo):</p>
-            <div className="btn-group">
-              <button className="btn btn-outline btn-sm" onClick={() => loadDemoFile('steg')}>STEG (Valide)</button>
-              <button className="btn btn-outline btn-sm" onClick={() => loadDemoFile('fraud')}>Fraude IBAN</button>
-              <button className="btn btn-outline btn-sm" onClick={() => loadDemoFile('calcul')}>Erreur TVA</button>
-            </div>
-          </div>
+
         </div>
 
         {/* Colonne de droite: Données extraites */}
@@ -116,12 +134,23 @@ const CapturePage = () => {
           {error && <div className="alert error"><AlertCircle size={18}/> {error}</div>}
           {success && <div className="alert success"><CheckCircle size={18}/> {success}</div>}
 
+          {extractedData?.validation_warnings && extractedData.validation_warnings.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              {extractedData.validation_warnings.map((warn: string, i: number) => (
+                <div key={i} className="alert warning" style={{ background: 'rgba(234, 179, 8, 0.1)', borderColor: '#eab308', color: '#eab308' }}>
+                  <AlertCircle size={18} /> {warn}
+                </div>
+              ))}
+            </div>
+          )}
+
           {!extractedData ? (
             <div className="empty-state">
               Veuillez uploader un document pour lancer l'extraction.
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="extracted-form">
+              {renderSourceBadge()}
               <div className="form-grid">
                 <div className="form-group">
                   <label>Fournisseur</label>
@@ -141,15 +170,15 @@ const CapturePage = () => {
                 </div>
                 <div className="form-group">
                   <label>Montant HT</label>
-                  <input type="number" step="0.01" name="ht" value={extractedData.ht || 0} onChange={handleChange} />
+                  <input type="number" step="0.001" name="ht" value={extractedData.ht ?? ''} onChange={handleChange} />
                 </div>
                 <div className="form-group">
                   <label>Montant TVA</label>
-                  <input type="number" step="0.01" name="tva" value={extractedData.tva || 0} onChange={handleChange} />
+                  <input type="number" step="0.001" name="tva" value={extractedData.tva ?? ''} onChange={handleChange} />
                 </div>
                 <div className="form-group">
                   <label>Montant TTC</label>
-                  <input type="number" step="0.01" name="ttc" value={extractedData.ttc || 0} onChange={handleChange} required />
+                  <input type="number" step="0.001" name="ttc" value={extractedData.ttc ?? ''} onChange={handleChange} required />
                 </div>
                 <div className="form-group full-width">
                   <label>IBAN</label>
