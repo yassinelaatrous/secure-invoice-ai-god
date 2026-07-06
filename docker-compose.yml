@@ -10,11 +10,10 @@ services:
     volumes:
       # Persister uniquement les uploads et la base de donnees
       - uploads_data:/app/backend/uploads
-    env_file:
-      - ./backend/.env
     environment:
       - JWT_SECRET_KEY=secure-invoice-ai-secret-key-change-in-production
       - ENVIRONMENT=production
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     restart: unless-stopped
 
 volumes:
