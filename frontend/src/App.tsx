@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
+import MobileUploadPage from './pages/MobileUploadPage';
 import { AuthContext } from './context/AuthContext';
 
 const ProtectedRoute = ({ children, requiredRole }: { children: ReactNode, requiredRole?: string }) => {
@@ -24,6 +25,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/mobile-upload" element={<MobileUploadPage />} />
       
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />

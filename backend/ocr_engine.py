@@ -168,8 +168,8 @@ def normalize_date(date_str: str) -> Optional[str]:
     Normalise une date extraite au format standard AAAA-MM-JJ.
 
     Les factures utilisent des formats variés (DD/MM/YYYY, DD.MM.YY,
-    YYYY-MM-DD, etc.). Cette fonction uniformise vers ISO 8601 pour
-    garantir la cohérence dans la base de données.
+    décrite en lettres en français, etc.). Cette fonction uniformise vers
+    ISO 8601 pour garantir la cohérence dans la base de données.
 
     Args:
         date_str: Date brute extraite du document.
@@ -180,6 +180,39 @@ def normalize_date(date_str: str) -> Optional[str]:
     """
     if not date_str:
         return None
+
+    date_clean = date_str.strip().lower()
+    
+    # Dictionnaire des mois en français pour la conversion littérale
+    months_fr = {
+        "jan": 1, "janv": 1, "janvier": 1,
+        "fev": 2, "fév": 2, "fevrier": 2, "février": 2,
+        "mar": 3, "mars": 3,
+        "avr": 4, "avril": 4,
+        "mai": 5,
+        "jui": 6, "juin": 6,
+        "jul": 7, "juil": 7, "juillet": 7,
+        "aou": 8, "aoû": 8, "aout": 8, "août": 8,
+        "sep": 9, "sept": 9, "septembre": 9,
+        "oct": 10, "octobre": 10,
+        "nov": 11, "novembre": 11,
+        "dec": 12, "déc": 12, "decembre": 12, "décembre": 12
+    }
+
+    # Supprimer les points (ex: "nov." -> "nov")
+    date_clean = date_clean.replace(".", "")
+
+    # Match format littéral : "29 mai 2026", "29-mai-2026", "29/mai/2026"
+    match_literal = re.search(r'(\d{1,2})[\s\-/\.]*([a-zéûâôîïç\s]+)[\s\-/\.]*(\d{4})', date_clean)
+    if match_literal:
+        try:
+            day_val = int(match_literal.group(1))
+            month_str = match_literal.group(2).strip()
+            year_val = int(match_literal.group(3))
+            if month_str in months_fr:
+                return f"{year_val:04d}-{months_fr[month_str]:02d}-{day_val:02d}"
+        except ValueError:
+            pass
 
     # Uniformiser les séparateurs (/ et . deviennent -)
     normalized: str = re.sub(r'[./]', '-', date_str.strip())
@@ -438,6 +471,11 @@ def extract_with_gemini(image_path: str) -> Optional[Dict]:
                 data["source"] = "gemini_api"
                 data["confiance"] = 0.95
                 data["texte_brut"] = f"[Gemini] Extraction reussie depuis : {os.path.basename(image_path)}"
+                
+                # Normalisation de la date retournee par l'IA
+                if data.get("date_facture"):
+                    data["date_facture"] = normalize_date(data["date_facture"])
+                    
                 print("[SUCCESS] Extraction Gemini reussie.")
                 return data
 

@@ -196,6 +196,54 @@ def update_facture_statut(
 
     return {"message": "Statut mis à jour"}
 
+# Stockage en mémoire pour les uploads mobiles
+# Format: {session_id: {"status": "pending" | "completed", "data": extracted_data}}
+mobile_sessions = {}
+
+@app.post("/api/upload/mobile/{session_id}")
+async def upload_invoice_mobile(
+    session_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    os.makedirs("uploads", exist_ok=True)
+    file_path = f"uploads/{file.filename}"
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+
+    # OCR Extraction
+    extracted_data = extract_invoice_data(file_path, filename=file.filename)
+
+    # Save to session
+    mobile_sessions[session_id] = {
+        "status": "completed",
+        "data": {
+            "filename": file.filename,
+            "extracted_data": extracted_data
+        }
+    }
+
+    # Add audit log
+    log = AuditLog(
+        acteur="Mobile Session App",
+        action="UPLOAD_DOCUMENT_MOBILE",
+        cible=file.filename,
+        details=f"Document uploadé depuis le mobile pour la session {session_id}",
+        ip_address="127.0.0.1"
+    )
+    db.add(log)
+    db.commit()
+
+    return {"message": "Document traité avec succès", "session_id": session_id}
+
+
+@app.get("/api/upload/status/{session_id}")
+def check_mobile_upload_status(session_id: str):
+    if session_id in mobile_sessions:
+        return mobile_sessions[session_id]
+    return {"status": "pending"}
+
+
 @app.post("/api/upload")
 async def upload_invoice(
     file: UploadFile = File(...),
