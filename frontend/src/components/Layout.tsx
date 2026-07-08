@@ -221,17 +221,17 @@ const Layout = () => {
         <div className="brand" style={{ padding: '22px 20px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div className="brand-mark" style={{
             width: '34px', height: '34px', borderRadius: '9px',
-            background: 'linear-gradient(135deg, #3b7ddb, #f4841f 45%, #f0b429 75%, #3d2170)',
+            background: 'var(--primary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Sora', fontWeight: 800, color: '#fff', fontSize: '15px'
+            fontFamily: 'Outfit', fontWeight: 800, color: '#000', fontSize: '15px'
           }}>
             CI
           </div>
           <div>
-            <div className="brand-name" style={{ fontFamily: 'Sora', fontWeight: 700, fontSize: '17px', color: '#0f172a', lineHeight: 1 }}>
+            <div className="brand-name" style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: '17px', color: '#fff', lineHeight: 1 }}>
               CEO.IT
             </div>
-            <div className="brand-tag" style={{ fontSize: '10px', color: '#64748b', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: '3px' }}>
+            <div className="brand-tag" style={{ fontSize: '10px', color: 'var(--text-secondary)', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: '3px' }}>
               {getRoleLabel()}
             </div>
           </div>
@@ -257,22 +257,19 @@ const Layout = () => {
                     border: 'none', 
                     background: 'transparent', 
                     textAlign: 'left', 
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.8rem'
+                    cursor: 'pointer'
                   }}
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                  {item.count && <span className="count" style={{ marginLeft: 'auto', background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '20px', fontSize: '0.75rem', fontFamily: 'IBM Plex Mono', fontWeight: 600 }}>{item.count}</span>}
+                  {item.count && <span className="count" style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '2px 8px', borderRadius: '20px', fontSize: '0.75rem', fontFamily: 'IBM Plex Mono', fontWeight: 600 }}>{item.count}</span>}
                 </button>
               ))}
             </div>
           ))}
         </nav>
 
-        <div className="sidebar-foot" style={{ padding: '14px 20px', borderTop: '1px solid #f1f5f9', fontSize: '11px', color: '#94a3b8' }}>
+        <div className="sidebar-foot" style={{ padding: '14px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '11px', color: 'var(--text-secondary)' }}>
           CEO-IT v1.0 — Démo interactive
         </div>
       </aside>
@@ -326,14 +323,14 @@ const Layout = () => {
               <div className="avatar" style={{ 
                 width: '34px', height: '34px', borderRadius: '50%', 
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: 'Sora', fontWeight: 700, fontSize: '12.5px', color: '#fff',
+                fontFamily: 'Outfit', fontWeight: 700, fontSize: '12.5px', color: '#fff',
                 background: getAvatarBg() 
               }}>
                 {getAvatarInitials()}
               </div>
               <div className="desktop-only">
-                <div className="profile-name" style={{ fontSize: '12.5px', fontWeight: 600, lineHeight: 1.2 }}>{getAvatarName()}</div>
-                <div className="profile-role" style={{ fontSize: '11px', color: '#94a3b8' }}>{getAvatarSubtitle()}</div>
+                <div className="profile-name" style={{ fontSize: '12.5px', fontWeight: 600, lineHeight: 1.2, color: '#fff' }}>{getAvatarName()}</div>
+                <div className="profile-role" style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{getAvatarSubtitle()}</div>
               </div>
             </div>
             <button onClick={handleLogout} className="icon-btn logout-btn" title="Déconnexion" style={{ border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem', borderRadius: '8px' }}>

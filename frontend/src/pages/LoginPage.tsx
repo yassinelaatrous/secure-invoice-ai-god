@@ -44,7 +44,7 @@ const LoginPage = () => {
         <div style={{ display: 'flex', gap: '24px', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.75rem' }}>
           <div style={{ position: 'relative', cursor: 'pointer' }}>
             <span style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', fontFamily: 'Outfit' }}>Sign In</span>
-            <div style={{ position: 'absolute', bottom: '-13px', left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #f4841f, #8b5cf6)', borderRadius: '2px' }}></div>
+            <div style={{ position: 'absolute', bottom: '-13px', left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, var(--glow-orange), var(--primary))', borderRadius: '2px' }}></div>
           </div>
           <div style={{ cursor: 'pointer', opacity: 0.3 }}>
             <span style={{ fontSize: '1.4rem', fontWeight: 600, color: '#fff', fontFamily: 'Outfit' }}>Join</span>
