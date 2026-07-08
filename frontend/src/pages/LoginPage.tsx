@@ -39,6 +39,11 @@ const LoginPage = () => {
 
   return (
     <div className="login-container">
+      <div className="wave-container">
+        <div className="wave wave1"></div>
+        <div className="wave wave2"></div>
+        <div className="wave wave3"></div>
+      </div>
       <div className="login-card glass-card">
         
         {/* Brand header */}
