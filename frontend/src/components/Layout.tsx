@@ -217,21 +217,21 @@ const Layout = () => {
       </div>
 
       {/* Sidebar */}
-      <aside className={`sidebar ${mobileMenuOpen ? 'open' : ''}`} style={{ background: '#1c0f38' }}>
+      <aside className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="brand" style={{ padding: '22px 20px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div className="brand-mark" style={{
             width: '34px', height: '34px', borderRadius: '9px',
             background: 'linear-gradient(135deg, #3b7ddb, #f4841f 45%, #f0b429 75%, #3d2170)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Sora', fontWeight: 800, color: '#1c0f38', fontSize: '15px'
+            fontFamily: 'Sora', fontWeight: 800, color: '#fff', fontSize: '15px'
           }}>
             CI
           </div>
           <div>
-            <div className="brand-name" style={{ fontFamily: 'Sora', fontWeight: 700, fontSize: '17px', color: '#fff', lineHeight: 1 }}>
+            <div className="brand-name" style={{ fontFamily: 'Sora', fontWeight: 700, fontSize: '17px', color: '#0f172a', lineHeight: 1 }}>
               CEO.IT
             </div>
-            <div className="brand-tag" style={{ fontSize: '10.5px', color: '#8a7fbc', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: '3px' }}>
+            <div className="brand-tag" style={{ fontSize: '10px', color: '#64748b', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: '3px' }}>
               {getRoleLabel()}
             </div>
           </div>
@@ -260,20 +260,19 @@ const Layout = () => {
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.8rem',
-                    color: activeTab === item.id ? '#fff' : '#cfc7ea'
+                    gap: '0.8rem'
                   }}
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                  {item.count && <span className="count" style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: '20px', fontSize: '0.75rem', fontFamily: 'IBM Plex Mono' }}>{item.count}</span>}
+                  {item.count && <span className="count" style={{ marginLeft: 'auto', background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '20px', fontSize: '0.75rem', fontFamily: 'IBM Plex Mono', fontWeight: 600 }}>{item.count}</span>}
                 </button>
               ))}
             </div>
           ))}
         </nav>
 
-        <div className="sidebar-foot" style={{ padding: '14px 20px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '11.5px', color: '#8a7fbc' }}>
+        <div className="sidebar-foot" style={{ padding: '14px 20px', borderTop: '1px solid #f1f5f9', fontSize: '11px', color: '#94a3b8' }}>
           CEO-IT v1.0 — Démo interactive
         </div>
       </aside>
