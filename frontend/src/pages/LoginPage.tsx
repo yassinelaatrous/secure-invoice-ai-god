@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { AuthContext } from '../context/AuthContext';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import Logo from '../components/Logo';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -40,6 +41,12 @@ const LoginPage = () => {
     <div className="login-container">
       <div className="login-card glass-card">
         
+        {/* Brand header */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '2rem' }}>
+          <Logo size={48} />
+          <h1 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '1.8rem', color: '#fff', letterSpacing: '-0.03em' }}>CEO.IT</h1>
+        </div>
+
         {/* Sign In / Join Tabs Header matching Photo 2 */}
         <div style={{ display: 'flex', gap: '24px', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.75rem' }}>
           <div style={{ position: 'relative', cursor: 'pointer' }}>

@@ -19,6 +19,8 @@ import {
   FileCheck
 } from 'lucide-react';
 
+import Logo from './Logo';
+
 const Layout = () => {
   const { logout, demoRole, setDemoRole } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -219,14 +221,7 @@ const Layout = () => {
       {/* Sidebar */}
       <aside className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="brand" style={{ padding: '22px 20px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div className="brand-mark" style={{
-            width: '34px', height: '34px', borderRadius: '9px',
-            background: 'var(--primary)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Outfit', fontWeight: 800, color: '#000', fontSize: '15px'
-          }}>
-            CI
-          </div>
+          <Logo size={34} />
           <div>
             <div className="brand-name" style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: '17px', color: '#fff', lineHeight: 1 }}>
               CEO.IT

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Camera, CheckCircle, UploadCloud, AlertCircle, RefreshCw } from 'lucide-react';
 import axios from 'axios';
+import Logo from '../components/Logo';
 
 const MobileUploadPage = () => {
   const [searchParams] = useSearchParams();
@@ -13,7 +14,6 @@ const MobileUploadPage = () => {
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
-    // Generate clean page title
     document.title = "CEO.IT — Mobile Upload";
   }, []);
 
@@ -38,11 +38,9 @@ const MobileUploadPage = () => {
     formData.append('file', file);
 
     try {
-      // Find API host. In mobile, window.location.origin is the frontend address.
-      // The API server runs on port 8000 (development) or same host (production).
       const backendUrl = window.location.origin.includes('localhost') 
         ? 'http://localhost:8000' 
-        : window.location.origin.replace(':3000', ':8000'); // dev override for React dev server
+        : window.location.origin.replace(':3000', ':8000'); 
 
       await axios.post(`${backendUrl}/api/upload/mobile/${sessionId}`, formData, {
         headers: {
@@ -65,11 +63,11 @@ const MobileUploadPage = () => {
 
   if (!sessionId) {
     return (
-      <div className="layout" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1c0f38', color: '#fff', padding: '20px', fontFamily: 'Inter, sans-serif' }}>
-        <div className="card glass-card text-center" style={{ padding: '2rem', maxWidth: '400px' }}>
-          <AlertCircle size={48} className="text-red" style={{ margin: '0 auto 1.5rem', color: '#f44336' }} />
-          <h2 style={{ fontFamily: 'Sora', fontWeight: 700, marginBottom: '1rem' }}>Session manquante</h2>
-          <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: 1.5 }}>
+      <div className="layout" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#12100f', color: '#fff', padding: '20px', fontFamily: 'var(--font-family)' }}>
+        <div className="card-dark text-center" style={{ padding: '2.5rem 2rem', maxWidth: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <AlertCircle size={48} className="text-error" style={{ margin: '0 auto' }} />
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Session manquante</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
             Cette page doit être ouverte en scannant le QR code affiché sur l'écran de votre ordinateur.
           </p>
         </div>
@@ -78,29 +76,22 @@ const MobileUploadPage = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#12072b', color: '#fff', fontFamily: 'Inter, sans-serif', padding: '20px 15px' }}>
+    <div style={{ minHeight: '100vh', background: '#12100f', color: '#fff', fontFamily: 'var(--font-family)', padding: '40px 15px' }}>
       <div style={{ maxWidth: '480px', margin: '0 auto' }}>
         
         {/* Brand header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px', justifyContent: 'center' }}>
-          <div style={{
-            width: '32px', height: '32px', borderRadius: '8px',
-            background: 'linear-gradient(135deg, #3b7ddb, #f4841f)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'Sora', fontWeight: 800, color: '#12072b', fontSize: '14px'
-          }}>
-            CI
-          </div>
-          <div style={{ fontFamily: 'Sora', fontWeight: 700, fontSize: '18px' }}>CEO.IT Mobile</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '30px', justifyContent: 'center' }}>
+          <Logo size={36} />
+          <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '20px', letterSpacing: '-0.02em' }}>CEO.IT Mobile</div>
         </div>
 
         {status === 'success' ? (
-          <div className="card glass-card text-center" style={{ padding: '2.5rem 1.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(30,158,107,0.1)', color: '#1e9e6b', marginBottom: '1.5rem', transform: 'scale(1)', animation: 'pulse 2s infinite' }}>
+          <div className="card-dark text-center" style={{ padding: '2.5rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(187, 251, 149, 0.1)', color: 'var(--primary)', marginBottom: '0.5rem' }}>
               <CheckCircle size={36} />
             </div>
-            <h2 style={{ fontFamily: 'Sora', fontWeight: 700, fontSize: '20px', marginBottom: '10px' }}>Document Envoyé !</h2>
-            <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '2rem', lineHeight: 1.5 }}>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Document Envoyé !</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.5, marginBottom: '1rem' }}>
               L'analyse OCR IA est lancée. Les données extraites vont s'afficher automatiquement sur l'écran de votre ordinateur.
             </p>
             <button className="btn btn-outline full-width" onClick={resetPage} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -108,9 +99,9 @@ const MobileUploadPage = () => {
             </button>
           </div>
         ) : (
-          <div className="card glass-card" style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="card-dark" style={{ padding: '24px' }}>
             <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', color: '#94a3b8' }}>Mode : Appareil photo / Scan</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Mode : Appareil photo / Scan</span>
               <span className="badge b-blue" style={{ fontSize: '10px', fontFamily: 'IBM Plex Mono' }}>Session: {sessionId.substring(8)}</span>
             </div>
 
@@ -118,15 +109,15 @@ const MobileUploadPage = () => {
             {!previewUrl ? (
               <label htmlFor="mobile-camera-input" style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                height: '240px', border: '2px dashed rgba(255,255,255,0.15)', borderRadius: '12px',
+                height: '240px', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px',
                 cursor: 'pointer', background: 'rgba(255,255,255,0.01)', transition: 'all 0.2s',
                 marginBottom: '20px'
               }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(59,125,219,0.1)', color: '#3b7ddb', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(187, 251, 149, 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px' }}>
                   <Camera size={24} />
                 </div>
                 <span style={{ fontWeight: 600, fontSize: '15px', marginBottom: '5px' }}>Prendre en photo la facture</span>
-                <span style={{ fontSize: '11px', color: '#64748b' }}>ou choisir un fichier local</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>ou choisir un fichier local</span>
                 <input 
                   type="file" 
                   id="mobile-camera-input" 
@@ -138,7 +129,7 @@ const MobileUploadPage = () => {
               </label>
             ) : (
               <div style={{ marginBottom: '20px' }}>
-                <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', height: '240px', background: '#000', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', height: '240px', background: '#000', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   <button 
                     onClick={resetPage} 
@@ -183,7 +174,7 @@ const MobileUploadPage = () => {
           </div>
         )}
 
-        <div style={{ textAlign: 'center', marginTop: '30px', fontSize: '11px', color: '#4a3d70' }}>
+        <div style={{ textAlign: 'center', marginTop: '30px', fontSize: '11px', color: 'var(--text-muted)' }}>
           Sécurité CEO.IT — Données cryptées de bout en bout
         </div>
       </div>
