@@ -223,7 +223,7 @@ const Layout = () => {
         <div className="brand" style={{ padding: '22px 20px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Logo size={34} />
           <div>
-            <div className="brand-name" style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: '17px', color: '#fff', lineHeight: 1 }}>
+            <div className="brand-name" style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: '17px', color: 'var(--text-primary)', lineHeight: 1 }}>
               CEO.IT
             </div>
             <div className="brand-tag" style={{ fontSize: '10px', color: 'var(--text-secondary)', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: '3px' }}>
@@ -257,14 +257,14 @@ const Layout = () => {
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                  {item.count && <span className="count" style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '2px 8px', borderRadius: '20px', fontSize: '0.75rem', fontFamily: 'IBM Plex Mono', fontWeight: 600 }}>{item.count}</span>}
+                  {item.count && <span className="count" style={{ marginLeft: 'auto', background: '#eaeaea', color: 'var(--text-secondary)', padding: '2px 8px', borderRadius: '20px', fontSize: '0.75rem', fontFamily: 'IBM Plex Mono', fontWeight: 600 }}>{item.count}</span>}
                 </button>
               ))}
             </div>
           ))}
         </nav>
 
-        <div className="sidebar-foot" style={{ padding: '14px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '11px', color: 'var(--text-secondary)' }}>
+        <div className="sidebar-foot" style={{ padding: '14px 20px', borderTop: '1px solid var(--card-border)', fontSize: '11px', color: 'var(--text-muted)' }}>
           CEO-IT v1.0 — Démo interactive
         </div>
       </aside>
@@ -274,7 +274,7 @@ const Layout = () => {
         <header className="topbar">
           {/* Custom Search Box */}
           <div className="search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style={{ width: '15px', height: '15px' }}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '15px', height: '15px' }}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
             <input type="text" placeholder="Rechercher un dossier, un document…" />
           </div>
 
@@ -324,11 +324,11 @@ const Layout = () => {
                 {getAvatarInitials()}
               </div>
               <div className="desktop-only">
-                <div className="profile-name" style={{ fontSize: '12.5px', fontWeight: 600, lineHeight: 1.2, color: '#fff' }}>{getAvatarName()}</div>
+                <div className="profile-name" style={{ fontSize: '12.5px', fontWeight: 600, lineHeight: 1.2, color: 'var(--text-primary)' }}>{getAvatarName()}</div>
                 <div className="profile-role" style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{getAvatarSubtitle()}</div>
               </div>
             </div>
-            <button onClick={handleLogout} className="icon-btn logout-btn" title="Déconnexion" style={{ border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem', borderRadius: '8px' }}>
+            <button onClick={handleLogout} className="icon-btn logout-btn" title="Déconnexion" style={{ border: '1px solid var(--card-border)', background: 'white', color: 'var(--text-secondary)', padding: '0.4rem', borderRadius: '8px', cursor: 'pointer' }}>
               <LogOut size={18} />
             </button>
           </div>

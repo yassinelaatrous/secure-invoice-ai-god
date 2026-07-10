@@ -49,17 +49,17 @@ const LoginPage = () => {
         {/* Brand header */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '2rem' }}>
           <Logo size={48} />
-          <h1 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '1.8rem', color: '#fff', letterSpacing: '-0.03em' }}>CEO.IT</h1>
+          <h1 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '1.8rem', color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>CEO.IT</h1>
         </div>
 
         {/* Sign In / Join Tabs Header matching Photo 2 */}
-        <div style={{ display: 'flex', gap: '24px', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '24px', marginBottom: '2rem', borderBottom: '1px solid var(--card-border)', paddingBottom: '0.75rem' }}>
           <div style={{ position: 'relative', cursor: 'pointer' }}>
-            <span style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', fontFamily: 'Outfit' }}>Sign In</span>
-            <div style={{ position: 'absolute', bottom: '-13px', left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, var(--glow-orange), var(--primary))', borderRadius: '2px' }}></div>
+            <span style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Outfit' }}>Sign In</span>
+            <div style={{ position: 'absolute', bottom: '-13px', left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, var(--primary), var(--secondary))', borderRadius: '2px' }}></div>
           </div>
           <div style={{ cursor: 'pointer', opacity: 0.3 }}>
-            <span style={{ fontSize: '1.4rem', fontWeight: 600, color: '#fff', fontFamily: 'Outfit' }}>Join</span>
+            <span style={{ fontSize: '1.4rem', fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'Outfit' }}>Join</span>
           </div>
         </div>
 
@@ -96,7 +96,7 @@ const LoginPage = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
                   position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
-                  background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
+                  background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px'
                 }}
               >
@@ -115,7 +115,8 @@ const LoginPage = () => {
           {[
             {
               name: 'Google',
-              color: 'rgba(255, 255, 255, 0.03)',
+              color: '#ffffff',
+              borderColor: '#e5e5eb',
               icon: (
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -127,27 +128,30 @@ const LoginPage = () => {
             },
             {
               name: 'Apple',
-              color: 'rgba(255, 255, 255, 0.03)',
+              color: '#ffffff',
+              borderColor: '#e5e5eb',
               icon: (
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="white">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="#12100f">
                   <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.57 2.95-1.39z"/>
                 </svg>
               )
             },
             {
               name: 'X',
-              color: 'rgba(255, 255, 255, 0.03)',
+              color: '#ffffff',
+              borderColor: '#e5e5eb',
               icon: (
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="white">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#12100f">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                 </svg>
               )
             },
             {
               name: 'Discord',
-              color: 'rgba(255, 255, 255, 0.03)',
+              color: '#ffffff',
+              borderColor: '#e5e5eb',
               icon: (
-                <svg viewBox="0 0 127.14 96.36" width="18" height="18" fill="white">
+                <svg viewBox="0 0 127.14 96.36" width="18" height="18" fill="#5865F2">
                   <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.8-.59,1.57-1.22,2.31-1.87a75.7,75.7,0,0,0,73.41,0c.74.65,1.51,1.28,2.31,1.87a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31.42-18.83C129.24,48.51,123.36,25.68,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/>
                 </svg>
               )
@@ -158,17 +162,17 @@ const LoginPage = () => {
               type="button"
               title={soc.name}
               style={{
-                width: '56px', height: '44px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)',
+                width: '56px', height: '44px', borderRadius: '12px', border: `1px solid ${soc.borderColor}`,
                 background: soc.color, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+                e.currentTarget.style.background = '#f9fafb';
+                e.currentTarget.style.borderColor = '#c8c8cf';
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.background = soc.color;
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                e.currentTarget.style.borderColor = soc.borderColor;
               }}
             >
               {soc.icon}
@@ -176,9 +180,9 @@ const LoginPage = () => {
           ))}
         </div>
 
-        <div className="demo-credentials">
-          <p><strong>Comptes de démo :</strong></p>
-          <ul>
+        <div className="demo-credentials" style={{ marginTop: '2rem', padding: '1rem', background: '#f8f8fa', borderRadius: '12px', border: '1px solid var(--card-border)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          <p style={{ fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>Comptes de démo :</p>
+          <ul style={{ listStyleType: 'none', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <li>client@demo.com / client123</li>
             <li>comptable@demo.com / comptable123</li>
             <li>admin@demo.com / admin123</li>

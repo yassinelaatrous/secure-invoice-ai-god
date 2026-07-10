@@ -13,12 +13,11 @@ import {
 import { 
   Folder, FileText, Clock, MessageSquare, Calendar, 
   ShieldAlert, DollarSign, TrendingUp, Plus, Send, 
-  BookOpen, CheckCircle, AlertTriangle, FileCheck
+  BookOpen, CheckCircle, AlertTriangle, FileCheck, Users
 } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler);
 
-// Fictional mockup data conforming to the CEO-IT specs
 const mockupClients = [
   { name: "Société Tunisienne de Bâtiment", sigle: "STB", secteur: "BTP", statut: "Actif", solde: 2450 },
   { name: "Alpha Distribution", sigle: "ADI", secteur: "Négoce", statut: "Actif", solde: 0 },
@@ -469,45 +468,50 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="card-dark" style={{ gridColumn: 'span 2', padding: 0 }}>
-                <div className="kpi-grid" style={{ marginBottom: 0, border: 'none', boxShadow: 'none' }}>
-                  <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none' }}>
-                    <div className="kpi-icon" style={{ background: 'rgba(187,251,149,0.1)', color: 'var(--primary)' }}><FileText size={20} /></div>
-                    <div className="kpi-data">
-                      <h3>Documents</h3>
-                      <div className="kpi-value">28</div>
-                      <div className="kpi-delta up">↑ +3 cette semaine</div>
-                    </div>
+              <div style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '1rem' }}>
+                {/* Card 1: Documents (Dark Charcoal) */}
+                <div className="card panel" style={{ background: 'var(--kpi-charcoal)', border: 'none', color: '#ffffff', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 600 }}>Documents</span>
+                    <div style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={14} color="#ffffff" /></div>
                   </div>
-                  <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none' }}>
-                    <div className="kpi-icon" style={{ background: 'rgba(248,113,113,0.1)', color: 'var(--error)' }}><DollarSign size={20} /></div>
-                    <div className="kpi-data">
-                      <h3>Factures Impayées</h3>
-                      <div className="kpi-value">2</div>
-                      <div className="kpi-delta warn">1 250 TND en attente</div>
-                    </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>28</div>
+                  <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>↑ +3 <span style={{ color: '#9ca3af' }}>cette semaine</span></div>
+                </div>
+
+                {/* Card 2: Factures Impayées (Soft Mint) */}
+                <div className="card panel" style={{ background: 'var(--kpi-mint)', border: 'none', color: 'var(--text-primary)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Factures Impayées</span>
+                    <div style={{ width: '28px', height: '28px', background: 'rgba(13, 148, 136, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><DollarSign size={14} color="var(--kpi-mint-text)" /></div>
                   </div>
-                  <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none' }}>
-                    <div className="kpi-icon" style={{ background: 'rgba(251,191,36,0.1)', color: 'var(--warning)' }}><Calendar size={20} /></div>
-                    <div className="kpi-data">
-                      <h3>Prochaine Échéance</h3>
-                      <div className="kpi-value">12 Juin</div>
-                      <div className="kpi-delta warn">TVA — 950 TND</div>
-                    </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#12100f' }}>2</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--kpi-mint-text)', fontWeight: 600 }}>1 250 TND <span style={{ color: 'var(--text-muted)' }}>en attente</span></div>
+                </div>
+
+                {/* Card 3: Prochaine Échéance (Soft Pink) */}
+                <div className="card panel" style={{ background: 'var(--kpi-pink)', border: 'none', color: 'var(--text-primary)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Prochaine Échéance</span>
+                    <div style={{ width: '28px', height: '28px', background: 'rgba(219, 39, 119, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Calendar size={14} color="var(--kpi-pink-text)" /></div>
                   </div>
-                  <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none' }}>
-                    <div className="kpi-icon" style={{ background: 'rgba(177,153,248,0.1)', color: 'var(--secondary)' }}><MessageSquare size={20} /></div>
-                    <div className="kpi-data">
-                      <h3>Messages Non Lus</h3>
-                      <div className="kpi-value">2</div>
-                      <div className="kpi-delta up">Cabinet CEO-IT</div>
-                    </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#12100f' }}>12 Juin</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--kpi-pink-text)', fontWeight: 600 }}>TVA <span style={{ color: 'var(--text-muted)' }}>— 950 TND</span></div>
+                </div>
+
+                {/* Card 4: Messages Non Lus (Soft Blue) */}
+                <div className="card panel" style={{ background: 'var(--kpi-blue)', border: 'none', color: 'var(--text-primary)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Messages Non Lus</span>
+                    <div style={{ width: '28px', height: '28px', background: 'rgba(37, 99, 235, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MessageSquare size={14} color="var(--kpi-blue-text)" /></div>
                   </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#12100f' }}>2</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--kpi-blue-text)', fontWeight: 600 }}>Cabinet <span style={{ color: 'var(--text-muted)' }}>CEO-IT</span></div>
                 </div>
               </div>
 
               {/* Left Column: Dossier avancement & Upload */}
-              <div className="card-dark" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="card panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="panel-head">
                   <h3>Avancement du dossier</h3>
                   <span className="link" onClick={() => navigate('/dossier')} style={{ cursor: 'pointer' }}>Voir mon dossier</span>
@@ -534,7 +538,7 @@ const Dashboard = () => {
               </div>
 
               {/* Right Column: Messages & Invoices (White High Contrast Card) */}
-              <div className="card-light" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div className="card panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div>
                   <div className="panel-head">
                     <h3 style={{ color: '#12100f' }}>Messages récents</h3>
@@ -763,45 +767,50 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="card-dark" style={{ gridColumn: 'span 2', padding: 0 }}>
-                <div className="kpi-grid" style={{ marginBottom: 0, border: 'none', boxShadow: 'none' }}>
-                  <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none' }}>
-                    <div className="kpi-icon" style={{ background: 'rgba(212,138,82,0.1)', color: 'var(--glow-orange)' }}><Folder size={20} /></div>
-                    <div className="kpi-data">
-                      <h3>Dossiers Attribués</h3>
-                      <div className="kpi-value">28</div>
-                      <div className="kpi-delta up">Tous actifs</div>
-                    </div>
+              <div style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '1rem' }}>
+                {/* Card 1: Dossiers Attribués (Dark Charcoal) */}
+                <div className="card panel" style={{ background: 'var(--kpi-charcoal)', border: 'none', color: '#ffffff', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 600 }}>Dossiers Attribués</span>
+                    <div style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Folder size={14} color="#ffffff" /></div>
                   </div>
-                  <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none' }}>
-                    <div className="kpi-icon" style={{ background: 'rgba(251,191,36,0.1)', color: 'var(--warning)' }}><FileText size={20} /></div>
-                    <div className="kpi-data">
-                      <h3>Docs à Vérifier</h3>
-                      <div className="kpi-value">16</div>
-                      <div className="kpi-delta warn">Affichés par date</div>
-                    </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>28</div>
+                  <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>↑ +2 <span style={{ color: '#9ca3af' }}>ce mois</span></div>
+                </div>
+
+                {/* Card 2: Docs à Vérifier (Soft Mint) */}
+                <div className="card panel" style={{ background: 'var(--kpi-mint)', border: 'none', color: 'var(--text-primary)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Docs à Vérifier</span>
+                    <div style={{ width: '28px', height: '28px', background: 'rgba(13, 148, 136, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileText size={14} color="var(--kpi-mint-text)" /></div>
                   </div>
-                  <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none' }}>
-                    <div className="kpi-icon" style={{ background: 'rgba(187,251,149,0.1)', color: 'var(--primary)' }}><FileCheck size={20} /></div>
-                    <div className="kpi-data">
-                      <h3>Factures à Traiter</h3>
-                      <div className="kpi-value">12</div>
-                      <div className="kpi-delta warn">18 650 TND</div>
-                    </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#12100f' }}>16</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--kpi-mint-text)', fontWeight: 600 }}>Affichés <span style={{ color: 'var(--text-muted)' }}>par date</span></div>
+                </div>
+
+                {/* Card 3: Factures à Traiter (Soft Pink) */}
+                <div className="card panel" style={{ background: 'var(--kpi-pink)', border: 'none', color: 'var(--text-primary)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Factures à Traiter</span>
+                    <div style={{ width: '28px', height: '28px', background: 'rgba(219, 39, 119, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileCheck size={14} color="var(--kpi-pink-text)" /></div>
                   </div>
-                  <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none' }}>
-                    <div className="kpi-icon" style={{ background: 'rgba(248,113,113,0.1)', color: 'var(--error)' }}><Clock size={20} /></div>
-                    <div className="kpi-data">
-                      <h3>Échéances à venir</h3>
-                      <div className="kpi-value">7</div>
-                      <div className="kpi-delta warn">9 480 TND</div>
-                    </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#12100f' }}>12</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--kpi-pink-text)', fontWeight: 600 }}>18 650 TND <span style={{ color: 'var(--text-muted)' }}>à valider</span></div>
+                </div>
+
+                {/* Card 4: Échéances à venir (Soft Blue) */}
+                <div className="card panel" style={{ background: 'var(--kpi-blue)', border: 'none', color: 'var(--text-primary)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Échéances à venir</span>
+                    <div style={{ width: '28px', height: '28px', background: 'rgba(37, 99, 235, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Clock size={14} color="var(--kpi-blue-text)" /></div>
                   </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#12100f' }}>7</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--kpi-blue-text)', fontWeight: 600 }}>9 480 TND <span style={{ color: 'var(--text-muted)' }}>total</span></div>
                 </div>
               </div>
 
               {/* Left Column: Dossiers list & Documents */}
-              <div className="card-dark" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="card panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="panel-head">
                   <h3>Dossiers attribués</h3>
                   <span className="link" onClick={() => navigate('/dossiers')} style={{ cursor: 'pointer' }}>Afficher tous</span>
@@ -834,7 +843,7 @@ const Dashboard = () => {
               </div>
 
               {/* Right Column: Tasks checklist & Multi-donut (High Contrast White Card) */}
-              <div className="card-light" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div className="card panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div>
                   <div className="panel-head">
                     <h3 style={{ color: '#12100f' }}>Tâches assignées</h3>
@@ -924,7 +933,7 @@ const Dashboard = () => {
             </div>
             <button className="btn btn-primary"><Plus size={16} /> Nouveau client</button>
           </div>
-          <div className="card-dark" style={{ padding: '1rem' }}>
+          <div className="card panel" style={{ padding: '1.5rem' }}>
             <div className="table-responsive">
               <table className="data-table">
                 <thead>
@@ -965,7 +974,7 @@ const Dashboard = () => {
             </div>
             <button className="btn btn-primary"><Plus size={16} /> Ajouter un utilisateur</button>
           </div>
-          <div className="card-dark" style={{ padding: '1rem' }}>
+          <div className="card panel" style={{ padding: '1.5rem' }}>
             <table className="data-table">
               <thead>
                 <tr>
@@ -1055,43 +1064,50 @@ const Dashboard = () => {
             </div>
 
             {/* KPI Row (Clipped and styled inside a dark card layout) */}
-            <div className="card-dark" style={{ gridColumn: 'span 2', padding: 0 }}>
-              <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(6, 1fr)', marginBottom: 0, border: 'none', boxShadow: 'none' }}>
-                <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: '1rem', flexDirection: 'column', alignItems: 'flex-start', gap: '5px' }}>
-                  <div className="kpi-label" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Clients</div>
-                  <div className="kpi-value" style={{ fontSize: '1.4rem' }}>152</div>
-                  <div className="kpi-delta up" style={{ fontSize: '0.7rem' }}>↑ +12 ce mois</div>
+            <div style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '1rem' }}>
+              {/* Card 1: Clients (Dark Charcoal) */}
+              <div className="card panel" style={{ background: 'var(--kpi-charcoal)', border: 'none', color: '#ffffff', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 600 }}>Clients</span>
+                  <div style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={14} color="#ffffff" /></div>
                 </div>
-                <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: '1rem', flexDirection: 'column', alignItems: 'flex-start', gap: '5px' }}>
-                  <div className="kpi-label" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Dossiers</div>
-                  <div className="kpi-value" style={{ fontSize: '1.4rem' }}>87</div>
-                  <div className="kpi-delta up" style={{ fontSize: '0.7rem' }}>↑ +8 ce mois</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>152</div>
+                <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>↑ +12 <span style={{ color: '#9ca3af' }}>ce mois</span></div>
+              </div>
+
+              {/* Card 2: Dossiers Actifs (Soft Mint) */}
+              <div className="card panel" style={{ background: 'var(--kpi-mint)', border: 'none', color: 'var(--text-primary)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Dossiers Actifs</span>
+                  <div style={{ width: '28px', height: '28px', background: 'rgba(13, 148, 136, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Folder size={14} color="var(--kpi-mint-text)" /></div>
                 </div>
-                <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: '1rem', flexDirection: 'column', alignItems: 'flex-start', gap: '5px' }}>
-                  <div className="kpi-label" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Équipe</div>
-                  <div className="kpi-value" style={{ fontSize: '1.4rem' }}>24</div>
-                  <div className="kpi-delta up" style={{ fontSize: '0.7rem' }}>↑ +2 ce mois</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#12100f' }}>87</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--kpi-mint-text)', fontWeight: 600 }}>↑ +8 <span style={{ color: 'var(--text-muted)' }}>ce mois</span></div>
+              </div>
+
+              {/* Card 3: CA Impayé (Soft Pink) */}
+              <div className="card panel" style={{ background: 'var(--kpi-pink)', border: 'none', color: 'var(--text-primary)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CA Impayé</span>
+                  <div style={{ width: '28px', height: '28px', background: 'rgba(219, 39, 119, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><DollarSign size={14} color="var(--kpi-pink-text)" /></div>
                 </div>
-                <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: '1rem', flexDirection: 'column', alignItems: 'flex-start', gap: '5px' }}>
-                  <div className="kpi-label" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.04em' }}>CA Impayé</div>
-                  <div className="kpi-value" style={{ fontSize: '1.4rem', whiteSpace: 'nowrap' }}>24.8K TND</div>
-                  <div className="kpi-delta down" style={{ fontSize: '0.7rem' }}>↓ 8 factures</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#12100f' }}>24.8K TND</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--kpi-pink-text)', fontWeight: 600 }}>↓ 8 <span style={{ color: 'var(--text-muted)' }}>factures impayées</span></div>
+              </div>
+
+              {/* Card 4: Validation Requise (Soft Blue) */}
+              <div className="card panel" style={{ background: 'var(--kpi-blue)', border: 'none', color: 'var(--text-primary)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px', borderRadius: 'var(--radius)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Validation Requise</span>
+                  <div style={{ width: '28px', height: '28px', background: 'rgba(37, 99, 235, 0.08)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileCheck size={14} color="var(--kpi-blue-text)" /></div>
                 </div>
-                <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: '1rem', flexDirection: 'column', alignItems: 'flex-start', gap: '5px' }}>
-                  <div className="kpi-label" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Fisc Échéances</div>
-                  <div className="kpi-value" style={{ fontSize: '1.4rem', whiteSpace: 'nowrap' }}>7.3K TND</div>
-                  <div className="kpi-delta warn" style={{ fontSize: '0.7rem' }}>• 5 échéances</div>
-                </div>
-                <div className="kpi-card" style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: '1rem', flexDirection: 'column', alignItems: 'flex-start', gap: '5px' }}>
-                  <div className="kpi-label" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Validation</div>
-                  <div className="kpi-value" style={{ fontSize: '1.4rem' }}>18</div>
-                  <div className="kpi-delta warn" style={{ fontSize: '0.7rem' }}>• 6 urgentes</div>
-                </div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#12100f' }}>18</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--kpi-blue-text)', fontWeight: 600 }}>• 6 <span style={{ color: 'var(--text-muted)' }}>urgentes</span></div>
               </div>
             </div>
 
             {/* Left Column: CA Charts */}
-            <div className="card-dark" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="card panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div className="panel-head"><h3>Indicateurs clés</h3><span className="badge b-blue">CA vs Encaissements</span></div>
               <div style={{ height: '220px' }}>
                 <Line 
@@ -1101,16 +1117,16 @@ const Dashboard = () => {
                       {
                         label: "Chiffre d'affaires (TND)",
                         data: [92000, 101000, 97000, 118000, 128500],
-                        borderColor: '#bbfb95',
-                        backgroundColor: 'rgba(187,251,149,0.1)',
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.05)',
                         tension: 0.4,
                         fill: true
                       },
                       {
                         label: 'Encaissements (TND)',
                         data: [80000, 88000, 91000, 99000, 110000],
-                        borderColor: '#b199f8',
-                        backgroundColor: 'rgba(177,153,248,0.05)',
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.05)',
                         tension: 0.4,
                         fill: true
                       }
@@ -1122,14 +1138,14 @@ const Dashboard = () => {
                     plugins: { legend: { display: false } },
                     scales: {
                       x: { grid: { display: false } },
-                      y: { grid: { color: 'rgba(255,255,255,0.05)' } }
+                      y: { grid: { color: '#e5e5eb' } }
                     }
                   }}
                 />
               </div>
 
               {/* Autonomy Slider inside Direction Panel */}
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem', marginTop: '1rem' }}>
+              <div style={{ borderTop: '1px solid var(--card-border)', paddingTop: '1.5rem', marginTop: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'center' }}>
                   <h3 style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <ShieldAlert size={18} color="var(--primary)" /> 
@@ -1154,7 +1170,7 @@ const Dashboard = () => {
             </div>
 
             {/* Right Column: Donut répartition & Fraud Alerts (White High Contrast Card) */}
-            <div className="card-light" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="card panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
                 <div className="panel-head">
                   <h3 style={{ color: '#12100f' }}>Répartition du chiffre d'affaires</h3>
@@ -1206,7 +1222,7 @@ const Dashboard = () => {
             </div>
 
             {/* Bottom Row: Unpaid Invoices, Team Charge, and BDD Activities */}
-            <div className="card-dark" style={{ gridColumn: 'span 2' }}>
+            <div className="card panel" style={{ gridColumn: 'span 2' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
                 <div>
                   <div className="panel-head">
