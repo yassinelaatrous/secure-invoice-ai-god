@@ -154,10 +154,10 @@ const Dashboard = () => {
     const off = c * (1 - percent / 100);
     return (
       <svg width="88" height="88" viewBox="0 0 80 80" style={{ flexShrink: 0 }}>
-        <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8"/>
+        <circle cx="40" cy="40" r={r} fill="none" stroke="#e5e5eb" strokeWidth="8"/>
         <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
           strokeDasharray={c} strokeDashoffset={off} transform="rotate(-90 40 40)"/>
-        <text x="40" y="46" textAnchor="middle" fontFamily="IBM Plex Mono" fontSize="15" fontWeight="600" fill="white">{percent}%</text>
+        <text x="40" y="46" textAnchor="middle" fontFamily="IBM Plex Mono" fontSize="15" fontWeight="600" fill="var(--text-primary)">{percent}%</text>
       </svg>
     );
   };
@@ -169,7 +169,7 @@ const Dashboard = () => {
     let offset = 0;
     return (
       <svg width="88" height="88" viewBox="0 0 80 80" style={{ flexShrink: 0 }}>
-        <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8"/>
+        <circle cx="40" cy="40" r={r} fill="none" stroke="#e5e5eb" strokeWidth="8"/>
         {segments.map((s, i) => {
           const len = c * (s.v / total);
           const currentOffset = offset;
@@ -179,7 +179,7 @@ const Dashboard = () => {
               strokeDasharray={`${len} ${c - len}`} strokeDashoffset={-currentOffset} transform="rotate(-90 40 40)"/>
           );
         })}
-        <text x="40" y="46" textAnchor="middle" fontFamily="IBM Plex Mono" fontSize="14" fontWeight="600" fill="white">{label}</text>
+        <text x="40" y="46" textAnchor="middle" fontFamily="IBM Plex Mono" fontSize="14" fontWeight="600" fill="var(--text-primary)">{label}</text>
       </svg>
     );
   };
@@ -392,7 +392,7 @@ const Dashboard = () => {
               <div className="card panel">
                 <div className="panel-head"><h3>Historique</h3></div>
                 <div className="list-row">
-                  <div className="list-icon" style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}><Calendar size={15} /></div>
+                  <div className="list-icon" style={{ background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)' }}><Calendar size={15} /></div>
                   <div className="list-main">
                     <div className="list-title">Lancement du dossier 2025</div>
                     <div className="list-sub">03/03/2026</div>

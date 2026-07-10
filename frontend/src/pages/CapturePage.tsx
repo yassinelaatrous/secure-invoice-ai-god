@@ -116,7 +116,7 @@ const CapturePage = () => {
           {icon} {label}
         </span>
         {confiance != null && (
-          <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             Confiance&nbsp;: {Math.round(confiance * 100)}%
           </span>
         )}
@@ -132,7 +132,7 @@ const CapturePage = () => {
         <div className="upload-section glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div>
             <h2>Document Source</h2>
-            <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '4px' }}>Déposez un fichier local depuis votre ordinateur</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>Déposez un fichier local depuis votre ordinateur</p>
           </div>
           
           <div className="upload-zone">
@@ -164,17 +164,17 @@ const CapturePage = () => {
 
           {/* QR Code pairing section */}
           <div style={{ 
-            borderTop: '1px solid rgba(255,255,255,0.08)', 
+            borderTop: '1px solid rgba(0,0,0,0.06)', 
             paddingTop: '1.5rem', 
             marginTop: '0.5rem',
             textAlign: 'center'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '12px' }}>
               <Smartphone size={18} color="#f4841f" />
-              <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#fff' }}>Numérisation Mobile</span>
+              <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>Numérisation Mobile</span>
             </div>
             
-            <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '15px', lineHeight: 1.4 }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '15px', lineHeight: 1.4 }}>
               Pas de fichier local ? Scannez ce QR Code avec votre téléphone pour photographier votre facture directement.
             </p>
 

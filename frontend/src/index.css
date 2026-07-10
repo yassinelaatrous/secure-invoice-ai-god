@@ -232,7 +232,7 @@ input:focus { outline: none; border-color: var(--primary); background: white; bo
 .panel-head {
   display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;
 }
-.panel-head h3 { font-size: 1.15rem; font-weight: 700; color: white; }
+.panel-head h3 { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
 .panel-head .link { font-size: 0.8rem; font-weight: 600; color: var(--primary); }
 
 /* KPI widgets */
@@ -265,32 +265,32 @@ input:focus { outline: none; border-color: var(--primary); background: white; bo
 
 /* Custom list layout */
 .list-row {
-  display: flex; align-items: center; gap: 1rem; padding: 0.9rem 0; border-bottom: 1px dashed rgba(255,255,255,0.05);
+  display: flex; align-items: center; gap: 1rem; padding: 0.9rem 0; border-bottom: 1px dashed rgba(0,0,0,0.06);
 }
 .list-row:last-child { border-bottom: none; }
 .list-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
 .list-main { flex: 1; min-width: 0; }
-.list-title { font-size: 0.9rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-sub { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
 .list-end { text-align: right; }
 .list-amount { font-size: 0.9rem; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
 .list-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
 
 /* Progress bars */
-.bar-track { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+.bar-track { width: 100%; height: 6px; background: #e5e5eb; border-radius: 4px; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
 
 .legend-row { display: flex; align-items: center; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; }
 .legend-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
-.legend-row .lv { margin-left: auto; font-family: 'IBM Plex Mono', monospace; color: white; }
+.legend-row .lv { margin-left: auto; font-family: 'IBM Plex Mono', monospace; color: var(--text-primary); }
 
 .tag-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .tag-row .badge .dot { width: 5px; height: 5px; border-radius: 50%; margin-right: 5px; background: currentColor; }
 
 /* Dropzone */
 .dropzone {
-  border: 2px dashed rgba(255,255,255,0.1); border-radius: var(--radius);
-  padding: 2rem; text-align: center; background: rgba(255,255,255,0.01);
+  border: 2px dashed #dcdce2; border-radius: var(--radius);
+  padding: 2rem; text-align: center; background: #f9fafb;
   transition: all 0.2s;
 }
 .dropzone:hover { border-color: var(--primary); background: rgba(187,251,149,0.02); }
@@ -306,20 +306,20 @@ input:focus { outline: none; border-color: var(--primary); background: white; bo
 .avatar-large { width: 48px; height: 48px; font-size: 1.1rem; }
 
 /* Chat Module styling */
-.chat-wrap { display: flex; height: 460px; background: #161514; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--card-border); }
-.chat-list { width: 220px; border-right: 1px solid var(--card-border); overflow-y: auto; background: #1c1a19; }
+.chat-wrap { display: flex; height: 460px; background: #ffffff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--card-border); }
+.chat-list { width: 220px; border-right: 1px solid var(--card-border); overflow-y: auto; background: #f9fafb; }
 .chat-item { display: flex; align-items: center; padding: 1rem; border-bottom: 1px solid var(--card-border); cursor: pointer; transition: 0.2s; }
-.chat-item:hover, .chat-item.active { background: rgba(255,255,255,0.03); }
+.chat-item:hover, .chat-item.active { background: rgba(0,0,0,0.03); }
 .chat-body { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-.chat-header { padding: 1rem; border-bottom: 1px solid var(--card-border); display: flex; align-items: center; background: #1c1a19; }
+.chat-header { padding: 1rem; border-bottom: 1px solid var(--card-border); display: flex; align-items: center; background: #f9fafb; }
 .chat-messages { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
 .msg { max-width: 70%; padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; line-height: 1.4; position: relative; }
-.msg.in { background: #262423; color: white; align-self: flex-start; border-bottom-left-radius: 2px; }
-.msg.out { background: var(--secondary); color: #12100f; align-self: flex-end; border-bottom-right-radius: 2px; font-weight: 500; }
+.msg.in { background: #f3f4f6; color: var(--text-primary); align-self: flex-start; border-bottom-left-radius: 2px; }
+.msg.out { background: var(--primary); color: #ffffff; align-self: flex-end; border-bottom-right-radius: 2px; font-weight: 500; }
 .msg-time { font-size: 0.65rem; opacity: 0.6; margin-top: 4px; text-align: right; }
-.chat-input { padding: 1rem; border-top: 1px solid var(--card-border); display: flex; gap: 10px; background: #1c1a19; }
+.chat-input { padding: 1rem; border-top: 1px solid var(--card-border); display: flex; gap: 10px; background: #f9fafb; }
 .chat-input input {
-  flex: 1; padding: 0.75rem 1rem; background: #12100f; border: 1px solid var(--card-border); border-radius: 25px; color: white; font-size: 0.85rem;
+  flex: 1; padding: 0.75rem 1rem; background: #ffffff; border: 1px solid var(--card-border); border-radius: 25px; color: var(--text-primary); font-size: 0.85rem;
 }
 .chat-input input:focus { outline: none; border-color: var(--secondary); }
 
@@ -337,10 +337,10 @@ input:checked + .slider:before { transform: translateX(22px); }
 .rules-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
 .rule-item {
   display: flex; justify-content: space-between; align-items: center; padding: 1.25rem;
-  background: #242221; border-radius: var(--radius-sm); border: 1px solid var(--card-border);
+  background: #f9fafb; border-radius: var(--radius-sm); border: 1px solid var(--card-border);
 }
-.rule-info h3 { font-size: 0.95rem; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px; }
-.rule-code { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--primary); background: rgba(187,251,149,0.08); padding: 2px 6px; border-radius: 4px; }
+.rule-info h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+.rule-code { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--primary); background: rgba(79, 70, 229, 0.08); padding: 2px 6px; border-radius: 4px; }
 .rule-info p { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; }
 .rule-toggle { display: flex; align-items: center; gap: 12px; }
 
@@ -348,19 +348,19 @@ input:checked + .slider:before { transform: translateX(22px); }
 .admin-tabs { display: flex; gap: 10px; margin-bottom: 1.5rem; }
 .tab-btn {
   border: none; outline: none; display: flex; align-items: center; gap: 8px;
-  padding: 0.65rem 1.25rem; border-radius: var(--radius-sm); background: #1c1a19;
+  padding: 0.65rem 1.25rem; border-radius: var(--radius-sm); background: #f3f4f6;
   color: var(--text-secondary); font-weight: 600; cursor: pointer; border: 1px solid var(--card-border);
   transition: 0.2s;
 }
-.tab-btn:hover { background: #262423; color: white; }
-.tab-btn.active { background: white; color: #12100f; border-color: white; }
-.admin-content { padding: 2rem; background: #1c1a19; border-radius: var(--radius-lg); border: 1px solid var(--card-border); }
+.tab-btn:hover { background: #e5e5eb; color: var(--text-primary); }
+.tab-btn.active { background: var(--primary); color: #ffffff; border-color: var(--primary); }
+.admin-content { padding: 2rem; background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--card-border); }
 
 /* Document Upload styling (CapturePage) */
 .capture-page { padding-bottom: 3rem; }
 .upload-zone {
-  border: 2px dashed rgba(255,255,255,0.1); border-radius: var(--radius-lg);
-  padding: 3rem 2rem; text-align: center; background: rgba(255,255,255,0.01);
+  border: 2px dashed #dcdce2; border-radius: var(--radius-lg);
+  padding: 3rem 2rem; text-align: center; background: #f9fafb;
   transition: all 0.2s; cursor: pointer;
 }
 .upload-zone:hover { border-color: var(--primary); background: rgba(187,251,149,0.02); }
@@ -373,9 +373,9 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 /* QR Code mobile scanning segment */
 .qr-section {
-  border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.5rem; text-align: center; margin-top: 0.5rem;
+  border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1.5rem; text-align: center; margin-top: 0.5rem;
 }
-.qr-title { display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 0.9rem; color: white; margin-bottom: 8px; }
+.qr-title { display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 0.9rem; color: var(--text-primary); margin-bottom: 8px; }
 .qr-desc { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 12px; }
 .qr-box { background: white; padding: 10px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
@@ -408,7 +408,7 @@ input:checked + .slider:before { transform: translateX(22px); }
   --s: 30px; 
   --t: 45px; 
   --l: 6px; 
-  --bg: #1c1a19; /* matches dark card bg */
+  --bg: #ffffff; /* matches light card bg */
   
   --p: shape(from 0 50%,curve to 6.25% 45.5% with 4.17% 3%,smooth to 10.42% 93.5%,smooth to 14.58% 73%,smooth to 18.75% 73%,smooth to 22.92% 56.5%,smooth to 27.08% 28%,smooth to 31.25% 25.5%,smooth to 35.42% 49.5%,smooth to 39.58% 65.5%,smooth to 43.75% 43%,smooth to 47.92% 56.5%,smooth to 52.08% 75%,smooth to 56.25% 81%,smooth to 60.42% 58.5%,smooth to 64.58% 25%,smooth to 68.75% 28%,smooth to 72.92% 58%,smooth to 77.08% 78.5%,smooth to 81.25% 79.5%,smooth to 85.42% 51.5%,smooth to 89.58% 26%,smooth to 93.75% 36%,smooth to 100% 50%);
   
@@ -430,7 +430,7 @@ input:checked + .slider:before { transform: translateX(22px); }
   content: "";
   position: absolute;
   inset: calc(var(--t)/2) 0;
-  background: rgba(255,255,255,0.05);
+  background: #e5e5eb;
   border-shape: var(--p);
   border-top: calc(var(--l) + 1px) solid var(--c);
   clip-path: inset(-99px calc(100% - var(--v)) -99px 0);

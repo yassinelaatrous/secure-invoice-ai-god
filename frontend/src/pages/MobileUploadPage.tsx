@@ -63,7 +63,7 @@ const MobileUploadPage = () => {
 
   if (!sessionId) {
     return (
-      <div className="layout" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#12100f', color: '#fff', padding: '20px', fontFamily: 'var(--font-family)' }}>
+      <div className="layout" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color)', color: 'var(--text-primary)', padding: '20px', fontFamily: 'var(--font-family)' }}>
         <div className="card-dark text-center" style={{ padding: '2.5rem 2rem', maxWidth: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
           <AlertCircle size={48} className="text-error" style={{ margin: '0 auto' }} />
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Session manquante</h2>
@@ -76,7 +76,7 @@ const MobileUploadPage = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#12100f', color: '#fff', fontFamily: 'var(--font-family)', padding: '40px 15px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', color: 'var(--text-primary)', fontFamily: 'var(--font-family)', padding: '40px 15px' }}>
       <div style={{ maxWidth: '480px', margin: '0 auto' }}>
         
         {/* Brand header */}
@@ -109,8 +109,8 @@ const MobileUploadPage = () => {
             {!previewUrl ? (
               <label htmlFor="mobile-camera-input" style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                height: '240px', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '16px',
-                cursor: 'pointer', background: 'rgba(255,255,255,0.01)', transition: 'all 0.2s',
+                height: '240px', border: '2px dashed #dcdce2', borderRadius: '16px',
+                cursor: 'pointer', background: '#f9fafb', transition: 'all 0.2s',
                 marginBottom: '20px'
               }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(187, 251, 149, 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px' }}>
@@ -129,7 +129,7 @@ const MobileUploadPage = () => {
               </label>
             ) : (
               <div style={{ marginBottom: '20px' }}>
-                <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', height: '240px', background: '#000', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', height: '240px', background: '#f3f4f6', border: '1px solid #e5e5eb' }}>
                   <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   <button 
                     onClick={resetPage} 
