@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api';
@@ -1154,17 +1154,31 @@ const Dashboard = () => {
                 </div>
                 <p className="text-secondary" style={{ fontSize: '0.8rem', marginBottom: '1.5rem' }}>Set the confidence limit above which invoice OCR is registered automatically without human bookkeeping.</p>
                 
-                <div className="ai-slider-wrapper" style={{ padding: '1rem 0 2rem' }}>
-                  <label>
+                <div className="modern-slider-container">
+                  <div className="slider-header">
+                    <span className="slider-value-display">{sliderValue}%</span>
+                    <span className="slider-status-tag">
+                      {sliderValue < 30 ? "Manuel (Haute Sécurité)" : sliderValue < 70 ? "Semi-Autonome" : "Autonomie Maximale ⚡"}
+                    </span>
+                  </div>
+                  <div className="slider-track-wrapper">
                     <input 
                       id="ai-autonomy-admin" 
                       type="range" 
                       min="0" max="100" 
                       value={sliderValue} 
                       onChange={(e) => setSliderValue(parseInt(e.target.value))}
+                      className="modern-range-input"
+                      style={{
+                        background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${sliderValue}%, #e5e5eb ${sliderValue}%, #e5e5eb 100%)`
+                      }}
                     />
-                    <output htmlFor="ai-autonomy-admin" style={{ '--min': 0, '--max': 100 } as React.CSSProperties}><span></span></output>
-                  </label>
+                  </div>
+                  <div className="slider-labels">
+                    <span>0% (Validation Manuelle)</span>
+                    <span>50%</span>
+                    <span>100% (Confiance Totale)</span>
+                  </div>
                 </div>
               </div>
             </div>

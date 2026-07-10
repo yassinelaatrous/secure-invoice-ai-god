@@ -13,9 +13,27 @@ const CapturePage = () => {
 
   // Unique session ID for QR Code pairing
   const [sessionId] = useState(() => 'session_' + Math.random().toString(36).substring(2, 9));
+  const [localIp, setLocalIp] = useState<string>('');
+
+  useEffect(() => {
+    api.get('/local-ip')
+      .then(res => {
+        if (res.data && res.data.ip) {
+          setLocalIp(res.data.ip);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Determine the mobile URL for the QR code
-  const mobileUrl = `${window.location.origin}/mobile-upload?session=${sessionId}`;
+  const getMobileUrl = () => {
+    const hostname = window.location.hostname;
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+    const displayHost = (isLocal && localIp) ? `${localIp}:3000` : window.location.host;
+    return `${window.location.protocol}//${displayHost}/mobile-upload?session=${sessionId}`;
+  };
+
+  const mobileUrl = getMobileUrl();
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=1c0f38&data=${encodeURIComponent(mobileUrl)}`;
 
   // Polling for mobile uploads

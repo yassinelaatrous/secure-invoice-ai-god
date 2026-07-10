@@ -34,9 +34,9 @@
 - **Tier 3 (Demo fallback)**: Gracefully handles document capture failure to maintain system availability.
 
 ### 2. 📱 Parallax Mobile Upload Pairing
-- Generates a **unique QR code session** on the desktop capture panel.
-- Users scan the QR code to pair their smartphones instantly.
-- The paired mobile interface lets users shoot invoices with their phone cameras and upload them directly to the active desktop session.
+- **Dynamically Generated QR Code**: The desktop capture panel (`/capture` or clicking "Déposer" / "Capture") retrieves the local network IP address of the host machine from the backend `/api/local-ip` and compiles it into a QR code.
+- **Instant Camera Pairing**: Scan the QR code with any smartphone connected to the same local Wi-Fi network. It automatically routes your phone to the custom mobile upload client running at `http://<your-pc-ip>:3000/mobile-upload?session=session_xxxxx`.
+- **Seamless Document Ingestion**: Take a photo of an invoice on your phone or choose an image file, and press "Envoyer". The backend parses it using the 3-Tier engine and securely injects the structured results into your active PC browser session instantly without manual file transfers.
 
 ### 3. 🔍 Adjustable Compliance Rules (Admin)
 The compliance engine runs four configurable checks against incoming invoices:
@@ -172,6 +172,14 @@ If you prefer to run the code directly on your local machine:
    npm run dev
    ```
 4. Open your browser at: **[http://localhost:3000](http://localhost:3000)**.
+
+#### 3. How to Test the Mobile QR Code Scanner on PC
+To test camera scanning from your smartphone:
+1. Ensure your PC and smartphone are connected to the **same Wi-Fi router/local network**.
+2. Run both the backend and frontend dev servers on your PC as shown above.
+3. Open **[http://localhost:3000](http://localhost:3000)** on your PC, log in, navigate to **Capture** or click **Déposer**.
+4. Scan the displayed QR code with your smartphone. It will automatically load the mobile upload interface using your PC's local IP address (e.g., `http://192.168.x.x:3000/mobile-upload?session=...`).
+5. Snap a picture of any invoice on your phone, click **Envoyer**, and watch the extracted data populate instantly in real-time on your PC screen!
 
 ---
 
