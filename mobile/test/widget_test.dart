@@ -7,6 +7,6 @@ void main() {
 
     // Verify login screen renders
     expect(find.text('SecureInvoice AI'), findsOneWidget);
-    expect(find.text('Se connecter'), findsOneWidget);
+    expect(find.text('Sign in'), findsOneWidget);
   });
 }

@@ -7,6 +7,7 @@ class KpiCard extends StatelessWidget {
   final Color backgroundColor;
   final Color textColor;
   final Color iconBgColor;
+  final Color? iconColor;
 
   const KpiCard({
     Key? key,
@@ -16,6 +17,7 @@ class KpiCard extends StatelessWidget {
     required this.backgroundColor,
     required this.textColor,
     required this.iconBgColor,
+    this.iconColor,
   }) : super(key: key);
 
   @override
@@ -26,12 +28,12 @@ class KpiCard extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF2A2A2A),
+          color: const Color(0xFFE5E7EB),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -47,7 +49,7 @@ class KpiCard extends StatelessWidget {
             ),
             child: Icon(
               icon,
-              color: textColor,
+              color: iconColor ?? (textColor == const Color(0xFF111827) ? const Color(0xFF22C55E) : textColor),
               size: 20,
             ),
           ),
@@ -60,7 +62,7 @@ class KpiCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Color(0xFFA1A1AA),
+                    color: Color(0xFF6B7280),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),

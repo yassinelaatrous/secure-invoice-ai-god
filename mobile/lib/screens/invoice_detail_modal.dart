@@ -112,7 +112,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF1E1E1E),
+        color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
@@ -124,7 +124,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
       child: FractionallySizedBox(
         heightFactor: 0.8,
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFF8B5CF6)))
+            ? const Center(child: CircularProgressIndicator(color: Color(0xFF22C55E)))
             : SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -135,7 +135,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         width: 40,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2A2A2A),
+                          color: const Color(0xFFE5E7EB),
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
@@ -157,7 +157,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                                   fontSize: 20,
                                   fontWeight: FontWeight.w800,
                                   fontFamily: 'Outfit',
-                                  color: Colors.white,
+                                  color: Color(0xFF111827),
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -165,7 +165,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                                 'N° ${_invoice.numero}',
                                 style: const TextStyle(
                                   fontSize: 14,
-                                  color: Color(0xFFA1A1AA),
+                                  color: Color(0xFF6B7280),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -175,7 +175,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         StatusBadge(status: _invoice.statut),
                       ],
                     ),
-                    const Divider(height: 32, color: Color(0xFF2A2A2A)),
+                    const Divider(height: 32, color: Color(0xFFF3F4F6)),
 
                     // Montants Section
                     Row(
@@ -186,7 +186,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         _buildAmountBlock('Total TTC', _invoice.montantTtc, _invoice.devise, isPrimary: true),
                       ],
                     ),
-                    const Divider(height: 32, color: Color(0xFF2A2A2A)),
+                    const Divider(height: 32, color: Color(0xFFF3F4F6)),
 
                     // IBAN & Date details
                     _buildDetailRow('IBAN Extrait', _invoice.iban.isNotEmpty ? _invoice.iban : 'Aucun'),
@@ -200,7 +200,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                       'Reçue le',
                       '${_invoice.dateReception.day.toString().padLeft(2, '0')}/${_invoice.dateReception.month.toString().padLeft(2, '0')}/${_invoice.dateReception.year}',
                     ),
-                    const Divider(height: 32, color: Color(0xFF2A2A2A)),
+                    const Divider(height: 32, color: Color(0xFFF3F4F6)),
 
                     // Risk indicators
                     RiskIndicator(score: _invoice.fraudScore),
@@ -210,13 +210,13 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                       const SizedBox(height: 12),
                       const Text(
                         'Indicateurs de fraude détectés :',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA)),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF6B7280)),
                       ),
                       const SizedBox(height: 6),
                       ..._invoice.fraudeAlertes!.map((flag) => _buildFraudFlagItem(flag)),
                     ],
                     
-                    const Divider(height: 32, color: Color(0xFF2A2A2A)),
+                    const Divider(height: 32, color: Color(0xFFF3F4F6)),
 
                     // Compliance rules checklist
                     const Text(
@@ -225,34 +225,39 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
                         fontFamily: 'Outfit',
-                        color: Colors.white,
+                        color: Color(0xFF111827),
                       ),
                     ),
                     const SizedBox(height: 10),
                     _buildComplianceSection(),
-                    const Divider(height: 32, color: Color(0xFF2A2A2A)),
+                    const Divider(height: 32, color: Color(0xFFF3F4F6)),
 
                     // Action controls for Reviewers
                     if (showActions && isPending) ...[
                       const Text(
                         'Décision & Commentaires',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827)),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _commentController,
                         maxLines: 2,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Color(0xFF111827)),
                         decoration: InputDecoration(
                           hintText: 'Saisissez un commentaire ou motif de rejet...',
-                          hintStyle: const TextStyle(color: Color(0xFF5F6168)),
+                          hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+                          fillColor: const Color(0xFFF9FAFB),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF22C55E), width: 1.5),
                           ),
                           contentPadding: const EdgeInsets.all(12),
                         ),
@@ -264,10 +269,10 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                             child: OutlinedButton(
                               onPressed: () => _handleStatusChange('rejete'),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFFF87171),
-                                side: const BorderSide(color: Color(0xFFF87171), width: 1.5),
+                                foregroundColor: const Color(0xFFEF4444),
+                                side: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
                                 padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               ),
                               child: const Text('Rejeter la facture', style: TextStyle(fontWeight: FontWeight.bold)),
                             ),
@@ -280,7 +285,8 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                                 backgroundColor: const Color(0xFF10B981),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                elevation: 0,
                               ),
                               child: const Text('Valider la facture', style: TextStyle(fontWeight: FontWeight.bold)),
                             ),
@@ -292,10 +298,11 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                       ElevatedButton(
                         onPressed: () => Navigator.pop(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8B5CF6),
+                          backgroundColor: const Color(0xFF22C55E),
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
+                          elevation: 0,
                         ),
                         child: const Text('Fermer', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
@@ -314,7 +321,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
         Text(
           label,
           style: const TextStyle(
-            color: Color(0xFFA1A1AA),
+            color: Color(0xFF6B7280),
             fontSize: 11,
             fontWeight: FontWeight.w500,
           ),
@@ -325,7 +332,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
           style: TextStyle(
             fontSize: isPrimary ? 18 : 14,
             fontWeight: isPrimary ? FontWeight.w800 : FontWeight.bold,
-            color: isPrimary ? const Color(0xFF8B5CF6) : Colors.white,
+            color: isPrimary ? const Color(0xFF22C55E) : const Color(0xFF111827),
             fontFamily: 'Outfit',
           ),
         ),
@@ -342,7 +349,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
           child: Text(
             label,
             style: const TextStyle(
-              color: Color(0xFFA1A1AA),
+              color: Color(0xFF6B7280),
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
@@ -354,7 +361,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 13,
-              color: Colors.white,
+              color: Color(0xFF111827),
             ),
           ),
         ),
@@ -387,7 +394,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
               description,
               style: const TextStyle(
                 fontSize: 11,
-                color: Color(0xFFD4D4D8),
+                color: Color(0xFF374151),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -418,7 +425,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                   children: [
                     Icon(
                       passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                      color: passed ? const Color(0xFF10B981) : const Color(0xFFF87171),
+                      color: passed ? const Color(0xFF10B981) : const Color(0xFFEF4444),
                       size: 18,
                     ),
                     const SizedBox(width: 8),
@@ -431,7 +438,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Color(0xFF111827),
                             ),
                           ),
                           if (message.isNotEmpty)
@@ -439,7 +446,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                               message,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: passed ? const Color(0xFFA1A1AA) : const Color(0xFFF87171),
+                                color: passed ? const Color(0xFF4B5563) : const Color(0xFFEF4444),
                               ),
                             ),
                         ],
@@ -484,7 +491,7 @@ class ComplianceItem extends StatelessWidget {
         children: [
           Icon(
             passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
-            color: passed ? const Color(0xFF10B981) : const Color(0xFFF87171),
+            color: passed ? const Color(0xFF10B981) : const Color(0xFFEF4444),
             size: 18,
           ),
           const SizedBox(width: 8),
@@ -494,7 +501,7 @@ class ComplianceItem extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Color(0xFF111827),
               ),
             ),
           ),

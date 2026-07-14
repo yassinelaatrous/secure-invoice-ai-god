@@ -1,15 +1,15 @@
-# SecureInvoice AI - God Tier 🚀
+# SecureInvoice AI - Mobile Client 🚀
 
 [![CI/CD Build](https://github.com/yassinelaatrous/secure-invoice-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/yassinelaatrous/secure-invoice-ai/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Bienvenue dans **SecureInvoice AI**, l'application ultime de gestion de factures alimentée par l'Intelligence Artificielle. Ce projet a été pensé pour offrir une expérience utilisateur ("Epic Design" & Glassmorphism en Dark Mode Neon) tout en fournissant des fonctionnalités puissantes de scan OCR, de vérification de conformité et de détection de fraudes.
+Bienvenue dans **SecureInvoice AI Mobile**, l'application cliente mobile ultime de gestion de factures alimentée par l'Intelligence Artificielle. Ce projet a été repensé pour offrir une expérience utilisateur exceptionnelle utilisant un design moderne blanc et vert lime (Light Theme), inspiré de l'esthétique épurée de *Jobsly*, avec des animations fluides et des composants soignés.
 
 ---
 
-## 📸 Aperçu de l'Application (Epic Dark Theme)
+## 📸 Aperçu de l'Application (Modern Green & White Theme)
 
-| Écran de Connexion (Glassmorphic Card & Waves) | Tableau de Bord (KPIs, Graphiques & Actions) |
+| Écran de Connexion (Jobsly Style & Animations) | Tableau de Bord (KPIs, Graphiques & Actions) |
 | :---: | :---: |
 | ![Connexion](screenshots/screenshot_login.png) | ![Tableau de Bord](screenshots/screenshot_dashboard.png) |
 
@@ -17,73 +17,80 @@ Bienvenue dans **SecureInvoice AI**, l'application ultime de gestion de factures
 | :---: | :---: |
 | ![Capture OCR](screenshots/screenshot_capture.png) | ![Imports PDF](screenshots/screenshot_factures.png) |
 
-| Vue Administrateur & Audit de Sécurité |
+| Vue Profil & Configuration Serveur |
 | :---: |
-| ![Admin](screenshots/screenshot_admin.png) |
+| ![Profil](screenshots/screenshot_admin.png) |
 
 ---
 
-## 🌟 Fonctionnalités
+## 🌟 Fonctionnalités & "Ce qui fonctionne" (What Works)
 
-*   **Design Peak & Dark Mode** : Interface utilisateur God-Tier utilisant des palettes sombres, des contrastes Neon Purple (`#8B5CF6`) et des accents Emerald pour une esthétique moderne et luxueuse.
-*   **Scan OCR & Importation PDF** : Extraction automatisée des données via la caméra (avec surbrillance des zones de capture sur le document) ou l'importation de documents avec analyse de fraude.
-*   **Tableau de bord dynamique** : Suivi des indicateurs clés (KPIs), conformité globale, statuts des factures et alertes en temps réel.
-*   **Architecture Cross-Platform** : Construit avec Flutter 3+ pour une fluidité native sur iOS et Android.
-*   **Moteur de Règles & Risques** : Analyse automatique de la cohérence de TVA (HT + TVA = TTC), vérification du format IBAN, détection de doublons et comparaison avec un annuaire de confiance.
-
----
-
-## 🛠️ Comment ouvrir et lancer le projet dans Android Studio (Guide Étape par Étape)
-
-Pour voir l'application tourner sur l'émulateur par vous-même, suivez attentivement ces instructions :
-
-### Étape 1 : Ouvrir le projet dans Android Studio
-1. Lancez **Android Studio**.
-2. Cliquez sur **Open** (ou "File > Open" si vous êtes déjà dans un autre projet).
-3. Naviguez vers le dossier où vous avez enregistré ce projet : `C:\plateforme\mobile` (assurez-vous de bien sélectionner le dossier `mobile` qui contient le code Flutter, et non le dossier backend).
-4. Cliquez sur **OK**. Android Studio va charger le projet. Patientez pendant l'indexation (barre de progression en bas à droite).
-
-### Étape 2 : Lancer un Émulateur Android (Téléphone Virtuel)
-1. En haut à droite d'Android Studio, repérez l'icône **Device Manager** (un petit téléphone avec le logo Android) et cliquez dessus.
-2. Si vous avez déjà un émulateur listé (ex: *Pixel 6 API 33*), cliquez sur le bouton **Play (▷)** à côté de son nom pour le démarrer.
-3. Si vous n'en avez pas :
-   * Cliquez sur **Create Device**.
-   * Choisissez un téléphone (ex: Pixel 6) -> Next.
-   * Téléchargez une image système recommandée (ex: API 33 ou API 34) -> Next -> Finish.
-   * Lancez-le avec le bouton **Play (▷)**.
-4. Le téléphone virtuel apparaîtra sur votre écran. Attendez qu'il soit complètement allumé et sur l'écran d'accueil.
-
-### Étape 3 : Installer les dépendances Flutter
-1. Dans Android Studio, ouvrez le fichier `pubspec.yaml` (situé à la racine du projet `mobile`).
-2. Une bannière apparaîtra en haut du fichier. Cliquez sur **Pub get** pour télécharger tous les packages nécessaires (ou ouvrez le terminal en bas d'Android Studio et tapez `flutter pub get`).
-
-### Étape 4 : Lancer l'application 🚀
-1. Dans la barre d'outils supérieure d'Android Studio, assurez-vous que votre émulateur (ex: `emulator-5554`) est sélectionné dans le menu déroulant des appareils.
-2. Assurez-vous que le fichier sélectionné juste à côté est `main.dart`.
-3. Cliquez sur le bouton vert **Play (▷)** (Run 'main.dart') en haut à droite.
-4. La compilation de l'application va commencer. *(Note : La première compilation (Gradle Build) peut prendre quelques minutes).*
-5. Une fois compilée, l'application s'ouvrira automatiquement et de manière fluide sur votre émulateur virtuel ! 🎉
+L'application mobile est entièrement fonctionnelle et prête pour la démonstration :
+*   **Connexion Animée (Jobsly Style)** : Écran d'accueil avec un dégradé vert épuré, un panneau de connexion blanc qui glisse vers le haut avec un effet de fondu-enchaîné, et des boutons d'accès rapide simulant des connexions sociales pour chaque rôle.
+*   **Tableau de Bord Dynamique (KPIs)** : Affichage d'indicateurs de performance clés (KPI) avec des couleurs de contraste vert/rouge/orange adaptées à l'état des factures.
+*   **Scan OCR Interactif** : Capture photo (Caméra/Galerie) envoyant le document au serveur pour extraction. L'utilisateur peut prévisualiser les zones de capture en surbrillance rouge sur l'image et ajuster les données extraites via un formulaire interactif.
+*   **Importation PDF** : Sélection de fichiers PDF locaux avec affichage d'une barre de progression de téléversement et mise à jour dynamique de l'historique des documents.
+*   **Gestion des Profils & URL API** : Liaison avec l'adresse IP locale de votre machine pour tester l'application directement sur un smartphone physique connecté au même réseau.
 
 ---
 
-## 🧪 Architecture & Validation (PFE Demo)
+## 📘 Documentation Technique & Choix Technologiques (Why & Why Not)
 
-### Justification de l'Architecture
-*   **Base de Données localisée (SQLite)** : Choix délibéré d'utiliser SQLite pour cette démonstration afin de permettre une **évaluation instantanée et sans installation** (pas besoin d'installer, configurer ou orchestrer de serveur de base de données comme PostgreSQL ou MySQL). L'implémentation SQLAlchemy est entièrement abstraite et peut être connectée à une base de données de production (comme PostgreSQL) en modifiant simplement la chaîne de connexion dans le fichier de configuration.
-*   **Comptes de Démo** : Les identifiants de test pré-configurés facilitent l'exploration des différents rôles (Client, Comptable, Admin) directement par les évaluateurs du PFE.
-*   **Sécurité en Production** : En production réelle, les clés secrètes JWT, les identifiants et les configurations sensibles doivent être chargés uniquement via des variables d'environnement (`.env` ou gestionnaire de secrets sécurisé comme Doppler ou AWS Secrets Manager).
+Cette section détaille l'ingénierie derrière l'application mobile et justifie les décisions d'architecture pour les examinateurs techniques.
 
-### Tests Automatisés & Qualité
-Le projet intègre des tests automatisés pour valider la robustesse du moteur de règles et de détection de risques.
-*   **Backend** : Exécutez les tests unitaires avec `python backend/test_invoice.py`.
-*   **Mobile** : Exécutez les tests unitaires / widget Flutter avec `flutter test` dans le dossier `mobile`.
-*   **CI/CD** : Un workflow GitHub Actions (`.github/workflows/ci.yml`) valide automatiquement chaque push en exécutant l'ensemble de la suite de tests sur les environnements backend et mobile.
+### 1. Pourquoi Flutter & Dart ? (vs React Native or Native iOS/Android)
+*   **Performance Exceptionnelle (Impeller Engine)** : Flutter compile directement en code machine natif ARM et utilise Impeller pour le rendu graphique à 60/120 FPS. React Native dépend d'un pont JavaScript (bridge) ou de composants natifs via JSI, ce qui peut créer des micro-saccades sur des rendus complexes comme les tracés de zones OCR.
+*   **Code Unique pour Multi-Platforme** : Dart permet d'assurer une fidélité graphique identique au pixel près sur iOS et Android, évitant de coder deux fois l'UI complexe des boîtes de collision OCR.
+*   **Pourquoi pas Native (Swift/Kotlin) ?** : Pour un projet académique ou de démonstration (PFE), la double base de code native multiplierait le temps de développement par deux sans apporter de bénéfice de performance perceptible pour cette typologie d'application.
+
+### 2. Pourquoi une API REST classique ? (vs GraphQL)
+*   **Traitement de Fichiers Binaires** : GraphQL est idéal pour les graphes de données complexes et les requêtes spécifiques, mais il est moins adapté et plus lourd pour le téléversement de fichiers binaires bruts (images et PDFs de factures). L'utilisation d'endpoints HTTP POST `multipart/form-data` standards est plus rapide, plus simple et parfaitement gérée par la bibliothèque Dart `http`.
+
+### 3. Pourquoi SQLite pour l'évaluation ? (vs PostgreSQL)
+*   **Objectif Zéro Configuration (Instant Setup)** : Pour évaluer le projet, un examinateur ne devrait pas avoir à installer un serveur PostgreSQL local et configurer des conteneurs complexes. SQLite stocke les données dans un simple fichier local (`secure_invoice.db`), éliminant tout frottement d'installation. L'ORM SQLAlchemy utilisé dans le backend permet de basculer sur PostgreSQL en production simplement en modifiant une variable d'environnement, sans réécrire le code.
+
+### 4. Pourquoi une architecture orientée "Services" ?
+*   **Découplage UI/Logique** : Les appels API sont centralisés dans `lib/services/api_service.dart` et `auth_service.dart`. Les widgets ne font que consommer ces services. Cela permet de modifier l'adresse du serveur, d'injecter des données de mock ou d'ajuster les formats de réponse sans jamais casser la mise en page des écrans.
+
+### 5. Rôles et Permissions (RBAC)
+*   L'application gère localement le type d'utilisateur connecté (`client`, `comptable`, `admin`) :
+    *   **Client** : Peut importer et soumettre ses factures.
+    *   **Comptable** : Accède à l'historique global pour valider/rejeter les factures avec des commentaires.
+    *   **Admin** : Configure les règles de conformité et consulte les logs d'audit.
+    *   *Note de sécurité* : Ces restrictions d'interface sont doublées de vérifications strictes côté API (`require_role` dans FastAPI) pour empêcher tout contournement.
 
 ---
 
-## 💡 Notes Techniques (Pour les développeurs)
-*   **Compile SDK** : Ce projet utilise `compileSdkVersion 36` dans `android/build.gradle.kts` pour éviter les conflits de versions de dépendances avec des plugins comme `file_picker`.
-*   **Thème** : Le thème global est défini dans `main.dart` utilisant la police `Outfit` et des couleurs de fond `0xFF121212` (Dark Mode complet).
+## 🛠️ Guide d'Installation Rapide (Pour Débutant)
+
+### Étape 1 : Prérequis
+1. Téléchargez et installez **Flutter SDK** depuis le site officiel.
+2. Téléchargez **Android Studio** et installez le plugin **Flutter** depuis les paramètres (Plugins).
+3. Assurez-vous d'avoir démarré le backend FastAPI (sur le port `8000`).
+
+### Étape 2 : Configurer le serveur API
+Par défaut, l'application mobile est configurée pour pointer vers `http://10.0.2.2:8000/api` (qui est l'adresse IP de votre ordinateur vue depuis l'émulateur Android standard).
+*   Si vous testez sur un **téléphone réel** :
+    1. Connectez votre téléphone et votre ordinateur au **même réseau Wi-Fi**.
+    2. Ouvrez l'application, allez dans l'onglet **Profil > Modifier Configuration Serveur API**.
+    3. Remplacez l'IP par celle de votre ordinateur (ex: `http://192.168.1.45:8000/api`).
+
+### Étape 3 : Lancer l'application
+1. Lancez un émulateur depuis Android Studio (Device Manager).
+2. Ouvrez un terminal dans le dossier `mobile` et tapez :
+   ```bash
+   flutter pub get
+   flutter run
+   ```
+3. L'application se lance en quelques secondes sur le téléphone virtuel !
+
+---
+
+## 🧪 Tests Unitaires
+Vous pouvez exécuter les tests unitaires et d'intégration de l'interface mobile en exécutant :
+```bash
+flutter test
+```
 
 ## 👨‍💻 Créé pour
-**Yassine Atrous** - Prêt à dominer la réunion d'aujourd'hui avec ce rendu visuel exceptionnel ! Let's go ! 🔥
+**Yassine Atrous** - Prêt à livrer le projet avec une clarté et un design digne des meilleurs standards professionnels ! 🚀

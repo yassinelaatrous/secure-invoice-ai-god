@@ -218,16 +218,16 @@ class _CaptureScreenState extends State<CaptureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text('Capture de facture', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Colors.white)),
-        backgroundColor: const Color(0xFF121212),
+        title: const Text('Capture de facture', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Color(0xFF111827))),
+        backgroundColor: const Color(0xFFF5F7FA),
         elevation: 0,
         centerTitle: true,
         actions: _imageFile != null
             ? [
                 IconButton(
-                  icon: const Icon(Icons.refresh_rounded, color: Color(0xFFF87171)),
+                  icon: const Icon(Icons.refresh_rounded, color: Color(0xFFEF4444)),
                   onPressed: _resetState,
                 )
               ]
@@ -252,12 +252,12 @@ class _CaptureScreenState extends State<CaptureScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
+                color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF2A2A2A)),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                    color: const Color(0xFF22C55E).withValues(alpha: 0.08),
                     blurRadius: 30,
                   ),
                 ],
@@ -265,19 +265,19 @@ class _CaptureScreenState extends State<CaptureScreen> {
               child: const Icon(
                 Icons.document_scanner_outlined,
                 size: 60,
-                color: Color(0xFF8B5CF6),
+                color: Color(0xFF22C55E),
               ),
             ),
             const SizedBox(height: 24),
             const Text(
               'Prêt à scanner',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Colors.white),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Color(0xFF111827)),
             ),
             const SizedBox(height: 10),
             const Text(
               'Prenez en photo une facture papier ou importez-en une depuis votre galerie.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 14),
+              style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
             ),
             const SizedBox(height: 40),
             
@@ -287,12 +287,13 @@ class _CaptureScreenState extends State<CaptureScreen> {
               icon: const Icon(Icons.camera_alt_rounded),
               label: const Text('Prendre une photo'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B5CF6),
+                backgroundColor: const Color(0xFF22C55E),
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
+                elevation: 0,
               ),
             ),
             const SizedBox(height: 12),
@@ -303,8 +304,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
               icon: const Icon(Icons.photo_library_rounded),
               label: const Text('Importer de la galerie'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF8B5CF6),
-                side: const BorderSide(color: Color(0xFF8B5CF6), width: 1.5),
+                foregroundColor: const Color(0xFF22C55E),
+                side: const BorderSide(color: Color(0xFF22C55E), width: 1.5),
                 minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -324,12 +325,12 @@ class _CaptureScreenState extends State<CaptureScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(color: Color(0xFF8B5CF6)),
+            const CircularProgressIndicator(color: Color(0xFF22C55E)),
             const SizedBox(height: 24),
             Text(
               _statusMessage ?? 'Traitement en cours...',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF111827)),
             ),
           ],
         ),
@@ -346,7 +347,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
           // Bounding Box Image Preview Header
           const Text(
             'Aperçu du document & zones OCR',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit', color: Colors.white),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit', color: Color(0xFF111827)),
           ),
           const SizedBox(height: 8),
 
@@ -360,9 +361,9 @@ class _CaptureScreenState extends State<CaptureScreen> {
               return Container(
                 height: containerHeight,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF2A2A2A)),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
                 ),
                 child: Stack(
                   children: [
@@ -375,7 +376,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
                                 File(_imageFile!.path),
                                 fit: BoxFit.contain,
                               )
-                            : Container(color: const Color(0xFF1E1E1E)),
+                            : Container(color: Colors.white),
                       ),
                     ),
 
@@ -388,7 +389,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
                         height: _boxCoords[_activeField]!['height']! * scaleY,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444).withValues(alpha: 0.25),
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.15),
                             border: Border.all(
                               color: const Color(0xFFEF4444),
                               width: 2.0,
@@ -420,16 +421,16 @@ class _CaptureScreenState extends State<CaptureScreen> {
           // Form Fields Review Section
           const Text(
             'Informations Extraites',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit', color: Colors.white),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit', color: Color(0xFF111827)),
           ),
           const SizedBox(height: 8),
 
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF2A2A2A)),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
             child: Form(
               key: _formKey,
@@ -463,19 +464,20 @@ class _CaptureScreenState extends State<CaptureScreen> {
           ElevatedButton(
             onPressed: _submitInvoice,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF8B5CF6),
+              backgroundColor: const Color(0xFF22C55E),
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 54),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
+              elevation: 0,
             ),
             child: const Text('Confirmer & Soumettre la Facture', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: _resetState,
-            child: const Text('Annuler', style: TextStyle(color: Color(0xFFF87171), fontWeight: FontWeight.bold)),
+            child: const Text('Annuler', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -499,18 +501,23 @@ class _CaptureScreenState extends State<CaptureScreen> {
       },
       child: TextFormField(
         controller: controller,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827)),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Color(0xFFA1A1AA)),
-          prefixIcon: Icon(icon, size: 20, color: const Color(0xFFA1A1AA)),
+          labelStyle: const TextStyle(color: Color(0xFF6B7280)),
+          prefixIcon: Icon(icon, size: 20, color: const Color(0xFF9CA3AF)),
+          fillColor: const Color(0xFFF9FAFB),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF22C55E), width: 1.5),
           ),
           contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
