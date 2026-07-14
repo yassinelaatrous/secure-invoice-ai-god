@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../models/invoice.dart';
+import '../widgets/ai_processing_overlay.dart';
 
 class CaptureScreen extends StatefulWidget {
   const CaptureScreen({Key? key}) : super(key: key);
@@ -11,7 +12,7 @@ class CaptureScreen extends StatefulWidget {
   State<CaptureScreen> createState() => _CaptureScreenState();
 }
 
-class _CaptureScreenState extends State<CaptureScreen> {
+class _CaptureScreenState extends State<CaptureScreen> with TickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
   
   XFile? _imageFile;
@@ -21,6 +22,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
   
   // Interactive bounding box active field
   String _activeField = '';
+
+  late AnimationController _aiController;
 
   // Form Controllers for OCR Editing
   final _formKey = GlobalKey<FormState>();
@@ -45,6 +48,15 @@ class _CaptureScreenState extends State<CaptureScreen> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    _aiController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+  }
+
+  @override
   void dispose() {
     _fournisseurController.dispose();
     _numeroController.dispose();
@@ -53,6 +65,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
     _tvaController.dispose();
     _ttcController.dispose();
     _ibanController.dispose();
+    _aiController.dispose();
     super.dispose();
   }
 
@@ -218,26 +231,29 @@ class _CaptureScreenState extends State<CaptureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text('Capture de facture', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Color(0xFF111827))),
-        backgroundColor: const Color(0xFFF5F7FA),
-        elevation: 0,
+        title: const Text('Capture de facture'),
         centerTitle: true,
         actions: _imageFile != null
             ? [
                 IconButton(
-                  icon: const Icon(Icons.refresh_rounded, color: Color(0xFFEF4444)),
+                  icon: const Icon(Icons.refresh_rounded, color: Color(0xFFD94040)),
                   onPressed: _resetState,
                 )
               ]
             : null,
       ),
-      body: _isProcessing
-          ? _buildLoadingView()
-          : _imageFile == null
+      body: Stack(
+        children: [
+          _imageFile == null
               ? _buildCaptureSourceSelector()
               : _buildOcrReviewEditor(),
+          if (_isProcessing)
+            Positioned.fill(
+              child: AiProcessingOverlay(controller: _aiController),
+            ),
+        ],
+      ),
     );
   }
 
