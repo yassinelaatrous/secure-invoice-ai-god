@@ -371,7 +371,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           child: Center(
             child: Text(
-              'L',
+              'C',
               style: GoogleFonts.fraunces(
                 fontSize: 32,
                 fontWeight: FontWeight.w700,
@@ -383,7 +383,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 16),
         Text(
-          'Ledger',
+          'CEO IT',
           style: GoogleFonts.fraunces(
             fontSize: 34,
             fontWeight: FontWeight.w700,

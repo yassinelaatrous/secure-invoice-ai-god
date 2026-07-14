@@ -7,7 +7,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     // Verify login screen renders
-    expect(find.text('Ledger'), findsOneWidget);
+    expect(find.text('CEO IT'), findsOneWidget);
     expect(find.text('Continue with Email'), findsOneWidget);
   });
 }

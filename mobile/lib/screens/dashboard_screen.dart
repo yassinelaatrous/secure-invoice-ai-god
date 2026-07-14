@@ -825,7 +825,7 @@ class _HomeTabState extends State<HomeTab> {
                                   ),
                                   child: const Center(
                                     child: Text(
-                                      'L',
+                                      'C',
                                       style: TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w900, fontSize: 16, fontStyle: FontStyle.italic),
                                     ),
                                   ),
@@ -835,7 +835,7 @@ class _HomeTabState extends State<HomeTab> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Ledger',
+                                      'CEO IT',
                                       style: GoogleFonts.fraunces(fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.primary),
                                     ),
                                     Text(

@@ -6,14 +6,68 @@ class AuthService {
   static const String _tokenKey = 'access_token';
   static const String _userKey = 'user_info';
   
-  // 10.0.2.2 maps to host machine's localhost when running on Android Emulator
+  // Default fallback URL
   static String _baseUrl = 'http://10.0.2.2:8000/api'; 
 
-  static void setBaseUrl(String url) {
+  static final List<String> _candidateUrls = [
+    'http://10.0.2.2:8000/api',
+    'http://localhost:8000/api',
+    'http://192.168.0.145:8000/api',
+    'http://192.168.144.1:8000/api',
+    'http://192.168.1.145:8000/api',
+  ];
+
+  static Future<void> setBaseUrl(String url) async {
     _baseUrl = url;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('custom_base_url', url);
   }
 
   static String get baseUrl => _baseUrl;
+
+  // Auto-probe candidate URLs to find the active uvicorn server
+  static Future<void> discoverBaseUrl() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedUrl = prefs.getString('custom_base_url');
+      if (savedUrl != null && savedUrl.isNotEmpty) {
+        _baseUrl = savedUrl;
+        print('[AUTO-DISCOVERY] Using saved custom server URL: $_baseUrl');
+        return;
+      }
+    } catch (_) {}
+
+    print('[AUTO-DISCOVERY] Probing active backend candidate URLs...');
+    
+    // Probe candidates in parallel
+    final List<Future<String?>> probes = _candidateUrls.map((url) async {
+      try {
+        final client = http.Client();
+        final response = await client.get(
+          Uri.parse('$url/local-ip'),
+        ).timeout(const Duration(milliseconds: 1500));
+        
+        if (response.statusCode == 200) {
+          return url;
+        }
+      } catch (_) {}
+      return null;
+    }).toList();
+
+    try {
+      final results = await Future.wait(probes);
+      for (final res in results) {
+        if (res != null) {
+          _baseUrl = res;
+          print('[AUTO-DISCOVERY] Detected active backend at: $_baseUrl');
+          return;
+        }
+      }
+    } catch (e) {
+      print('[AUTO-DISCOVERY] Probe failed with error: $e');
+    }
+    print('[AUTO-DISCOVERY] No active backend detected. Falling back to default: $_baseUrl');
+  }
 
   // Log in user — MUST use x-www-form-urlencoded for FastAPI OAuth2PasswordRequestForm
   static Future<Map<String, dynamic>> login(String username, String password) async {

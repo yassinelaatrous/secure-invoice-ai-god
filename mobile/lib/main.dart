@@ -7,6 +7,9 @@ import 'theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Auto-discover the active backend server IP address
+  await AuthService.discoverBaseUrl();
+  
   // Check if session token is already stored in shared preferences
   final bool loggedIn = await AuthService.isLoggedIn();
   
