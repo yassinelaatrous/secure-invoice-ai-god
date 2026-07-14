@@ -91,6 +91,97 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  void _showServerConfigDialog() {
+    final controller = TextEditingController(text: AuthService.baseUrl);
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: AppTheme.backgroundLight,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Configuration Serveur API',
+                  style: GoogleFonts.fraunces(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Si l\'adresse par défaut (10.0.2.2) ne fonctionne pas, entrez l\'adresse IP locale de votre machine (ex: http://192.168.1.50:8000/api).',
+                  style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.textSecondary),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: controller,
+                  style: GoogleFonts.dmSans(color: AppTheme.textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'Adresse du serveur',
+                    labelStyle: GoogleFonts.dmSans(color: AppTheme.textSecondary),
+                    filled: true,
+                    fillColor: AppTheme.surfaceCard,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: AppTheme.cardBorder),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: AppTheme.cardBorder),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text('Annuler', style: GoogleFonts.dmSans(color: AppTheme.error)),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        AuthService.setBaseUrl(controller.text);
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: AppTheme.primary,
+                            content: Text(
+                              'Serveur configuré : ${AuthService.baseUrl}',
+                              style: GoogleFonts.dmSans(color: Colors.white),
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text('Enregistrer', style: GoogleFonts.dmSans(fontWeight: FontWeight.w600)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -101,6 +192,38 @@ class _LoginScreenState extends State<LoginScreen>
         children: [
           // Floating invoice icons scattered around
           ..._buildFloatingIcons(size),
+
+          // Server configuration settings button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            right: 16,
+            child: GestureDetector(
+              onTap: _showServerConfigDialog,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(color: AppTheme.cardBorder),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.settings_outlined,
+                    color: AppTheme.primary,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
+          ),
 
           // Main content
           SafeArea(
