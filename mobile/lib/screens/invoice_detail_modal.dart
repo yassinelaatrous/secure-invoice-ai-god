@@ -124,7 +124,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
       child: FractionallySizedBox(
         heightFactor: 0.8,
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFF22C55E)))
+            ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor))
             : SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -257,7 +257,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF22C55E), width: 1.5),
+                            borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
                           ),
                           contentPadding: const EdgeInsets.all(12),
                         ),
@@ -298,7 +298,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                       ElevatedButton(
                         onPressed: () => Navigator.pop(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF22C55E),
+                          backgroundColor: Theme.of(context).primaryColor,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -332,7 +332,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
           style: TextStyle(
             fontSize: isPrimary ? 18 : 14,
             fontWeight: isPrimary ? FontWeight.w800 : FontWeight.bold,
-            color: isPrimary ? const Color(0xFF22C55E) : const Color(0xFF111827),
+            color: isPrimary ? Theme.of(context).primaryColor : const Color(0xFF14251F),
             fontFamily: 'Outfit',
           ),
         ),

@@ -247,7 +247,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+           children: [
             Container(
               width: 120,
               height: 120,
@@ -257,21 +257,21 @@ class _CaptureScreenState extends State<CaptureScreen> {
                 border: Border.all(color: const Color(0xFFE5E7EB)),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF22C55E).withValues(alpha: 0.08),
+                    color: Theme.of(context).primaryColor.withOpacity(0.08),
                     blurRadius: 30,
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.document_scanner_outlined,
                 size: 60,
-                color: Color(0xFF22C55E),
+                color: Theme.of(context).primaryColor,
               ),
             ),
             const SizedBox(height: 24),
             const Text(
               'Prêt à scanner',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Color(0xFF111827)),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Color(0xFF14251F)),
             ),
             const SizedBox(height: 10),
             const Text(
@@ -287,7 +287,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
               icon: const Icon(Icons.camera_alt_rounded),
               label: const Text('Prendre une photo'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF22C55E),
+                backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(
@@ -304,8 +304,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
               icon: const Icon(Icons.photo_library_rounded),
               label: const Text('Importer de la galerie'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF22C55E),
-                side: const BorderSide(color: Color(0xFF22C55E), width: 1.5),
+                foregroundColor: Theme.of(context).primaryColor,
+                side: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
                 minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -325,7 +325,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(color: Color(0xFF22C55E)),
+            CircularProgressIndicator(color: Theme.of(context).primaryColor),
             const SizedBox(height: 24),
             Text(
               _statusMessage ?? 'Traitement en cours...',
@@ -464,7 +464,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
           ElevatedButton(
             onPressed: _submitInvoice,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF22C55E),
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 54),
               shape: RoundedRectangleBorder(
@@ -517,7 +517,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF22C55E), width: 1.5),
+            borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
           ),
           contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),

@@ -60,7 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF22C55E), // Modern vibrant green
+          selectedItemColor: Theme.of(context).primaryColor, // Modern vibrant green
           unselectedItemColor: const Color(0xFF6B7280),
           showSelectedLabels: true,
           showUnselectedLabels: true,
@@ -152,9 +152,9 @@ class _HomeTabState extends State<HomeTab> {
         : '';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFFF5F4F0),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F7FA),
+        backgroundColor: const Color(0xFFF5F4F0),
         elevation: 0,
         title: Row(
           children: [
@@ -162,7 +162,7 @@ class _HomeTabState extends State<HomeTab> {
               width: 38,
               height: 38,
               decoration: const BoxDecoration(
-                color: Color(0xFF22C55E),
+                color: Color(0xFF14251F),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -205,7 +205,7 @@ class _HomeTabState extends State<HomeTab> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF22C55E)),
+            icon: Icon(Icons.refresh_rounded, color: Theme.of(context).primaryColor),
             onPressed: _loadData,
           ),
           IconButton(
@@ -222,11 +222,11 @@ class _HomeTabState extends State<HomeTab> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF22C55E)))
+          ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor))
           : _error.isNotEmpty
               ? _buildErrorView()
               : RefreshIndicator(
-                  color: const Color(0xFF22C55E),
+                  color: Theme.of(context).primaryColor,
                   backgroundColor: Colors.white,
                   onRefresh: _loadData,
                   child: SingleChildScrollView(
@@ -254,9 +254,9 @@ class _HomeTabState extends State<HomeTab> {
                             ),
                             TextButton(
                               onPressed: _loadData,
-                              child: const Text(
+                              child: Text(
                                 'Tout voir',
-                                style: TextStyle(color: Color(0xFF22C55E), fontWeight: FontWeight.bold),
+                                style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
@@ -382,10 +382,10 @@ class _HomeTabState extends State<HomeTab> {
                   ),
                   Text(
                     '${invoice.montantTtc.toStringAsFixed(2)} ${invoice.devise == 'EUR' ? '€' : invoice.devise}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF22C55E), // Modern green accent
+                      color: Theme.of(context).primaryColor, // Modern green accent
                       fontFamily: 'Outfit',
                     ),
                   ),
@@ -495,7 +495,7 @@ class _HomeTabState extends State<HomeTab> {
             ElevatedButton(
               onPressed: _loadData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF22C55E),
+                backgroundColor: Theme.of(context).primaryColor,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
               ),
               child: const Text('Réessayer', style: TextStyle(color: Colors.white)),

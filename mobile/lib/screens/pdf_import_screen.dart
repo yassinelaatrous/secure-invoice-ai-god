@@ -118,7 +118,7 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+                          color: Theme.of(context).primaryColor.withOpacity(0.3),
                           width: 2,
                           style: BorderStyle.solid,
                         ),
@@ -139,10 +139,10 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
                               color: Color(0xFFF0FDF4), // Light green tint
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.upload_file_rounded,
                               size: 32,
-                              color: Color(0xFF22C55E),
+                              color: Theme.of(context).primaryColor,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -223,16 +223,16 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
                 value: _uploadProgress,
                 minHeight: 10,
                 backgroundColor: const Color(0xFFE5E7EB),
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF22C55E)),
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
               ),
             ),
             const SizedBox(height: 10),
             Text(
               '${(_uploadProgress * 100).toStringAsFixed(0)}%',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'IBM Plex Mono',
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF22C55E),
+                color: Theme.of(context).primaryColor,
               ),
             ),
           ],

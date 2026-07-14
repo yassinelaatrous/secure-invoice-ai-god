@@ -98,8 +98,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     width: 72,
                     height: 72,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF22C55E),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -140,12 +140,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(roleIcon, size: 14, color: const Color(0xFF22C55E)),
+                        Icon(roleIcon, size: 14, color: Theme.of(context).primaryColor),
                         const SizedBox(width: 6),
                         Text(
                           roleLabel,
-                          style: const TextStyle(
-                            color: Color(0xFF22C55E),
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
@@ -228,7 +228,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       if (!_isEditingServer)
                         IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF22C55E)),
+                          icon: Icon(Icons.edit_outlined, size: 18, color: Theme.of(context).primaryColor),
                           onPressed: () {
                             setState(() {
                               _isEditingServer = true;
@@ -276,7 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ElevatedButton(
                           onPressed: _saveServerUrl,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF22C55E),
+                            backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
                             elevation: 0,
                           ),

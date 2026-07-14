@@ -85,11 +85,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5F4F0),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Jobsly-style Green Gradient Header
+            // Jobsly-style Deep Forest Gradient Header
             Container(
               height: size.height * 0.35,
               width: double.infinity,
@@ -98,8 +98,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFF15803D), // Deep Green
-                    Color(0xFF22C55E), // Emerald Green
+                    Color(0xFF14251F), // Deep Forest Green
+                    Color(0xFF223E34), // Lighter Forest Green
                   ],
                 ),
               ),
@@ -112,13 +112,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
+                        color: const Color(0xFFD2FA5A).withOpacity(0.15),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.receipt_long_rounded,
                         size: 48,
-                        color: Colors.white,
+                        color: Color(0xFFD2FA5A),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -137,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       'Plateforme intelligente de facturation',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.85),
+                        color: Colors.white.withOpacity(0.85),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -163,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 child: Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: Color(0xFFFCFBF9), // Lighter Warm Cream Card
                     borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -178,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
                             fontFamily: 'Outfit',
-                            color: Color(0xFF111827),
+                            color: Color(0xFF14251F), // Ink text
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -186,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           'Enter your details below to login',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF6B7280),
+                            color: Color(0xFF455550), // Muted Ink text
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -195,11 +195,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         // Username Input
                         TextFormField(
                           controller: _usernameController,
-                          style: const TextStyle(color: Color(0xFF111827), fontSize: 15),
+                          style: const TextStyle(color: Color(0xFF14251F), fontSize: 15),
                           decoration: const InputDecoration(
                             labelText: 'Email Address',
                             hintText: 'name@example.com',
-                            prefixIcon: Icon(Icons.mail_outline_rounded, color: Color(0xFF9CA3AF)),
+                            prefixIcon: Icon(Icons.mail_outline_rounded, color: Color(0xFF455550)),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -214,15 +214,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
-                          style: const TextStyle(color: Color(0xFF111827), fontSize: 15),
+                          style: const TextStyle(color: Color(0xFF14251F), fontSize: 15),
                           decoration: InputDecoration(
                             labelText: 'Password',
                             hintText: 'Enter your password',
-                            prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF9CA3AF)),
+                            prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF455550)),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                color: const Color(0xFF9CA3AF),
+                                color: const Color(0xFF455550),
                               ),
                               onPressed: () {
                                 setState(() {
@@ -247,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             child: const Text(
                               'Forgot your password?',
                               style: TextStyle(
-                                color: Color(0xFF22C55E),
+                                color: Color(0xFF14251F),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -291,11 +291,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               _handleLogin(
                                 _usernameController.text,
                                 _passwordController.text,
-                              );
+                                );
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF22C55E),
+                            backgroundColor: const Color(0xFF14251F), // Deep Forest Green
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
@@ -330,7 +330,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             const Text(
                               'Or sign in with',
                               style: TextStyle(
-                                color: Color(0xFF9CA3AF),
+                                color: Color(0xFF455550),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -347,8 +347,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               child: _buildSocialLoginCard(
                                 label: 'Client',
                                 icon: Icons.person_outline_rounded,
-                                color: const Color(0xFFEFF6FF),
-                                textColor: const Color(0xFF3B82F6),
+                                color: const Color(0xFF14251F).withOpacity(0.06),
+                                textColor: const Color(0xFF14251F),
                                 onPressed: () {
                                   _usernameController.text = 'client@demo.com';
                                   _passwordController.text = 'client123';
@@ -361,8 +361,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               child: _buildSocialLoginCard(
                                 label: 'Comptable',
                                 icon: Icons.work_outline_rounded,
-                                color: const Color(0xFFECFDF5),
-                                textColor: const Color(0xFF10B981),
+                                color: const Color(0xFFD2FA5A).withOpacity(0.2),
+                                textColor: const Color(0xFF14251F),
                                 onPressed: () {
                                   _usernameController.text = 'comptable@demo.com';
                                   _passwordController.text = 'comptable123';
@@ -375,8 +375,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               child: _buildSocialLoginCard(
                                 label: 'Admin',
                                 icon: Icons.admin_panel_settings_outlined,
-                                color: const Color(0xFFFFF7ED),
-                                textColor: const Color(0xFFF97316),
+                                color: const Color(0xFFD2FA5A).withOpacity(0.4),
+                                textColor: const Color(0xFF14251F),
                                 onPressed: () {
                                   _usernameController.text = 'admin@demo.com';
                                   _passwordController.text = 'admin123';

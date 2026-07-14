@@ -49,7 +49,7 @@ class KpiCard extends StatelessWidget {
             ),
             child: Icon(
               icon,
-              color: iconColor ?? (textColor == const Color(0xFF111827) ? const Color(0xFF22C55E) : textColor),
+              color: iconColor ?? (textColor == const Color(0xFF14251F) ? Theme.of(context).primaryColor : textColor),
               size: 20,
             ),
           ),
