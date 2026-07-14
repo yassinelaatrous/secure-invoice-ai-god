@@ -3,13 +3,13 @@
 [![CI/CD Build](https://github.com/yassinelaatrous/secure-invoice-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/yassinelaatrous/secure-invoice-ai/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Bienvenue dans **SecureInvoice AI Mobile**, l'application cliente mobile ultime de gestion de factures alimentée par l'Intelligence Artificielle. Ce projet a été repensé pour offrir une expérience utilisateur exceptionnelle utilisant un design moderne blanc et vert lime (Light Theme), inspiré de l'esthétique épurée de *Jobsly*, avec des animations fluides et des composants soignés.
+Bienvenue dans **SecureInvoice AI Mobile**, l'application cliente mobile ultime de gestion de factures alimentée par l'Intelligence Artificielle. Ce projet a été repensé pour offrir une expérience utilisateur exceptionnelle utilisant un design moderne crème, vert forêt profond et vert lime (Cream & Forest Green Theme), inspiré de l'esthétique haut de gamme d'applications premium, avec des animations fluides, du verre dépoli (glassmorphism) et des composants soignés.
 
 ---
 
-## 📸 Aperçu de l'Application (Modern Green & White Theme)
+## 📸 Aperçu de l'Application (Premium Cream & Forest Green Theme)
 
-| Écran de Connexion (Jobsly Style & Animations) | Tableau de Bord (KPIs, Graphiques & Actions) |
+| Écran de Connexion (Design Premium & Animations) | Tableau de Bord (KPIs Réels, Graphiques & Actions) |
 | :---: | :---: |
 | ![Connexion](screenshots/screenshot_login.png) | ![Tableau de Bord](screenshots/screenshot_dashboard.png) |
 

@@ -1,9 +1,16 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../models/invoice.dart';
+import '../theme/app_theme.dart';
 import '../widgets/ai_processing_overlay.dart';
+
+enum CaptureMode { camera, gallery, pdf }
 
 class CaptureScreen extends StatefulWidget {
   const CaptureScreen({Key? key}) : super(key: key);
@@ -12,18 +19,12 @@ class CaptureScreen extends StatefulWidget {
   State<CaptureScreen> createState() => _CaptureScreenState();
 }
 
-class _CaptureScreenState extends State<CaptureScreen> with TickerProviderStateMixin {
-  final ImagePicker _picker = ImagePicker();
-  
-  XFile? _imageFile;
+class _CaptureScreenState extends State<CaptureScreen>
+    with TickerProviderStateMixin {
+  CaptureMode _selectedMode = CaptureMode.camera;
   bool _isProcessing = false;
-  String? _statusMessage;
+  String? _capturedFilePath;
   Invoice? _ocrResult;
-  
-  // Interactive bounding box active field
-  String _activeField = '';
-
-  late AnimationController _aiController;
 
   // Form Controllers for OCR Editing
   final _formKey = GlobalKey<FormState>();
@@ -35,29 +36,29 @@ class _CaptureScreenState extends State<CaptureScreen> with TickerProviderStateM
   final _ttcController = TextEditingController();
   final _ibanController = TextEditingController();
 
-  // Predefined mock templates coordinates mapping (for interactive highlighting)
-  // Coordinates are normalized percentages: left, top, width, height
-  final Map<String, Map<String, double>> _boxCoords = {
-    'fournisseur': {'left': 0.1, 'top': 0.08, 'width': 0.35, 'height': 0.06},
-    'numero': {'left': 0.6, 'top': 0.15, 'width': 0.3, 'height': 0.04},
-    'date': {'left': 0.6, 'top': 0.20, 'width': 0.3, 'height': 0.04},
-    'ht': {'left': 0.65, 'top': 0.60, 'width': 0.25, 'height': 0.04},
-    'tva': {'left': 0.65, 'top': 0.65, 'width': 0.25, 'height': 0.04},
-    'ttc': {'left': 0.65, 'top': 0.72, 'width': 0.25, 'height': 0.05},
-    'iban': {'left': 0.1, 'top': 0.88, 'width': 0.6, 'height': 0.04},
-  };
+  late AnimationController _entranceController;
+  late AnimationController _processingController;
+
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    _aiController = AnimationController(
+    _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(milliseconds: 600),
+    )..forward();
+
+    _processingController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
     )..repeat();
   }
 
   @override
   void dispose() {
+    _entranceController.dispose();
+    _processingController.dispose();
     _fournisseurController.dispose();
     _numeroController.dispose();
     _dateController.dispose();
@@ -65,7 +66,6 @@ class _CaptureScreenState extends State<CaptureScreen> with TickerProviderStateM
     _tvaController.dispose();
     _ttcController.dispose();
     _ibanController.dispose();
-    _aiController.dispose();
     super.dispose();
   }
 
@@ -76,143 +76,119 @@ class _CaptureScreenState extends State<CaptureScreen> with TickerProviderStateM
     return double.tryParse(val.toString()) ?? 0.0;
   }
 
-  // Camera snap simulation
-  Future<void> _captureImage(ImageSource source) async {
+  Future<void> _processFile(String filePath) async {
+    setState(() {
+      _isProcessing = true;
+      _ocrResult = null;
+    });
+
     try {
-      final XFile? image = await _picker.pickImage(
-        source: source,
-        imageQuality: 90,
-      );
+      final result = await ApiService.uploadInvoice(filePath);
+      final extractedData = result['extracted_data'] ?? result;
 
-      if (image != null) {
-        setState(() {
-          _imageFile = image;
-          _isProcessing = true;
-          _statusMessage = 'Analyse OCR & vérification fraude en cours...';
-          _ocrResult = null;
-        });
+      setState(() {
+        _ocrResult = Invoice(
+          id: 0,
+          numero: extractedData['numero']?.toString() ?? 'N/A',
+          fournisseur: extractedData['fournisseur']?.toString() ?? 'N/A',
+          dateFacture: DateTime.tryParse(extractedData['date_facture']?.toString() ?? '') ?? DateTime.now(),
+          dateReception: DateTime.now(),
+          devise: extractedData['devise']?.toString() ?? 'TND',
+          montantHt: _toDouble(extractedData['ht']),
+          tva: _toDouble(extractedData['tva']),
+          montantTtc: _toDouble(extractedData['ttc']),
+          iban: extractedData['iban']?.toString() ?? '',
+          statut: 'nouveau',
+          fraudScore: _toDouble(extractedData['fraude_score']),
+          confidenceScore: _toDouble(extractedData['confiance'] ?? 0.95),
+        );
+        
+        _fournisseurController.text = _ocrResult!.fournisseur;
+        _numeroController.text = _ocrResult!.numero;
+        _dateController.text = '${_ocrResult!.dateFacture.day.toString().padLeft(2, '0')}/${_ocrResult!.dateFacture.month.toString().padLeft(2, '0')}/${_ocrResult!.dateFacture.year}';
+        _htController.text = _ocrResult!.montantHt.toStringAsFixed(2);
+        _tvaController.text = _ocrResult!.tva.toStringAsFixed(2);
+        _ttcController.text = _ocrResult!.montantTtc.toStringAsFixed(2);
+        _ibanController.text = _ocrResult!.iban;
 
-        // Trigger upload to backend
-        try {
-          final result = await ApiService.uploadInvoice(image.path);
-          // The upload endpoint returns extracted_data from OCR
-          final extractedData = result['extracted_data'] ?? result;
-          setState(() {
-            _ocrResult = Invoice(
-              id: 0,
-              numero: extractedData['numero']?.toString() ?? 'N/A',
-              fournisseur: extractedData['fournisseur']?.toString() ?? 'N/A',
-              dateFacture: DateTime.tryParse(extractedData['date_facture']?.toString() ?? '') ?? DateTime.now(),
-              dateReception: DateTime.now(),
-              devise: extractedData['devise']?.toString() ?? 'TND',
-              montantHt: _toDouble(extractedData['ht']),
-              tva: _toDouble(extractedData['tva']),
-              montantTtc: _toDouble(extractedData['ttc']),
-              iban: extractedData['iban']?.toString() ?? '',
-              statut: 'nouveau',
-              fraudScore: _toDouble(extractedData['fraude_score']),
-              confidenceScore: _toDouble(extractedData['confiance'] ?? 0.95),
-            );
-            _isProcessing = false;
-            _statusMessage = null;
-            
-            // Populate form
-            _fournisseurController.text = _ocrResult!.fournisseur;
-            _numeroController.text = _ocrResult!.numero;
-            _dateController.text = '${_ocrResult!.dateFacture.day.toString().padLeft(2, '0')}/${_ocrResult!.dateFacture.month.toString().padLeft(2, '0')}/${_ocrResult!.dateFacture.year}';
-            _htController.text = _ocrResult!.montantHt.toStringAsFixed(2);
-            _tvaController.text = _ocrResult!.tva.toStringAsFixed(2);
-            _ttcController.text = _ocrResult!.montantTtc.toStringAsFixed(2);
-            _ibanController.text = _ocrResult!.iban;
-          });
-        } catch (e) {
-          // Fallback to simulate a clean result locally for testing if backend throws error
-          _simulateMockOcr();
-        }
-      }
+        _isProcessing = false;
+      });
+
+      _showExtractionResult();
     } catch (e) {
+      setState(() => _isProcessing = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur d\'accès caméra/galerie : $e')),
+        SnackBar(content: Text('Erreur de traitement: $e')),
       );
     }
   }
 
-  // Simulation fallback in case backend is offline
-  void _simulateMockOcr() {
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-          _statusMessage = null;
-          
-          _ocrResult = Invoice(
-            id: 999,
-            numero: 'INV-2026-0881',
-            fournisseur: 'Amazon Business FR',
-            dateFacture: DateTime.now().subtract(const Duration(days: 3)),
-            dateReception: DateTime.now(),
-            devise: 'EUR',
-            montantHt: 250.00,
-            tva: 50.00,
-            montantTtc: 300.00,
-            iban: 'FR7630006000011234567890188',
-            statut: 'nouveau',
-            fraudScore: 12.0,
-            confidenceScore: 0.95,
-          );
-
-          // Populate form
-          _fournisseurController.text = 'Amazon Business FR';
-          _numeroController.text = 'INV-2026-0881';
-          _dateController.text = '11/07/2026';
-          _htController.text = '250.00';
-          _tvaController.text = '50.00';
-          _ttcController.text = '300.00';
-          _ibanController.text = 'FR7630006000011234567890188';
-        });
-      }
-    });
+  Future<void> _handleCameraCapture() async {
+    final XFile? file = await _imagePicker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 90,
+    );
+    if (file != null && mounted) {
+      setState(() => _capturedFilePath = file.path);
+      _processFile(file.path);
+    }
   }
 
-  // Submit the corrected details back to database
-  void _submitInvoice() async {
-    if (_formKey.currentState!.validate() && _ocrResult != null) {
-      setState(() {
-        _isProcessing = true;
-        _statusMessage = 'Soumission de la facture validée...';
-      });
+  Future<void> _handleGalleryPick() async {
+    final XFile? file = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 90,
+    );
+    if (file != null && mounted) {
+      setState(() => _capturedFilePath = file.path);
+      _processFile(file.path);
+    }
+  }
 
+  Future<void> _handlePdfImport() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (result != null && mounted) {
+      final path = result.files.first.path;
+      if (path != null) {
+        setState(() => _capturedFilePath = path);
+        _processFile(path);
+      }
+    }
+  }
+
+  void _saveInvoice() async {
+    if (_formKey.currentState!.validate()) {
       try {
-        final double ht = double.parse(_htController.text);
-        final double tva = double.parse(_tvaController.text);
-        final double ttc = double.parse(_ttcController.text);
-        
+        final double ht = double.tryParse(_htController.text) ?? 0.0;
+        final double tva = double.tryParse(_tvaController.text) ?? 0.0;
+        final double ttc = double.tryParse(_ttcController.text) ?? 0.0;
+
         await ApiService.createFacture({
           'fournisseur': _fournisseurController.text,
           'numero': _numeroController.text,
+          'date_facture': _ocrResult?.dateFacture.toIso8601String().split('T')[0] ?? '',
           'ht': ht,
           'tva': tva,
           'ttc': ttc,
           'iban': _ibanController.text,
-          'devise': _ocrResult!.devise,
+          'devise': _ocrResult?.devise ?? 'TND',
         });
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              backgroundColor: Color(0xFF0D9488),
-              content: Text('Facture soumise avec succès ! Moteur OCR & Fraude mis à jour.', style: TextStyle(color: Colors.white)),
+              backgroundColor: AppTheme.accentGreen,
+              content: Text('Facture sauvegardée avec succès !', style: TextStyle(color: Colors.white)),
             ),
           );
           _resetState();
         }
       } catch (e) {
-        setState(() {
-          _isProcessing = false;
-          _statusMessage = null;
-        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de la validation : $e')),
+          SnackBar(content: Text('Erreur lors de la validation: $e')),
         );
       }
     }
@@ -220,437 +196,236 @@ class _CaptureScreenState extends State<CaptureScreen> with TickerProviderStateM
 
   void _resetState() {
     setState(() {
-      _imageFile = null;
-      _isProcessing = false;
-      _statusMessage = null;
+      _capturedFilePath = null;
       _ocrResult = null;
-      _activeField = '';
+      _fournisseurController.clear();
+      _numeroController.clear();
+      _dateController.clear();
+      _htController.clear();
+      _tvaController.clear();
+      _ttcController.clear();
+      _ibanController.clear();
     });
+  }
+
+  void _showExtractionResult() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _ExtractionResultSheet(
+        ocrResult: _ocrResult!,
+        onSave: () {
+          Navigator.pop(context);
+          _saveInvoice();
+        },
+        onEdit: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Capture de facture'),
-        centerTitle: true,
-        actions: _imageFile != null
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.refresh_rounded, color: Color(0xFFD94040)),
-                  onPressed: _resetState,
-                )
-              ]
-            : null,
-      ),
+      backgroundColor: AppTheme.backgroundLight,
       body: Stack(
         children: [
-          _imageFile == null
-              ? _buildCaptureSourceSelector()
-              : _buildOcrReviewEditor(),
-          if (_isProcessing)
-            Positioned.fill(
-              child: AiProcessingOverlay(controller: _aiController),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCaptureSourceSelector() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-           children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFE5E7EB)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).primaryColor.withOpacity(0.08),
-                    blurRadius: 30,
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.document_scanner_outlined,
-                size: 60,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Prêt à scanner',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Color(0xFF14251F)),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Prenez en photo une facture papier ou importez-en une depuis votre galerie.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
-            ),
-            const SizedBox(height: 40),
-            
-            // Camera capture button
-            ElevatedButton.icon(
-              onPressed: () => _captureImage(ImageSource.camera),
-              icon: const Icon(Icons.camera_alt_rounded),
-              label: const Text('Prendre une photo'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 54),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 0,
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Gallery import button
-            OutlinedButton.icon(
-              onPressed: () => _captureImage(ImageSource.gallery),
-              icon: const Icon(Icons.photo_library_rounded),
-              label: const Text('Importer de la galerie'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Theme.of(context).primaryColor,
-                side: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
-                minimumSize: const Size(double.infinity, 54),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const LaserScannerAnimation(),
-            const SizedBox(height: 32),
-            Text(
-              _statusMessage ?? 'Traitement en cours...',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                fontFamily: 'Outfit',
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Running multi-tier OCR models',
-              style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOcrReviewEditor() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Bounding Box Image Preview Header
-          const Text(
-            'Aperçu du document & zones OCR',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit', color: Color(0xFF111827)),
-          ),
-          const SizedBox(height: 8),
-
-          // Interactive Bounding Box Stack View
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final double containerHeight = 240;
-              final double scaleX = constraints.maxWidth;
-              final double scaleY = containerHeight;
-
-              return Container(
-                height: containerHeight,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                ),
-                child: Stack(
-                  children: [
-                    // Mock Invoice template or loaded image
-                    Positioned.fill(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: _imageFile != null
-                            ? Image.file(
-                                File(_imageFile!.path),
-                                fit: BoxFit.contain,
-                              )
-                            : Container(color: Colors.white),
-                      ),
-                    ),
-
-                    // Red bounding box indicator highlighting active field coordinates
-                    if (_activeField.isNotEmpty && _boxCoords.containsKey(_activeField))
-                      Positioned(
-                        left: _boxCoords[_activeField]!['left']! * scaleX,
-                        top: _boxCoords[_activeField]!['top']! * scaleY,
-                        width: _boxCoords[_activeField]!['width']! * scaleX,
-                        height: _boxCoords[_activeField]!['height']! * scaleY,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444).withValues(alpha: 0.15),
-                            border: Border.all(
-                              color: const Color(0xFFEF4444),
-                              width: 2.0,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-          
-          if (_activeField.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0, left: 4.0),
-              child: Text(
-                'Focus OCR Zone : $_activeField',
-                style: const TextStyle(
-                  color: Color(0xFFEF4444),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          
-          const SizedBox(height: 24),
-          
-          // Form Fields Review Section
-          const Text(
-            'Informations Extraites',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit', color: Color(0xFF111827)),
-          ),
-          const SizedBox(height: 8),
-
+          // Background – solid cream, no gradient needed
           Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-            ),
-            child: Form(
-              key: _formKey,
+            color: AppTheme.backgroundLight,
+          ),
+
+          // Main Content
+          SafeArea(
+            child: FadeTransition(
+              opacity: CurvedAnimation(
+                parent: _entranceController,
+                curve: Curves.easeOutCubic,
+              ),
               child: Column(
                 children: [
-                  _buildOcrTextField('fournisseur', 'Fournisseur', _fournisseurController, Icons.business_outlined),
-                  const SizedBox(height: 12),
-                  _buildOcrTextField('numero', 'Numéro de Facture', _numeroController, Icons.receipt_outlined),
-                  const SizedBox(height: 12),
-                  _buildOcrTextField('date', 'Date Facture', _dateController, Icons.calendar_today_outlined),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(child: _buildOcrTextField('ht', 'Montant HT', _htController, Icons.money_off_rounded)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildOcrTextField('tva', 'TVA', _tvaController, Icons.percent_rounded)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildOcrTextField('ttc', 'Montant TTC', _ttcController, Icons.monetization_on_outlined),
-                  const SizedBox(height: 12),
-                  _buildOcrTextField('iban', 'IBAN', _ibanController, Icons.account_balance_outlined),
+                  _buildTopBar(),
+                  const SizedBox(height: 16),
+                  
+                  if (_ocrResult == null) ...[
+                    _buildModeSelector(),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _buildCaptureArea(),
+                      ),
+                    ),
+                    _buildBottomBar(),
+                  ] else ...[
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: _buildReviewEditor(),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
           ),
-          
-          const SizedBox(height: 24),
 
-          // Submit action buttons
-          ElevatedButton(
-            onPressed: _submitInvoice,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 54),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 0,
-            ),
-            child: const Text('Confirmer & Soumettre la Facture', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ),
-          const SizedBox(height: 12),
-          TextButton(
-            onPressed: _resetState,
-            child: const Text('Annuler', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
-          ),
+          // AI Processing overlay
+          if (_isProcessing)
+            AiProcessingOverlay(controller: _processingController),
         ],
       ),
     );
   }
 
-  // Build fields that triggers highlight bounding box on focus
-  Widget _buildOcrTextField(
-    String fieldId, 
-    String label, 
-    TextEditingController controller,
-    IconData icon,
-  ) {
-    return Focus(
-      onFocusChange: (hasFocus) {
-        if (hasFocus) {
-          setState(() {
-            _activeField = fieldId;
-          });
-        }
-      },
-      child: TextFormField(
-        controller: controller,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827)),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: Color(0xFF6B7280)),
-          prefixIcon: Icon(icon, size: 20, color: const Color(0xFF9CA3AF)),
-          fillColor: const Color(0xFFF9FAFB),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-        ),
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return 'Ce champ est obligatoire';
-          }
-          return null;
-        },
-      ),
-    );
-  }
-}
-
-class LaserScannerAnimation extends StatefulWidget {
-  const LaserScannerAnimation({Key? key}) : super(key: key);
-
-  @override
-  State<LaserScannerAnimation> createState() => _LaserScannerAnimationState();
-}
-
-class _LaserScannerAnimationState extends State<LaserScannerAnimation> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 220,
-      height: 280,
-      decoration: BoxDecoration(
-        color: const Color(0xFF14251F),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF14251F).withOpacity(0.3), width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF14251F).withOpacity(0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Stack(
+  Widget _buildTopBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Row(
         children: [
-          // Simulated document content outline
-          Center(
-            child: Icon(
-              Icons.receipt_long_rounded,
-              size: 80,
-              color: Colors.white.withOpacity(0.15),
+          if (_ocrResult != null)
+            GestureDetector(
+              onTap: _resetState,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceCard,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.cardBorder),
+                ),
+                child: const Icon(Icons.arrow_back_ios_new, color: AppTheme.textPrimary, size: 18),
+              ),
+            ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _ocrResult == null ? 'Capture Invoice' : 'Review OCR Fields',
+              style: GoogleFonts.fraunces(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                fontStyle: FontStyle.italic,
+                color: AppTheme.textPrimary,
+              ),
             ),
           ),
-          // Frame corners
-          ..._buildCorners(),
-          // Sweeping Laser Line
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return Positioned(
-                top: 15 + (_controller.value * 240),
-                left: 15,
-                right: 15,
-                child: Container(
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD2FA5A),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFD2FA5A).withOpacity(0.8),
-                        blurRadius: 10,
-                        spreadRadius: 1.5,
-                      ),
-                    ],
-                  ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceCard,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.cardBorder),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.help_outline, color: AppTheme.textSecondary, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  'Help',
+                  style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.textSecondary),
                 ),
-              );
-            },
+              ],
+            ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildModeSelector() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.cardBorder),
+      ),
+      child: Row(
+        children: [
+          _buildModeTab('Camera', CaptureMode.camera),
+          _buildModeTab('Gallery', CaptureMode.gallery),
+          _buildModeTab('PDF', CaptureMode.pdf),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeTab(String label, CaptureMode mode) {
+    final active = _selectedMode == mode;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedMode = mode;
+          });
+          if (mode == CaptureMode.gallery) _handleGalleryPick();
+          if (mode == CaptureMode.pdf) _handlePdfImport();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: active ? AppTheme.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.dmSans(
+                fontSize: 13,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                color: active ? Colors.white : AppTheme.textSecondary,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCaptureArea() {
+    if (_selectedMode == CaptureMode.camera) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppTheme.cardBorder, width: 1.5),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.camera_alt_outlined, color: AppTheme.textSecondary.withOpacity(0.4), size: 64),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Position invoice in center',
+                    style: GoogleFonts.dmSans(color: AppTheme.textSecondary, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            ..._buildCorners(),
+          ],
+        ),
+      );
+    } else {
+      return _buildDropZone();
+    }
   }
 
   List<Widget> _buildCorners() {
-    const double size = 16;
-    const double thickness = 2.5;
-    const Color color = Color(0xFFD2FA5A);
+    const double size = 24;
+    const double thickness = 3.0;
+    const Color color = AppTheme.primary;
 
     return [
-      // Top Left
       Positioned(
-        top: 15,
-        left: 15,
+        top: 20,
+        left: 20,
         child: Container(
           width: size,
           height: size,
@@ -662,10 +437,9 @@ class _LaserScannerAnimationState extends State<LaserScannerAnimation> with Sing
           ),
         ),
       ),
-      // Top Right
       Positioned(
-        top: 15,
-        right: 15,
+        top: 20,
+        right: 20,
         child: Container(
           width: size,
           height: size,
@@ -677,10 +451,9 @@ class _LaserScannerAnimationState extends State<LaserScannerAnimation> with Sing
           ),
         ),
       ),
-      // Bottom Left
       Positioned(
-        bottom: 15,
-        left: 15,
+        bottom: 20,
+        left: 20,
         child: Container(
           width: size,
           height: size,
@@ -692,10 +465,9 @@ class _LaserScannerAnimationState extends State<LaserScannerAnimation> with Sing
           ),
         ),
       ),
-      // Bottom Right
       Positioned(
-        bottom: 15,
-        right: 15,
+        bottom: 20,
+        right: 20,
         child: Container(
           width: size,
           height: size,
@@ -709,5 +481,449 @@ class _LaserScannerAnimationState extends State<LaserScannerAnimation> with Sing
       ),
     ];
   }
+
+  Widget _buildDropZone() {
+    final isPdf = _selectedMode == CaptureMode.pdf;
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.cardBorder, width: 1.5),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.08),
+              shape: BoxShape.circle,
+              border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
+            ),
+            child: Center(
+              child: Icon(
+                isPdf ? Icons.picture_as_pdf : Icons.photo_library,
+                color: AppTheme.primary,
+                size: 36,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            isPdf ? 'Import PDF Invoice' : 'Select from Gallery',
+            style: GoogleFonts.fraunces(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              fontStyle: FontStyle.italic,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isPdf
+                ? 'Tap below to browse PDF files\nfrom your device'
+                : 'Tap below to choose an invoice\nimage from your gallery',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              fontSize: 13,
+              color: AppTheme.textSecondary,
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 32),
+          GestureDetector(
+            onTap: isPdf ? _handlePdfImport : _handleGalleryPick,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              decoration: BoxDecoration(
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withOpacity(0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(isPdf ? Icons.folder_open : Icons.collections, color: Colors.white, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    isPdf ? 'Browse Files' : 'Open Gallery',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceCard,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppTheme.cardBorder),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.lightbulb_outline, color: AppTheme.warning, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Ensure invoice is well-lit and flat',
+                      style: GoogleFonts.dmSans(fontSize: 11, color: AppTheme.textSecondary),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_selectedMode == CaptureMode.camera) ...[
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: _handleCameraCapture,
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.primary, AppTheme.accent],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withOpacity(0.4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(Icons.camera_alt, color: Colors.white, size: 24),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewEditor() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceCard,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.cardBorder),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: AppTheme.primary, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Modify the OCR fields below if needed before validating saving.',
+                    style: GoogleFonts.dmSans(color: AppTheme.textSecondary, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          _buildTextField('Fournisseur / Vendor', _fournisseurController, Icons.business),
+          const SizedBox(height: 14),
+          _buildTextField('Numéro de facture', _numeroController, Icons.tag),
+          const SizedBox(height: 14),
+          _buildTextField('Date de facture', _dateController, Icons.calendar_today),
+          const SizedBox(height: 14),
+          _buildTextField('Montant HT', _htController, Icons.money, keyboardType: TextInputType.number),
+          const SizedBox(height: 14),
+          _buildTextField('Montant TVA', _tvaController, Icons.percent, keyboardType: TextInputType.number),
+          const SizedBox(height: 14),
+          _buildTextField('Montant TTC', _ttcController, Icons.payments, keyboardType: TextInputType.number),
+          const SizedBox(height: 14),
+          _buildTextField('IBAN', _ibanController, Icons.credit_card),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: _saveInvoice,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: Text('Save Invoice to Database', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 15)),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: _resetState,
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppTheme.cardBorder),
+              foregroundColor: AppTheme.textPrimary,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: Text(
+              'Reset and Scan Again',
+              style: GoogleFonts.dmSans(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {TextInputType keyboardType = TextInputType.text}) {
+    return TextFormField(
+      controller: controller,
+      style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.dmSans(color: AppTheme.textSecondary),
+        prefixIcon: Icon(icon, size: 20, color: AppTheme.textMuted),
+        fillColor: AppTheme.surfaceCard,
+        filled: true,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.cardBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.cardBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return 'This field is required';
+        }
+        return null;
+      },
+    );
+  }
 }
 
+class _ExtractionResultSheet extends StatelessWidget {
+  final Invoice ocrResult;
+  final VoidCallback onSave;
+  final VoidCallback onEdit;
+
+  const _ExtractionResultSheet({
+    Key? key,
+    required this.ocrResult,
+    required this.onSave,
+    required this.onEdit,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceLight,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: const Border(
+              top: BorderSide(color: AppTheme.cardBorder, width: 1),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardBorder,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentGreen.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: AppTheme.accentGreen,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'AI Extraction Complete',
+                          style: GoogleFonts.fraunces(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            fontStyle: FontStyle.italic,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          'Confiance: ${(ocrResult.confidenceScore * 100).toInt()}%',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 12,
+                            color: AppTheme.accentGreen,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _extractedField('Invoice #', ocrResult.numero),
+              _extractedField('Vendor', ocrResult.fournisseur),
+              _extractedField('Amount', '${ocrResult.montantTtc.toStringAsFixed(2)} ${ocrResult.devise}'),
+              _extractedField('Date', '${ocrResult.dateFacture.day}/${ocrResult.dateFacture.month}/${ocrResult.dateFacture.year}'),
+              _extractedField('IBAN', ocrResult.iban.isNotEmpty ? ocrResult.iban : 'Not found'),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: onEdit,
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppTheme.cardBorder),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        'Edit Fields',
+                        style: GoogleFonts.dmSans(
+                          color: AppTheme.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: onSave,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accent,
+                        foregroundColor: AppTheme.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        'Save Invoice',
+                        style: GoogleFonts.dmSans(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _extractedField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              label,
+              style: GoogleFonts.dmSans(
+                fontSize: 12,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: GoogleFonts.dmSans(
+                fontSize: 13,
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: AppTheme.accentGreen.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.check_rounded,
+                size: 12,
+                color: AppTheme.accentGreen,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -38,7 +39,14 @@ from fraud_detector import detect_fraud
 # Création des tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Secure Invoice AI API", version="1.0.0")
+# Initialisation de la BDD au démarrage via lifespan
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    os.makedirs("uploads", exist_ok=True)
+    yield
+
+app = FastAPI(title="Secure Invoice AI API", version="1.0.0", lifespan=lifespan)
 
 # CORS middleware pour le frontend
 app.add_middleware(
@@ -48,13 +56,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialisation de la BDD au démarrage
-@app.on_event("startup")
-def on_startup():
-    init_db()
-    # Ensure uploads directory exists
-    os.makedirs("uploads", exist_ok=True)
 
 # Dependency
 def get_db():

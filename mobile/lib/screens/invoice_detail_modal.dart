@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/invoice.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../theme/app_theme.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/risk_indicator.dart';
 
@@ -11,10 +13,10 @@ class InvoiceDetailModal extends StatefulWidget {
   final VoidCallback onActionComplete;
 
   const InvoiceDetailModal({
-    Key? key,
+    super.key,
     required this.invoice,
     required this.onActionComplete,
-  }) : super(key: key);
+  });
 
   static void show(BuildContext context, Invoice invoice, {required VoidCallback onActionComplete}) {
     showModalBottomSheet(
@@ -36,7 +38,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
   late Invoice _invoice;
   bool _isLoading = false;
   Map<String, dynamic>? _user;
-  
+
   final _commentController = TextEditingController();
 
   @override
@@ -90,8 +92,13 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: const Color(0xFF0D9488),
-            content: Text('Facture mise à jour avec succès : $newStatus', style: const TextStyle(color: Colors.white)),
+            backgroundColor: AppTheme.primary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            content: Text(
+              'Facture mise à jour avec succès : $newStatus',
+              style: GoogleFonts.dmSans(color: Colors.white, fontWeight: FontWeight.w600),
+            ),
           ),
         );
       }
@@ -99,9 +106,19 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur : $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            content: Text(
+              'Erreur : $e',
+              style: GoogleFonts.dmSans(color: Colors.white),
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -112,7 +129,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.surfaceLight,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
@@ -124,7 +141,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
       child: FractionallySizedBox(
         heightFactor: 0.8,
         child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor))
+            ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
             : SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -135,7 +152,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         width: 40,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE5E7EB),
+                          color: AppTheme.cardBorder,
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
@@ -153,19 +170,19 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                             children: [
                               Text(
                                 _invoice.fournisseur,
-                                style: const TextStyle(
+                                style: GoogleFonts.fraunces(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w800,
-                                  fontFamily: 'Outfit',
-                                  color: Color(0xFF111827),
+                                  fontStyle: FontStyle.italic,
+                                  color: AppTheme.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'N° ${_invoice.numero}',
-                                style: const TextStyle(
+                                style: GoogleFonts.dmSans(
                                   fontSize: 14,
-                                  color: Color(0xFF6B7280),
+                                  color: AppTheme.textSecondary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -175,7 +192,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         StatusBadge(status: _invoice.statut),
                       ],
                     ),
-                    const Divider(height: 32, color: Color(0xFFF3F4F6)),
+                    Divider(height: 32, color: AppTheme.cardBorder),
 
                     // Montants Section
                     Row(
@@ -186,7 +203,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         _buildAmountBlock('Total TTC', _invoice.montantTtc, _invoice.devise, isPrimary: true),
                       ],
                     ),
-                    const Divider(height: 32, color: Color(0xFFF3F4F6)),
+                    Divider(height: 32, color: AppTheme.cardBorder),
 
                     // IBAN & Date details
                     _buildDetailRow('IBAN Extrait', _invoice.iban.isNotEmpty ? _invoice.iban : 'Aucun'),
@@ -200,64 +217,73 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                       'Reçue le',
                       '${_invoice.dateReception.day.toString().padLeft(2, '0')}/${_invoice.dateReception.month.toString().padLeft(2, '0')}/${_invoice.dateReception.year}',
                     ),
-                    const Divider(height: 32, color: Color(0xFFF3F4F6)),
+                    Divider(height: 32, color: AppTheme.cardBorder),
 
                     // Risk indicators
                     RiskIndicator(score: _invoice.fraudScore),
-                    
+
                     // Fraud logs details
                     if (_invoice.fraudeAlertes != null && _invoice.fraudeAlertes!.isNotEmpty) ...[
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         'Indicateurs de fraude détectés :',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF6B7280)),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textSecondary,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       ..._invoice.fraudeAlertes!.map((flag) => _buildFraudFlagItem(flag)),
                     ],
-                    
-                    const Divider(height: 32, color: Color(0xFFF3F4F6)),
+
+                    Divider(height: 32, color: AppTheme.cardBorder),
 
                     // Compliance rules checklist
-                    const Text(
+                    Text(
                       'Vérifications de Conformité',
-                      style: TextStyle(
+                      style: GoogleFonts.fraunces(
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
-                        fontFamily: 'Outfit',
-                        color: Color(0xFF111827),
+                        fontStyle: FontStyle.italic,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 10),
                     _buildComplianceSection(),
-                    const Divider(height: 32, color: Color(0xFFF3F4F6)),
+                    Divider(height: 32, color: AppTheme.cardBorder),
 
                     // Action controls for Reviewers
                     if (showActions && isPending) ...[
-                      const Text(
+                      Text(
                         'Décision & Commentaires',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF111827)),
+                        style: GoogleFonts.dmSans(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: AppTheme.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _commentController,
                         maxLines: 2,
-                        style: const TextStyle(color: Color(0xFF111827)),
+                        style: GoogleFonts.dmSans(color: AppTheme.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Saisissez un commentaire ou motif de rejet...',
-                          hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-                          fillColor: const Color(0xFFF9FAFB),
+                          hintStyle: GoogleFonts.dmSans(color: AppTheme.textMuted),
+                          fillColor: AppTheme.surfaceCard,
+                          filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                            borderSide: const BorderSide(color: AppTheme.cardBorder),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                            borderSide: const BorderSide(color: AppTheme.cardBorder),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
+                            borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
                           ),
                           contentPadding: const EdgeInsets.all(12),
                         ),
@@ -269,26 +295,32 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                             child: OutlinedButton(
                               onPressed: () => _handleStatusChange('rejete'),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFFEF4444),
-                                side: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                                foregroundColor: AppTheme.error,
+                                side: const BorderSide(color: AppTheme.error, width: 1.5),
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               ),
-                              child: const Text('Rejeter la facture', style: TextStyle(fontWeight: FontWeight.bold)),
+                              child: Text(
+                                'Rejeter la facture',
+                                style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: ElevatedButton(
-                              onPressed: () => _handleStatusChange('valide'),
+                              onPressed: () => _handleStatusChange('validee'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF10B981),
+                                backgroundColor: AppTheme.accentGreen,
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                 elevation: 0,
                               ),
-                              child: const Text('Valider la facture', style: TextStyle(fontWeight: FontWeight.bold)),
+                              child: Text(
+                                'Valider la facture',
+                                style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                         ],
@@ -298,13 +330,16 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                       ElevatedButton(
                         onPressed: () => Navigator.pop(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
+                          backgroundColor: AppTheme.primary,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 0,
                         ),
-                        child: const Text('Fermer', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: Text(
+                          'Fermer',
+                          style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ],
@@ -320,8 +355,8 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF6B7280),
+          style: GoogleFonts.dmSans(
+            color: AppTheme.textSecondary,
             fontSize: 11,
             fontWeight: FontWeight.w500,
           ),
@@ -329,11 +364,10 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
         const SizedBox(height: 4),
         Text(
           '${value.toStringAsFixed(2)} $currencySymbol',
-          style: TextStyle(
+          style: GoogleFonts.dmSans(
             fontSize: isPrimary ? 18 : 14,
             fontWeight: isPrimary ? FontWeight.w800 : FontWeight.bold,
-            color: isPrimary ? Theme.of(context).primaryColor : const Color(0xFF14251F),
-            fontFamily: 'Outfit',
+            color: isPrimary ? AppTheme.primary : AppTheme.textPrimary,
           ),
         ),
       ],
@@ -348,8 +382,8 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
           width: 100,
           child: Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF6B7280),
+            style: GoogleFonts.dmSans(
+              color: AppTheme.textSecondary,
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
@@ -358,10 +392,10 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
+            style: GoogleFonts.dmSans(
               fontWeight: FontWeight.bold,
               fontSize: 13,
-              color: Color(0xFF111827),
+              color: AppTheme.textPrimary,
             ),
           ),
         ),
@@ -372,14 +406,14 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
   Widget _buildFraudFlagItem(dynamic flag) {
     final String description = flag['description'] ?? '';
     final int severity = flag['severity'] ?? 0;
-    
-    Color severityColor = Colors.grey;
+
+    Color severityColor;
     if (severity >= 80) {
-      severityColor = Colors.red;
+      severityColor = AppTheme.error;
     } else if (severity >= 40) {
-      severityColor = Colors.orange;
+      severityColor = AppTheme.warning;
     } else {
-      severityColor = Colors.amber;
+      severityColor = const Color(0xFFEA580C);
     }
 
     return Padding(
@@ -392,9 +426,9 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
           Expanded(
             child: Text(
               description,
-              style: const TextStyle(
+              style: GoogleFonts.dmSans(
                 fontSize: 11,
-                color: Color(0xFF374151),
+                color: AppTheme.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -408,7 +442,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
     // Try to parse conformite_details JSON string from the backend
     if (_invoice.conformiteDetails != null) {
       try {
-        final dynamic parsed = _invoice.conformiteDetails is String 
+        final dynamic parsed = _invoice.conformiteDetails is String
             ? jsonDecode(_invoice.conformiteDetails!)
             : _invoice.conformiteDetails;
         if (parsed is List) {
@@ -425,7 +459,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                   children: [
                     Icon(
                       passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                      color: passed ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                      color: passed ? AppTheme.accentGreen : AppTheme.error,
                       size: 18,
                     ),
                     const SizedBox(width: 8),
@@ -435,18 +469,18 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         children: [
                           Text(
                             ruleName,
-                            style: const TextStyle(
+                            style: GoogleFonts.dmSans(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF111827),
+                              color: AppTheme.textPrimary,
                             ),
                           ),
                           if (message.isNotEmpty)
                             Text(
                               message,
-                              style: TextStyle(
+                              style: GoogleFonts.dmSans(
                                 fontSize: 11,
-                                color: passed ? const Color(0xFF4B5563) : const Color(0xFFEF4444),
+                                color: passed ? AppTheme.textSecondary : AppTheme.error,
                               ),
                             ),
                         ],
@@ -481,7 +515,7 @@ class ComplianceItem extends StatelessWidget {
   final String title;
   final bool passed;
 
-  const ComplianceItem({Key? key, required this.title, required this.passed}) : super(key: key);
+  const ComplianceItem({super.key, required this.title, required this.passed});
 
   @override
   Widget build(BuildContext context) {
@@ -491,17 +525,17 @@ class ComplianceItem extends StatelessWidget {
         children: [
           Icon(
             passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
-            color: passed ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+            color: passed ? AppTheme.accentGreen : AppTheme.error,
             size: 18,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
+              style: GoogleFonts.dmSans(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
+                color: AppTheme.textPrimary,
               ),
             ),
           ),
