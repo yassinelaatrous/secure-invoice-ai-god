@@ -1,46 +1,151 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital,wght@0,400;1,400&family=Inter+Tight:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 16px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-lime: var(--lime);
+  --color-ink: var(--ink);
+  --color-cream: var(--cream);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
 
 :root {
+  --radius: 1.25rem;
+
   /* Modern Peak White Theme - Poital.flow inspired */
-  --bg-color: #eaeaee;
-  --bg-gradient: radial-gradient(circle at top left, #fbfbfd 0%, #eaeaee 100%);
-  --card-bg: #ffffff;
-  --card-border: #e5e5eb;
+  --bg-color: oklch(0.965 0.014 95);          /* warm cream */
+  --bg-gradient: radial-gradient(circle at 20% 10%, oklch(0.86 0.18 128 / 0.18), transparent 45%), radial-gradient(circle at 90% 90%, oklch(0.28 0.06 155 / 0.1), transparent 50%);
+  --card-bg: oklch(0.985 0.008 95);
+  --card-border: oklch(0.22 0.03 155 / 0.12);
   
-  --text-primary: #12100f;
-  --text-secondary: #5f6168;
-  --text-muted: #8f9199;
+  --background: oklch(0.965 0.014 95);
+  --foreground: oklch(0.22 0.03 155);
+  --card: oklch(0.985 0.008 95);
+  --card-foreground: oklch(0.22 0.03 155);
+  --primary: oklch(0.28 0.06 155);              /* deep forest */
+  --primary-foreground: oklch(0.97 0.02 95);
+  --secondary: oklch(0.92 0.02 95);
+  --secondary-foreground: oklch(0.22 0.03 155);
+  --muted: oklch(0.93 0.015 95);
+  --muted-foreground: oklch(0.45 0.02 155);
+  --accent: oklch(0.88 0.14 130);               /* electric lime accent */
+  --accent-foreground: oklch(0.22 0.03 155);
+  --lime: oklch(0.86 0.18 128);
+  --ink: oklch(0.18 0.03 155);
+  --cream: oklch(0.965 0.014 95);
+  --destructive: oklch(0.55 0.2 27);
+  --border: oklch(0.22 0.03 155 / 0.12);
+  --input: oklch(0.22 0.03 155 / 0.12);
+  --ring: oklch(0.28 0.06 155);
+
+  --text-primary: oklch(0.22 0.03 155);
+  --text-secondary: oklch(0.45 0.02 155);
+  --text-muted: oklch(0.45 0.02 155 / 0.7);
   
   /* Brand Accents & Pastels matching reference */
-  --primary: #4f46e5;       /* Modern Indigo */
-  --primary-hover: #4338ca;
-  --secondary: #8b5cf6;     /* Purple */
-  --glow-orange: #f97316;   /* Orange */
-  --white-card: #ffffff;    /* Card base */
+  --primary-hover: oklch(0.18 0.03 155);
+  --glow-orange: oklch(0.86 0.18 128);   /* lime green as accent */
+  --white-card: oklch(0.985 0.008 95);
   
   /* Pastels for KPI metrics */
-  --kpi-charcoal: #2e2d31;
-  --kpi-mint: #e6f7f5;
-  --kpi-mint-text: #0d9488;
-  --kpi-pink: #fdf2f4;
-  --kpi-pink-text: #db2777;
-  --kpi-blue: #f0f5ff;
-  --kpi-blue-text: #2563eb;
+  --kpi-charcoal: oklch(0.28 0.06 155);
+  --kpi-mint: oklch(0.86 0.18 128 / 0.15);
+  --kpi-mint-text: oklch(0.28 0.06 155);
+  --kpi-pink: oklch(0.55 0.2 27 / 0.08);
+  --kpi-pink-text: oklch(0.55 0.2 27);
+  --kpi-blue: oklch(0.92 0.02 95);
+  --kpi-blue-text: oklch(0.22 0.03 155);
   
   /* Status */
-  --success: #10b981;
-  --error: #ef4444;
-  --warning: #f59e0b;
-  --info: #3b82f6;
+  --success: oklch(0.5 0.15 155);
+  --error: oklch(0.55 0.2 27);
+  --warning: oklch(0.8 0.12 80);
+  --info: oklch(0.65 0.12 250);
   
   --radius-sm: 8px;
   --radius: 16px;
   --radius-lg: 24px;
   
-  --font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-family: 'Inter Tight', 'Plus Jakarta Sans', sans-serif;
   --font-heading: 'Outfit', sans-serif;
   --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
   --shadow-glow: 0 0 40px rgba(79, 70, 229, 0.05);
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+  font-feature-settings: "ss01";
+}
+
+@utility font-mono-tight {
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+
+@utility grain-bg {
+  background-image:
+    radial-gradient(circle at 20% 10%, oklch(0.86 0.18 128 / 0.18), transparent 45%),
+    radial-gradient(circle at 90% 90%, oklch(0.28 0.06 155 / 0.1), transparent 50%);
+}
+
+@keyframes rise {
+  0% { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+@keyframes scan {
+  0% { transform: translateY(0); opacity: 0.9; }
+  50% { opacity: 1; }
+  100% { transform: translateY(calc(100vw - 4rem)); opacity: 0.9; }
+}
+
+@utility animate-scan {
+  animation: scan 1.8s ease-in-out infinite alternate;
+}
+
+@utility animate-rise {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@utility animate-shimmer {
+  background: linear-gradient(90deg, transparent, oklch(0.86 0.18 128 / 0.35), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
+}
+
+@utility animate-pulse-dot {
+  animation: pulse-dot 1.8s ease-in-out infinite;
 }
 
 /* Reset & Base */

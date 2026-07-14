@@ -2,8 +2,16 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { AuthContext } from '../context/AuthContext';
-import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
-import Logo from '../components/Logo';
+import {
+  ShieldCheck,
+  Fingerprint,
+  ArrowRight,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  KeyRound,
+} from 'lucide-react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -11,18 +19,17 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (eEmail: string, ePass: string) => {
     setError('');
     setLoading(true);
-
     try {
       const formData = new URLSearchParams();
-      formData.append('username', email);
-      formData.append('password', password);
+      formData.append('username', eEmail);
+      formData.append('password', ePass);
 
       const res = await api.post('/auth/login', formData, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
@@ -37,197 +44,213 @@ const LoginPage = () => {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleLogin(email, password);
+  };
+
+  const handleDemoAccess = (role: 'client' | 'comptable' | 'admin') => {
+    const creds = {
+      client: { email: 'client@demo.com', pass: 'client123' },
+      comptable: { email: 'comptable@demo.com', pass: 'comptable123' },
+      admin: { email: 'admin@demo.com', pass: 'admin123' },
+    }[role];
+    
+    setEmail(creds.email);
+    setPassword(creds.pass);
+    handleLogin(creds.email, creds.pass);
+  };
+
   return (
-    <div className="login-split-container">
-      {/* LEFT SIDE: Login Form */}
-      <div className="login-left-side">
-        {/* Brand Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Logo size={36} />
-          <span style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '1.4rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>CEO.IT</span>
-        </div>
+    <div className="relative min-h-screen bg-background grain-bg overflow-hidden flex flex-col justify-center">
+      {/* Ambient orbs */}
+      <div className="pointer-events-none absolute -top-40 -left-20 h-[420px] w-[420px] rounded-full bg-[oklch(0.86_0.18_128)] opacity-40 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-40 -right-20 h-[420px] w-[420px] rounded-full bg-[oklch(0.28_0.06_155)] opacity-25 blur-3xl" />
 
-        {/* Form Container */}
-        <div style={{ maxWidth: '400px', width: '100%', margin: 'auto 0' }}>
-          <div style={{ marginBottom: '2rem' }}>
-            <h1 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: '2.2rem', color: 'var(--text-primary)', marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>Welcome Back</h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Welcome Back, Please enter Your details</p>
-          </div>
-
-          {/* Toggle pill */}
-          <div className="login-pill-toggle" style={{ marginBottom: '2rem' }}>
-            <button type="button" className="login-pill-btn active">Sign In</button>
-            <button type="button" className="login-pill-btn" onClick={() => alert("L'inscription est désactivée pour cette version de démonstration.")}>Signup</button>
-          </div>
-
-          {error && <div className="alert error">{error}</div>}
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Email Address</label>
-              <div className="input-with-icon">
-                <Mail size={18} className="input-icon" />
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
-                  placeholder="enter your email..."
-                  required 
-                  style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #dcdce2', padding: '0.8rem 1.25rem 0.8rem 2.8rem' }}
-                />
+      <div className="mx-auto max-w-[480px] w-full px-5 py-6 relative">
+        {/* Top brand header */}
+        <header className="flex items-center justify-between animate-rise">
+          <div className="flex items-center gap-2">
+            <div className="relative h-9 w-9 rounded-xl bg-primary grid place-items-center">
+              <div className="h-3.5 w-3.5 rounded-[4px] bg-[oklch(0.86_0.18_128)]" />
+              <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-background grid place-items-center">
+                <ShieldCheck className="h-2 w-2 text-primary" strokeWidth={3} />
               </div>
             </div>
-
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Password</label>
-              <div className="input-with-icon">
-                <Lock size={18} className="input-icon" />
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  value={password} 
-                  onChange={e => setPassword(e.target.value)} 
-                  placeholder="••••••••••••"
-                  required 
-                  style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #dcdce2', padding: '0.8rem 1.25rem 0.8rem 2.8rem' }}
-                />
-                <button 
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
-                    background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px'
-                  }}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+            <div className="leading-tight text-foreground">
+              <div className="font-display text-lg italic">Ledger</div>
+              <div className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground -mt-0.5">Secure · Invoice · AI</div>
             </div>
+          </div>
+        </header>
 
-            <button type="submit" className="btn btn-primary full-width" disabled={loading} style={{ marginTop: '0.5rem', background: '#2563eb', padding: '0.8rem 1.4rem' }}>
-              {loading ? 'Connexion en cours...' : 'Continue'}
-            </button>
-          </form>
+        {/* Hero copy */}
+        <section className="mt-10 animate-rise" style={{ animationDelay: '60ms' }}>
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-[oklch(0.55_0.6_150)] animate-pulse-dot" />
+            {mode === 'signin' ? 'Welcome back' : 'Create account'}
+          </div>
+          <h1 className="mt-4 font-display text-[44px] leading-[1.02] tracking-tight">
+            Sign in to your
+            <br />
+            <span className="italic">secure ledger.</span>
+          </h1>
+          <p className="mt-3 text-sm text-muted-foreground max-w-[85%]">
+            Cryptographic receipts, hardware-bound sessions, zero-knowledge password proofs.
+          </p>
+        </section>
 
-          {/* Social Logins */}
-          <div style={{ margin: '2rem 0', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ flex: 1, height: '1px', background: '#e5e5eb' }}></div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>Or Continue With</span>
-              <div style={{ flex: 1, height: '1px', background: '#e5e5eb' }}></div>
-            </div>
+        {/* Error Alert */}
+        {error && (
+          <div className="mt-4 p-3 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs animate-rise">
+            {error}
+          </div>
+        )}
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-              {[
-                {
-                  name: 'Google',
-                  icon: (
-                    <svg viewBox="0 0 24 24" width="20" height="20">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-                    </svg>
-                  )
-                },
-                {
-                  name: 'Apple',
-                  icon: (
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="#12100f">
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.57 2.95-1.39z"/>
-                    </svg>
-                  )
-                },
-                {
-                  name: 'Facebook',
-                  icon: (
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="#1877F2">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47H3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                  )
-                }
-              ].map((soc, i) => (
-                <button 
-                  key={i} 
+        {/* Card */}
+        <section className="mt-6 animate-rise" style={{ animationDelay: '140ms' }}>
+          <div className="relative rounded-3xl border border-border bg-card/80 backdrop-blur-xl p-6 shadow-[0_30px_80px_-30px_oklch(0.22_0.03_155/0.35)] overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-px animate-shimmer" />
+
+            {/* Mode toggle */}
+            <div className="flex items-center gap-1 rounded-full border border-border p-1 bg-background/60">
+              {(['signin', 'signup'] as const).map((m) => (
+                <button
+                  key={m}
                   type="button"
-                  title={soc.name}
-                  style={{
-                    width: '50px', height: '50px', borderRadius: '50%', border: '1px solid #dcdce2',
-                    background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
+                  onClick={() => {
+                    if (m === 'signup') {
+                      alert("L'inscription est désactivée pour cette version de démonstration.");
+                    } else {
+                      setMode(m);
+                    }
                   }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = '#f9fafb';
-                    e.currentTarget.style.borderColor = '#c8c8cf';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = '#ffffff';
-                    e.currentTarget.style.borderColor = '#dcdce2';
-                  }}
+                  className={`flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                    mode === m
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
                 >
-                  {soc.icon}
+                  {m === 'signin' ? 'Sign in' : 'Create account'}
                 </button>
               ))}
             </div>
+
+            {/* Social Logins styled as Demo Access Buttons */}
+            <div className="mt-5 grid grid-cols-1 gap-2">
+              <button 
+                type="button"
+                onClick={() => handleDemoAccess('client')}
+                className="group flex items-center justify-between rounded-2xl border border-border bg-background/60 px-4 py-3 hover:border-foreground/30 transition text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-[oklch(0.86_0.18_128)] grid place-items-center">
+                    <Fingerprint className="h-4 w-4 text-[oklch(0.22_0.03_155)]" strokeWidth={2.25} />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">Continue as Client</div>
+                    <div className="text-[11px] text-muted-foreground">Submit invoices & check status</div>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition" />
+              </button>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <button 
+                  type="button"
+                  onClick={() => handleDemoAccess('comptable')}
+                  className="rounded-2xl border border-border bg-background/60 px-3 py-2.5 text-xs font-medium hover:bg-background transition inline-flex items-center justify-center gap-2"
+                >
+                  <KeyRound className="h-3.5 w-3.5 text-primary" />
+                  Comptable
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handleDemoAccess('admin')}
+                  className="rounded-2xl border border-border bg-background/60 px-3 py-2.5 text-xs font-medium hover:bg-background transition inline-flex items-center justify-center gap-2"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                  Admin
+                </button>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">or with credentials</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Email</span>
+                <div className="mt-1.5 relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@company.com"
+                    className="w-full rounded-2xl border border-border bg-background/60 pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-foreground/40 transition"
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Password</span>
+                </div>
+                <div className="mt-1.5 relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    required
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••"
+                    className="w-full rounded-2xl border border-border bg-background/60 pl-10 pr-11 py-3 text-sm focus:outline-none focus:border-foreground/40 transition font-mono-tight"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full grid place-items-center hover:bg-secondary/40"
+                  >
+                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-2 group w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground py-3.5 text-sm font-medium hover:opacity-95 transition disabled:opacity-50"
+              >
+                {loading ? 'Signing in...' : 'Continue'}
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition" />
+              </button>
+            </form>
           </div>
+        </section>
 
-          {/* Demo credentials */}
-          <div className="demo-credentials" style={{ padding: '1rem', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e5eb', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            <p style={{ fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>Comptes de démonstration :</p>
-            <ul style={{ listStyleType: 'none', display: 'flex', flexDirection: 'column', gap: '4px', paddingLeft: 0 }}>
-              <li><strong>Client :</strong> client@demo.com / client123</li>
-              <li><strong>Comptable :</strong> comptable@demo.com / comptable123</li>
-              <li><strong>Admin :</strong> admin@demo.com / admin123</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Footer info text */}
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: '2rem', lineHeight: 1.4 }}>
-          Join the millions of smart businesses who trust us to manage their invoices, track audit compliance, and detect financial fraud.
-        </div>
-      </div>
-
-      {/* RIGHT SIDE: 3D Illustration / Brand display */}
-      <div className="login-right-side">
-        {/* Particle Rain streaks */}
-        <div className="login-rain-particles">
+        {/* Trust row */}
+        <section className="mt-6 grid grid-cols-3 gap-2 animate-rise" style={{ animationDelay: '220ms' }}>
           {[
-            { left: '15%', top: '-20px', delay: '0s', duration: '3s' },
-            { left: '35%', top: '-50px', delay: '1s', duration: '4s' },
-            { left: '55%', top: '-10px', delay: '0.5s', duration: '2.5s' },
-            { left: '75%', top: '-60px', delay: '2s', duration: '3.5s' },
-            { left: '90%', top: '-30px', delay: '1.5s', duration: '4.5s' },
-          ].map((st, i) => (
-            <div 
-              key={i} 
-              className="rain-streak" 
-              style={{ 
-                left: st.left, 
-                top: st.top, 
-                animationDelay: st.delay, 
-                animationDuration: st.duration 
-              }}
-            ></div>
+            { k: 'SOC 2', v: 'Type II' },
+            { k: 'ISO', v: '27001' },
+            { k: 'E2E', v: 'Signed' },
+          ].map((t) => (
+            <div key={t.k} className="rounded-2xl border border-border bg-card/60 backdrop-blur px-3 py-2.5 text-center">
+              <div className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground">{t.k}</div>
+              <div className="mt-0.5 font-mono-tight text-xs">{t.v}</div>
+            </div>
           ))}
-        </div>
+        </section>
 
-        {/* Floating 3D Safe illustration */}
-        <div className="floating-safe-container">
-          <img 
-            src="/login_safe_box.png" 
-            alt="Secure Invoice Safe" 
-            className="floating-safe-image" 
-          />
-          <div className="floating-safe-shadow"></div>
-        </div>
-
-        <div style={{ marginTop: '3rem', textAlign: 'center', color: '#ffffff', padding: '0 2rem', zIndex: 2 }}>
-          <h2 style={{ color: '#ffffff', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.5rem', fontFamily: 'Outfit' }}>Sécurité Inégalée</h2>
-          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95rem', maxWidth: '380px', margin: '0 auto', lineHeight: 1.5 }}>
-            Vos données financières sont chiffrées de bout en bout et auditées en temps réel par notre intelligence artificielle.
-          </p>
-        </div>
+        <p className="mt-6 text-center text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-mono-tight">
+          Ledger · v2.4.1
+        </p>
       </div>
     </div>
   );
