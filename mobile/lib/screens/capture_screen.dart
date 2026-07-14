@@ -321,16 +321,26 @@ class _CaptureScreenState extends State<CaptureScreen> {
   Widget _buildLoadingView() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(30.0),
+        padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Theme.of(context).primaryColor),
-            const SizedBox(height: 24),
+            const LaserScannerAnimation(),
+            const SizedBox(height: 32),
             Text(
               _statusMessage ?? 'Traitement en cours...',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF111827)),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontFamily: 'Outfit',
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Running multi-tier OCR models',
+              style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
             ),
           ],
         ),
@@ -531,3 +541,157 @@ class _CaptureScreenState extends State<CaptureScreen> {
     );
   }
 }
+
+class LaserScannerAnimation extends StatefulWidget {
+  const LaserScannerAnimation({Key? key}) : super(key: key);
+
+  @override
+  State<LaserScannerAnimation> createState() => _LaserScannerAnimationState();
+}
+
+class _LaserScannerAnimationState extends State<LaserScannerAnimation> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 220,
+      height: 280,
+      decoration: BoxDecoration(
+        color: const Color(0xFF14251F),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF14251F).withOpacity(0.3), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF14251F).withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Simulated document content outline
+          Center(
+            child: Icon(
+              Icons.receipt_long_rounded,
+              size: 80,
+              color: Colors.white.withOpacity(0.15),
+            ),
+          ),
+          // Frame corners
+          ..._buildCorners(),
+          // Sweeping Laser Line
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Positioned(
+                top: 15 + (_controller.value * 240),
+                left: 15,
+                right: 15,
+                child: Container(
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD2FA5A),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFD2FA5A).withOpacity(0.8),
+                        blurRadius: 10,
+                        spreadRadius: 1.5,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildCorners() {
+    const double size = 16;
+    const double thickness = 2.5;
+    const Color color = Color(0xFFD2FA5A);
+
+    return [
+      // Top Left
+      Positioned(
+        top: 15,
+        left: 15,
+        child: Container(
+          width: size,
+          height: size,
+          decoration: const BoxDecoration(
+            border: Border(
+              top: BorderSide(color: color, width: thickness),
+              left: BorderSide(color: color, width: thickness),
+            ),
+          ),
+        ),
+      ),
+      // Top Right
+      Positioned(
+        top: 15,
+        right: 15,
+        child: Container(
+          width: size,
+          height: size,
+          decoration: const BoxDecoration(
+            border: Border(
+              top: BorderSide(color: color, width: thickness),
+              right: BorderSide(color: color, width: thickness),
+            ),
+          ),
+        ),
+      ),
+      // Bottom Left
+      Positioned(
+        bottom: 15,
+        left: 15,
+        child: Container(
+          width: size,
+          height: size,
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: color, width: thickness),
+              left: BorderSide(color: color, width: thickness),
+            ),
+          ),
+        ),
+      ),
+      // Bottom Right
+      Positioned(
+        bottom: 15,
+        right: 15,
+        child: Container(
+          width: size,
+          height: size,
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: color, width: thickness),
+              right: BorderSide(color: color, width: thickness),
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+}
+
