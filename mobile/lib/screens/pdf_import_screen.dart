@@ -73,8 +73,8 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              backgroundColor: Colors.green,
-              content: Text('Le document $fileName a bien été importé et envoyé pour analyse !'),
+              backgroundColor: const Color(0xFF0D9488),
+              content: Text('Le document $fileName a bien été importé et envoyé pour analyse !', style: const TextStyle(color: Colors.white)),
             ),
           );
         }
@@ -95,10 +95,10 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAEAEE),
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        title: const Text('Import PDF', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Outfit')),
-        backgroundColor: Colors.white,
+        title: const Text('Import PDF', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Colors.white)),
+        backgroundColor: const Color(0xFF121212),
         elevation: 0,
         centerTitle: true,
       ),
@@ -115,10 +115,10 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: const Color(0xFF1E1E1E),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: const Color(0xFF4F46E5).withOpacity(0.3),
+                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
                           width: 2,
                           style: BorderStyle.solid,
                         ),
@@ -129,13 +129,13 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
                             width: 64,
                             height: 64,
                             decoration: const BoxDecoration(
-                              color: Color(0xFFF0F5FF),
+                              color: Color(0xFF2A2A2A),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
                               Icons.upload_file_rounded,
                               size: 32,
-                              color: Color(0xFF4F46E5),
+                              color: Color(0xFF8B5CF6),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -144,6 +144,7 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
+                              color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -151,7 +152,7 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
                             'Le document sera automatiquement importé et soumis au traitement OCR.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Color(0xFF8F9199),
+                              color: Color(0xFFA1A1AA),
                               fontSize: 12,
                             ),
                           ),
@@ -168,6 +169,7 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       fontFamily: 'Outfit',
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -199,13 +201,13 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
             const Icon(
               Icons.picture_as_pdf_rounded,
               size: 72,
-              color: Colors.redAccent,
+              color: Color(0xFFF87171),
             ),
             const SizedBox(height: 24),
             Text(
               _uploadStatus ?? 'Téléversement en cours...',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white),
             ),
             const SizedBox(height: 16),
             ClipRRect(
@@ -213,8 +215,8 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
               child: LinearProgressIndicator(
                 value: _uploadProgress,
                 minHeight: 10,
-                backgroundColor: Colors.white,
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4F46E5)),
+                backgroundColor: const Color(0xFF1E1E1E),
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
               ),
             ),
             const SizedBox(height: 10),
@@ -223,7 +225,7 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
               style: const TextStyle(
                 fontFamily: 'IBM Plex Mono',
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF4F46E5),
+                color: Color(0xFF8B5CF6),
               ),
             ),
           ],
@@ -236,15 +238,15 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E5EB)),
+        border: Border.all(color: const Color(0xFF2A2A2A)),
       ),
       child: Row(
         children: [
           const Icon(
             Icons.picture_as_pdf_rounded,
-            color: Colors.redAccent,
+            color: Color(0xFFF87171),
             size: 28,
           ),
           const SizedBox(width: 12),
@@ -257,6 +259,7 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
+                    color: Colors.white,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -265,7 +268,7 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
                 Text(
                   '${pdf['size']} • Importé le ${pdf['date']}',
                   style: const TextStyle(
-                    color: Color(0xFF8F9199),
+                    color: Color(0xFFA1A1AA),
                     fontSize: 11,
                   ),
                 ),
@@ -276,13 +279,13 @@ class _PdfImportScreenState extends State<PdfImportScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: pdf['status'] == 'envoyé' ? const Color(0xFFECFDF5) : const Color(0xFFF3F4F6),
+              color: pdf['status'] == 'envoyé' ? const Color(0xFF064E3B) : const Color(0xFF2A2A2A), // Dark emerald for status
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               pdf['status'] == 'envoyé' ? 'Analysé' : 'Brouillon',
               style: TextStyle(
-                color: pdf['status'] == 'envoyé' ? const Color(0xFF10B981) : const Color(0xFF5F6168),
+                color: pdf['status'] == 'envoyé' ? const Color(0xFF34D399) : const Color(0xFFA1A1AA),
                 fontWeight: FontWeight.bold,
                 fontSize: 11,
               ),

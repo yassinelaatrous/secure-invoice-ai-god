@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../models/invoice.dart';
-import '../widgets/status_badge.dart';
 
 class CaptureScreen extends StatefulWidget {
   const CaptureScreen({Key? key}) : super(key: key);
@@ -35,7 +34,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
   // Predefined mock templates coordinates mapping (for interactive highlighting)
   // Coordinates are normalized percentages: left, top, width, height
-  final Map<String, Map<String, List<double>>> _boxCoords = {
+  final Map<String, Map<String, double>> _boxCoords = {
     'fournisseur': {'left': 0.1, 'top': 0.08, 'width': 0.35, 'height': 0.06},
     'numero': {'left': 0.6, 'top': 0.15, 'width': 0.3, 'height': 0.04},
     'date': {'left': 0.6, 'top': 0.20, 'width': 0.3, 'height': 0.04},
@@ -57,6 +56,13 @@ class _CaptureScreenState extends State<CaptureScreen> {
     super.dispose();
   }
 
+  double _toDouble(dynamic val) {
+    if (val == null) return 0.0;
+    if (val is int) return val.toDouble();
+    if (val is double) return val;
+    return double.tryParse(val.toString()) ?? 0.0;
+  }
+
   // Camera snap simulation
   Future<void> _captureImage(ImageSource source) async {
     try {
@@ -75,20 +81,36 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
         // Trigger upload to backend
         try {
-          final invoice = await ApiService.uploadInvoice(image.path);
+          final result = await ApiService.uploadInvoice(image.path);
+          // The upload endpoint returns extracted_data from OCR
+          final extractedData = result['extracted_data'] ?? result;
           setState(() {
-            _ocrResult = invoice;
+            _ocrResult = Invoice(
+              id: 0,
+              numero: extractedData['numero']?.toString() ?? 'N/A',
+              fournisseur: extractedData['fournisseur']?.toString() ?? 'N/A',
+              dateFacture: DateTime.tryParse(extractedData['date_facture']?.toString() ?? '') ?? DateTime.now(),
+              dateReception: DateTime.now(),
+              devise: extractedData['devise']?.toString() ?? 'TND',
+              montantHt: _toDouble(extractedData['ht']),
+              tva: _toDouble(extractedData['tva']),
+              montantTtc: _toDouble(extractedData['ttc']),
+              iban: extractedData['iban']?.toString() ?? '',
+              statut: 'nouveau',
+              fraudScore: _toDouble(extractedData['fraude_score']),
+              confidenceScore: _toDouble(extractedData['confiance'] ?? 0.95),
+            );
             _isProcessing = false;
             _statusMessage = null;
             
             // Populate form
-            _fournisseurController.text = invoice.fournisseur;
-            _numeroController.text = invoice.numero;
-            _dateController.text = '${invoice.dateFacture.day.toString().padLeft(2, '0')}/${invoice.dateFacture.month.toString().padLeft(2, '0')}/${invoice.dateFacture.year}';
-            _htController.text = invoice.montantHt.toStringAsFixed(2);
-            _tvaController.text = invoice.tva.toStringAsFixed(2);
-            _ttcController.text = invoice.montantTtc.toStringAsFixed(2);
-            _ibanController.text = invoice.iban;
+            _fournisseurController.text = _ocrResult!.fournisseur;
+            _numeroController.text = _ocrResult!.numero;
+            _dateController.text = '${_ocrResult!.dateFacture.day.toString().padLeft(2, '0')}/${_ocrResult!.dateFacture.month.toString().padLeft(2, '0')}/${_ocrResult!.dateFacture.year}';
+            _htController.text = _ocrResult!.montantHt.toStringAsFixed(2);
+            _tvaController.text = _ocrResult!.tva.toStringAsFixed(2);
+            _ttcController.text = _ocrResult!.montantTtc.toStringAsFixed(2);
+            _ibanController.text = _ocrResult!.iban;
           });
         } catch (e) {
           // Fallback to simulate a clean result locally for testing if backend throws error
@@ -152,23 +174,21 @@ class _CaptureScreenState extends State<CaptureScreen> {
         final double tva = double.parse(_tvaController.text);
         final double ttc = double.parse(_ttcController.text);
         
-        await ApiService.updateInvoice(_ocrResult!.id, {
+        await ApiService.createFacture({
           'fournisseur': _fournisseurController.text,
           'numero': _numeroController.text,
-          'montant_ht': ht,
+          'ht': ht,
           'tva': tva,
-          'montant_ttc': ttc,
+          'ttc': ttc,
           'iban': _ibanController.text,
+          'devise': _ocrResult!.devise,
         });
-
-        // Soft state change to trigger verification checks
-        await ApiService.updateInvoiceStatus(_ocrResult!.id, 'en_verification');
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              backgroundColor: Colors.green,
-              content: Text('Facture soumise avec succès ! Moteur OCR & Fraude mis à jour.'),
+              backgroundColor: Color(0xFF0D9488),
+              content: Text('Facture soumise avec succès ! Moteur OCR & Fraude mis à jour.', style: TextStyle(color: Colors.white)),
             ),
           );
           _resetState();
@@ -198,16 +218,16 @@ class _CaptureScreenState extends State<CaptureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAEAEE),
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        title: const Text('Capture de facture', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Outfit')),
-        backgroundColor: Colors.white,
+        title: const Text('Capture de facture', style: TextStyle(fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Colors.white)),
+        backgroundColor: const Color(0xFF121212),
         elevation: 0,
         centerTitle: true,
         actions: _imageFile != null
             ? [
                 IconButton(
-                  icon: const Icon(Icons.refresh_rounded, color: Colors.redAccent),
+                  icon: const Icon(Icons.refresh_rounded, color: Color(0xFFF87171)),
                   onPressed: _resetState,
                 )
               ]
@@ -232,31 +252,32 @@ class _CaptureScreenState extends State<CaptureScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF1E1E1E),
                 shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFF2A2A2A)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 15,
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                    blurRadius: 30,
                   ),
                 ],
               ),
               child: const Icon(
                 Icons.document_scanner_outlined,
                 size: 60,
-                color: Color(0xFF4F46E5),
+                color: Color(0xFF8B5CF6),
               ),
             ),
             const SizedBox(height: 24),
             const Text(
               'Prêt à scanner',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, fontFamily: 'Outfit'),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, fontFamily: 'Outfit', color: Colors.white),
             ),
             const SizedBox(height: 10),
             const Text(
               'Prenez en photo une facture papier ou importez-en une depuis votre galerie.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF5F6168), fontSize: 14),
+              style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 14),
             ),
             const SizedBox(height: 40),
             
@@ -266,11 +287,11 @@ class _CaptureScreenState extends State<CaptureScreen> {
               icon: const Icon(Icons.camera_alt_rounded),
               label: const Text('Prendre une photo'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4F46E5),
+                backgroundColor: const Color(0xFF8B5CF6),
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(40),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
@@ -282,11 +303,11 @@ class _CaptureScreenState extends State<CaptureScreen> {
               icon: const Icon(Icons.photo_library_rounded),
               label: const Text('Importer de la galerie'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF4F46E5),
-                side: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
+                foregroundColor: const Color(0xFF8B5CF6),
+                side: const BorderSide(color: Color(0xFF8B5CF6), width: 1.5),
                 minimumSize: const Size(double.infinity, 54),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(40),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
@@ -303,12 +324,12 @@ class _CaptureScreenState extends State<CaptureScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(color: Color(0xFF4F46E5)),
+            const CircularProgressIndicator(color: Color(0xFF8B5CF6)),
             const SizedBox(height: 24),
             Text(
               _statusMessage ?? 'Traitement en cours...',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
             ),
           ],
         ),
@@ -325,7 +346,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
           // Bounding Box Image Preview Header
           const Text(
             'Aperçu du document & zones OCR',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit'),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit', color: Colors.white),
           ),
           const SizedBox(height: 8),
 
@@ -339,9 +360,9 @@ class _CaptureScreenState extends State<CaptureScreen> {
               return Container(
                 height: containerHeight,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFF1E1E1E),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE5E5EB)),
+                  border: Border.all(color: const Color(0xFF2A2A2A)),
                 ),
                 child: Stack(
                   children: [
@@ -354,7 +375,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
                                 File(_imageFile!.path),
                                 fit: BoxFit.contain,
                               )
-                            : Container(color: Colors.grey.shade200),
+                            : Container(color: const Color(0xFF1E1E1E)),
                       ),
                     ),
 
@@ -367,7 +388,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
                         height: _boxCoords[_activeField]!['height']! * scaleY,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444).withOpacity(0.25),
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.25),
                             border: Border.all(
                               color: const Color(0xFFEF4444),
                               width: 2.0,
@@ -399,16 +420,16 @@ class _CaptureScreenState extends State<CaptureScreen> {
           // Form Fields Review Section
           const Text(
             'Informations Extraites',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit'),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Outfit', color: Colors.white),
           ),
           const SizedBox(height: 8),
 
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF1E1E1E),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE5E5EB)),
+              border: Border.all(color: const Color(0xFF2A2A2A)),
             ),
             child: Form(
               key: _formKey,
@@ -442,11 +463,11 @@ class _CaptureScreenState extends State<CaptureScreen> {
           ElevatedButton(
             onPressed: _submitInvoice,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4F46E5),
+              backgroundColor: const Color(0xFF8B5CF6),
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 54),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(40),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
             child: const Text('Confirmer & Soumettre la Facture', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -454,7 +475,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
           const SizedBox(height: 12),
           TextButton(
             onPressed: _resetState,
-            child: const Text('Annuler', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: const Text('Annuler', style: TextStyle(color: Color(0xFFF87171), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -478,13 +499,18 @@ class _CaptureScreenState extends State<CaptureScreen> {
       },
       child: TextFormField(
         controller: controller,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: Icon(icon, size: 20, color: const Color(0xFF8F9199)),
+          labelStyle: const TextStyle(color: Color(0xFFA1A1AA)),
+          prefixIcon: Icon(icon, size: 20, color: const Color(0xFFA1A1AA)),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE5E5EB)),
+            borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
           ),
           contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),

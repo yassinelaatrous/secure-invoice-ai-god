@@ -17,20 +17,32 @@ class StatusBadge extends StatelessWidget {
         textColor = const Color(0xFF2563EB);
         label = 'Nouveau';
         break;
+      case 'brouillon':
+        bgColor = const Color(0xFFF3F4F6);
+        textColor = const Color(0xFF6B7280);
+        label = 'Brouillon';
+        break;
+      case 'controlee':
+        bgColor = const Color(0xFFF0FDF4);
+        textColor = const Color(0xFF16A34A);
+        label = 'Contrôlée';
+        break;
       case 'en_verification':
         bgColor = const Color(0xFFFFFBEB);
         textColor = const Color(0xFFD97706);
         label = 'En vérification';
         break;
       case 'valide':
+      case 'validee':
         bgColor = const Color(0xFFECFDF5);
         textColor = const Color(0xFF059669);
-        label = 'Validé';
+        label = 'Validée';
         break;
       case 'rejete':
+      case 'rejetee':
         bgColor = const Color(0xFFFEF2F2);
         textColor = const Color(0xFFDC2626);
-        label = 'Rejeté';
+        label = 'Rejetée';
         break;
       case 'archive':
         bgColor = const Color(0xFFF3F4F6);

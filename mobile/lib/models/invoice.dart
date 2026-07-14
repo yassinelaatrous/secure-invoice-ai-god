@@ -15,8 +15,10 @@ class Invoice {
   final double fraudScore;
   final double confidenceScore;
   final String? imagePath;
-  final Map<String, dynamic>? complianceResults;
-  final List<dynamic>? fraudDetails;
+  final bool? conformiteValide;
+  final String? conformiteDetails;
+  final String? fraudeJustification;
+  final List<dynamic>? fraudeAlertes;
 
   Invoice({
     required this.id,
@@ -33,8 +35,10 @@ class Invoice {
     required this.fraudScore,
     required this.confidenceScore,
     this.imagePath,
-    this.complianceResults,
-    this.fraudDetails,
+    this.conformiteValide,
+    this.conformiteDetails,
+    this.fraudeJustification,
+    this.fraudeAlertes,
   });
 
   factory Invoice.fromJson(Map<String, dynamic> json) {
@@ -52,31 +56,36 @@ class Invoice {
       return DateTime.tryParse(val.toString()) ?? DateTime.now();
     }
 
+    // Parse fraude_alertes which can be a JSON string or already a list
+    List<dynamic>? parseAlertes(dynamic val) {
+      if (val == null) return null;
+      if (val is List) return val;
+      if (val is String) {
+        try { return jsonDecode(val); } catch (_) { return null; }
+      }
+      return null;
+    }
+
     return Invoice(
       id: json['id'] ?? 0,
       numero: json['numero'] ?? 'Inconnu',
       fournisseur: json['fournisseur'] ?? 'Inconnu',
       dateFacture: toDateTime(json['date_facture']),
       dateReception: toDateTime(json['date_reception'] ?? json['created_at']),
-      devise: json['devise'] ?? 'EUR',
-      montantHt: toDouble(json['montant_ht']),
+      devise: json['devise'] ?? 'TND',
+      // Backend uses 'ht', 'tva', 'ttc' — NOT 'montant_ht', 'montant_ttc'
+      montantHt: toDouble(json['ht'] ?? json['montant_ht']),
       tva: toDouble(json['tva']),
-      montantTtc: toDouble(json['montant_ttc']),
+      montantTtc: toDouble(json['ttc'] ?? json['montant_ttc']),
       iban: json['iban'] ?? '',
       statut: json['statut'] ?? 'nouveau',
-      fraudScore: toDouble(json['fraud_score']),
-      confidenceScore: toDouble(json['confidence_score'] ?? 1.0),
+      fraudScore: toDouble(json['fraude_score'] ?? json['fraud_score']),
+      confidenceScore: toDouble(json['confiance'] ?? json['confidence_score'] ?? 0.95),
       imagePath: json['image_path'],
-      complianceResults: json['compliance_results'] != null 
-          ? (json['compliance_results'] is String 
-              ? jsonDecode(json['compliance_results']) 
-              : Map<String, dynamic>.from(json['compliance_results']))
-          : null,
-      fraudDetails: json['fraud_details'] != null
-          ? (json['fraud_details'] is String 
-              ? jsonDecode(json['fraud_details']) 
-              : List<dynamic>.from(json['fraud_details']))
-          : null,
+      conformiteValide: json['conformite_valide'],
+      conformiteDetails: json['conformite_details'],
+      fraudeJustification: json['fraude_justification'],
+      fraudeAlertes: parseAlertes(json['fraude_alertes']),
     );
   }
 
@@ -86,18 +95,12 @@ class Invoice {
       'numero': numero,
       'fournisseur': fournisseur,
       'date_facture': dateFacture.toIso8601String(),
-      'date_reception': dateReception.toIso8601String(),
       'devise': devise,
-      'montant_ht': montantHt,
+      'ht': montantHt,
       'tva': tva,
-      'montant_ttc': montantTtc,
+      'ttc': montantTtc,
       'iban': iban,
       'statut': statut,
-      'fraud_score': fraudScore,
-      'confidence_score': confidenceScore,
-      'image_path': imagePath,
-      'compliance_results': complianceResults != null ? jsonEncode(complianceResults) : null,
-      'fraud_details': fraudDetails != null ? jsonEncode(fraudDetails) : null,
     };
   }
 }

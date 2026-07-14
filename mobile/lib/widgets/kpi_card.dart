@@ -26,12 +26,12 @@ class KpiCard extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.black.withOpacity(0.03),
+          color: const Color(0xFF2A2A2A),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -60,7 +60,7 @@ class KpiCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Color(0xFF5F6168),
+                    color: Color(0xFFA1A1AA),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),

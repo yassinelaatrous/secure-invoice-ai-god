@@ -6,7 +6,7 @@ class AuthService {
   static const String _tokenKey = 'access_token';
   static const String _userKey = 'user_info';
   
-  // Replace with local backend address (10.0.2.2 for Android Emulator, or localhost for Web/iOS)
+  // 10.0.2.2 maps to host machine's localhost when running on Android Emulator
   static String _baseUrl = 'http://10.0.2.2:8000/api'; 
 
   static void setBaseUrl(String url) {
@@ -15,16 +15,16 @@ class AuthService {
 
   static String get baseUrl => _baseUrl;
 
-  // Log in user
+  // Log in user — MUST use x-www-form-urlencoded for FastAPI OAuth2PasswordRequestForm
   static Future<Map<String, dynamic>> login(String username, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
           'username': username,
           'password': password,
-        }),
+        },
       );
 
       if (response.statusCode == 200) {
@@ -38,11 +38,14 @@ class AuthService {
 
         return {'success': true, 'user': user};
       } else {
-        final errorMsg = jsonDecode(response.body)['detail'] ?? 'Identifiants incorrects';
+        String errorMsg = 'Identifiants incorrects';
+        try {
+          errorMsg = jsonDecode(response.body)['detail'] ?? errorMsg;
+        } catch (_) {}
         return {'success': false, 'error': errorMsg};
       }
     } catch (e) {
-      return {'success': false, 'error': 'Impossible de se connecter au serveur backend: $e'};
+      return {'success': false, 'error': 'Impossible de se connecter au serveur: $e'};
     }
   }
 

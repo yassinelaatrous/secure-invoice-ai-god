@@ -53,10 +53,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAEAEE),
+      backgroundColor: const Color(0xFF121212),
       body: Stack(
         children: [
-          // Silver Wavy Custom Painter Background
+          // Dark Wavy Custom Painter Background
           Positioned.fill(
             child: CustomPaint(
               painter: WavePainter(),
@@ -78,21 +78,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: const Color(0xFF1E1E1E),
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
+                              color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                              blurRadius: 30,
+                              offset: const Offset(0, 10),
                             )
                           ],
+                          border: Border.all(color: const Color(0xFF2A2A2A)),
                         ),
                         child: const Center(
                           child: Icon(
                             Icons.receipt_long_rounded,
                             size: 40,
-                            color: Color(0xFF4F46E5), // Indigo
+                            color: Color(0xFF8B5CF6), // Neon Purple
                           ),
                         ),
                       ),
@@ -104,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF12100F),
+                        color: Colors.white,
                         fontFamily: 'Outfit',
                       ),
                     ),
@@ -113,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF5F6168),
+                        color: Color(0xFFA1A1AA),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -123,16 +124,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.85),
+                        color: const Color(0xFF1E1E1E).withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.05),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
-                            blurRadius: 15,
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
                         ],
@@ -148,6 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fontSize: 20,
                                 fontWeight: FontWeight.w800,
                                 fontFamily: 'Outfit',
+                                color: Colors.white,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -155,14 +157,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             // Username
                             TextFormField(
                               controller: _usernameController,
-                              decoration: InputDecoration(
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
                                 labelText: 'Identifiant',
                                 hintText: 'Entrez votre identifiant',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE5E5EB)),
-                                ),
-                                prefixIcon: const Icon(Icons.person_outline),
+                                prefixIcon: Icon(Icons.person_outline, color: Color(0xFFA1A1AA)),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
@@ -177,17 +176,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
+                              style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
                                 labelText: 'Mot de passe',
                                 hintText: 'Entrez votre mot de passe',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE5E5EB)),
-                                ),
-                                prefixIcon: const Icon(Icons.lock_outline),
+                                prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFA1A1AA)),
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                    color: const Color(0xFFA1A1AA),
                                   ),
                                   onPressed: () {
                                     setState(() {
@@ -209,16 +206,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (_errorMessage.isNotEmpty)
                               Container(
                                 padding: const EdgeInsets.all(10),
-                                margin: const EdgeInsets.bottom(16),
+                                margin: const EdgeInsets.only(bottom: 16),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFEF2F2),
+                                  color: const Color(0xFF3F1919),
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFFFCA5A5)),
+                                  border: Border.all(color: const Color(0xFFEF4444)),
                                 ),
                                 child: Text(
                                   _errorMessage,
                                   style: const TextStyle(
-                                    color: Color(0xFFB91C1C),
+                                    color: Color(0xFFFCA5A5),
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -236,13 +233,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4F46E5),
+                                backgroundColor: const Color(0xFF8B5CF6),
                                 foregroundColor: Colors.white,
-                                shadowColor: const Color(0xFF4F46E5).withOpacity(0.3),
-                                elevation: 4,
+                                shadowColor: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                                elevation: 8,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(40),
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
                               child: _isLoading
@@ -274,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       'Comptes de Démo :',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF8F9199),
+                        color: Color(0xFFA1A1AA),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -283,9 +280,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _buildQuickLoginButton('Client', 'client1', 'client1pass'),
-                        _buildQuickLoginButton('Comptable', 'comptable1', 'comptable1pass'),
-                        _buildQuickLoginButton('Admin', 'admin1', 'admin1pass'),
+                        _buildQuickLoginButton('Client', 'client@demo.com', 'client123'),
+                        _buildQuickLoginButton('Comptable', 'comptable@demo.com', 'comptable123'),
+                        _buildQuickLoginButton('Admin', 'admin@demo.com', 'admin123'),
                       ],
                     ),
                   ],
@@ -300,8 +297,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildQuickLoginButton(String label, String username, String password) {
     return ActionChip(
-      backgroundColor: Colors.white.withOpacity(0.7),
-      side: const BorderSide(color: Color(0xFFE5E5EB)),
+      backgroundColor: const Color(0xFF2A2A2A),
+      side: const BorderSide(color: Color(0xFF3A3A3A)),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -309,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
         label,
         style: const TextStyle(
           fontSize: 11,
-          color: Color(0xFF4F46E5),
+          color: Color(0xFFD8B4FE),
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -322,12 +319,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// Background painter representing silver wavy lines matching web design
+// Background painter representing dark wavy lines
 class WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFFFFFFF).withOpacity(0.5)
+      ..color = const Color(0xFF1E1E1E).withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
 
     final path = Path()
@@ -351,7 +348,7 @@ class WavePainter extends CustomPainter {
     canvas.drawPath(path, paint);
 
     final secondaryPaint = Paint()
-      ..color = const Color(0xFF4F46E5).withOpacity(0.03)
+      ..color = const Color(0xFF8B5CF6).withValues(alpha: 0.05)
       ..style = PaintingStyle.fill;
 
     final secondaryPath = Path()
@@ -378,3 +375,4 @@ class WavePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+

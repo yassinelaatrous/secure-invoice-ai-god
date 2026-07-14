@@ -8,7 +8,7 @@ import 'login_screen.dart';
 import 'capture_screen.dart';
 import 'pdf_import_screen.dart';
 import 'profile_screen.dart';
-import 'invoice_detail_modal.dart'; // We'll create this details viewer
+import 'invoice_detail_modal.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -20,7 +20,6 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
   
-  // Navigation tabs
   late List<Widget> _tabs;
 
   @override
@@ -37,6 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF121212),
       body: IndexedStack(
         index: _currentIndex,
         children: _tabs,
@@ -45,7 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 15,
               offset: const Offset(0, -4),
             ),
@@ -59,9 +59,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             });
           },
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF4F46E5), // Indigo
-          unselectedItemColor: const Color(0xFF8F9199),
+          backgroundColor: const Color(0xFF1E1E1E),
+          selectedItemColor: const Color(0xFF8B5CF6), // Neon Purple
+          unselectedItemColor: const Color(0xFFA1A1AA),
           showSelectedLabels: true,
           showUnselectedLabels: true,
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
@@ -146,15 +146,15 @@ class _HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
-    final String greeting = _user != null ? 'Bonjour, ${_user!['full_name']}' : 'Bonjour';
+    final String greeting = _user != null ? 'Bonjour, ${_user!['nom']}' : 'Bonjour';
     final String roleLabel = _user != null 
         ? (_user!['role'] == 'client' ? 'Espace Client' : _user!['role'] == 'comptable' ? 'Espace Comptable' : 'Administrateur')
         : '';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAEAEE),
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF121212),
         elevation: 0,
         title: Row(
           children: [
@@ -162,13 +162,13 @@ class _HomeTabState extends State<HomeTab> {
               width: 36,
               height: 36,
               decoration: const BoxDecoration(
-                color: Color(0xFF4F46E5),
+                color: Color(0xFF8B5CF6),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(
-                  _user != null && _user!['full_name'] != null
-                      ? _user!['full_name'].toString().substring(0, 1).toUpperCase()
+                  _user != null && _user!['nom'] != null
+                      ? _user!['nom'].toString().substring(0, 1).toUpperCase()
                       : 'U',
                   style: const TextStyle(
                     color: Colors.white,
@@ -186,7 +186,7 @@ class _HomeTabState extends State<HomeTab> {
                 Text(
                   greeting,
                   style: const TextStyle(
-                    color: Color(0xFF12100F),
+                    color: Colors.white,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -194,7 +194,7 @@ class _HomeTabState extends State<HomeTab> {
                 Text(
                   roleLabel,
                   style: const TextStyle(
-                    color: Color(0xFF5F6168),
+                    color: Color(0xFFA1A1AA),
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -205,11 +205,11 @@ class _HomeTabState extends State<HomeTab> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF4F46E5)),
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF8B5CF6)),
             onPressed: _loadData,
           ),
           IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFFF87171)),
             onPressed: () async {
               await AuthService.logout();
               if (mounted) {
@@ -222,10 +222,12 @@ class _HomeTabState extends State<HomeTab> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF8B5CF6)))
           : _error.isNotEmpty
               ? _buildErrorView()
               : RefreshIndicator(
+                  color: const Color(0xFF8B5CF6),
+                  backgroundColor: const Color(0xFF1E1E1E),
                   onRefresh: _loadData,
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -233,13 +235,13 @@ class _HomeTabState extends State<HomeTab> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // KPI Grid (2x2 or row layout)
+                        // KPI Grid
                         _buildKpisSection(),
                         const SizedBox(height: 24),
                         
                         // Recent Invoices Header
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.between,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text(
                               'Factures Récentes',
@@ -247,11 +249,15 @@ class _HomeTabState extends State<HomeTab> {
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
                                 fontFamily: 'Outfit',
+                                color: Colors.white,
                               ),
                             ),
                             TextButton(
                               onPressed: _loadData,
-                              child: const Text('Tout voir'),
+                              child: const Text(
+                                'Tout voir',
+                                style: TextStyle(color: Color(0xFF8B5CF6)),
+                              ),
                             ),
                           ],
                         ),
@@ -279,9 +285,10 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   Widget _buildKpisSection() {
-    final int totalCount = _stats['total_invoices'] ?? _invoices.length;
-    final double complianceRate = double.tryParse(_stats['compliance_rate']?.toString() ?? '') ?? 100.0;
-    final double avgFraudScore = double.tryParse(_stats['avg_fraud_score']?.toString() ?? '') ?? 0.0;
+    final int totalCount = _stats['total_factures'] ?? _invoices.length;
+    final int validated = _stats['factures_validees'] ?? 0;
+    final double complianceRate = totalCount > 0 ? (validated / totalCount * 100) : 100.0;
+    final double avgFraudScore = double.tryParse(_stats['risque_moyen']?.toString() ?? '') ?? 0.0;
 
     return Column(
       children: [
@@ -292,9 +299,9 @@ class _HomeTabState extends State<HomeTab> {
                 title: 'Total Factures',
                 value: '$totalCount',
                 icon: Icons.receipt_outlined,
-                backgroundColor: Colors.white,
-                textColor: const Color(0xFF12100F),
-                iconBgColor: const Color(0xFFF0F5FF),
+                backgroundColor: const Color(0xFF1E1E1E),
+                textColor: Colors.white,
+                iconBgColor: const Color(0xFF2A2A2A),
               ),
             ),
             const SizedBox(width: 12),
@@ -303,9 +310,9 @@ class _HomeTabState extends State<HomeTab> {
                 title: 'Conformité',
                 value: '${complianceRate.toStringAsFixed(0)}%',
                 icon: Icons.check_circle_outline_rounded,
-                backgroundColor: const Color(0xFFE6F7F5),
-                textColor: const Color(0xFF0D9488),
-                iconBgColor: Colors.white,
+                backgroundColor: const Color(0xFF1E1E1E),
+                textColor: Colors.white,
+                iconBgColor: const Color(0xFF2A2A2A),
               ),
             ),
           ],
@@ -318,9 +325,9 @@ class _HomeTabState extends State<HomeTab> {
                 title: 'Risque Fraude',
                 value: '${avgFraudScore.toStringAsFixed(0)}%',
                 icon: Icons.gpp_maybe_outlined,
-                backgroundColor: const Color(0xFFFDF2F4),
-                textColor: const Color(0xFFDB2777),
-                iconBgColor: Colors.white,
+                backgroundColor: const Color(0xFF1E1E1E),
+                textColor: Colors.white,
+                iconBgColor: const Color(0xFF2A2A2A),
               ),
             ),
             const SizedBox(width: 12),
@@ -329,9 +336,9 @@ class _HomeTabState extends State<HomeTab> {
                 title: 'A vérifier',
                 value: '${_invoices.where((i) => i.statut == 'nouveau' || i.statut == 'en_verification').length}',
                 icon: Icons.pending_actions_rounded,
-                backgroundColor: const Color(0xFFFFF7ED),
-                textColor: const Color(0xFFEA580C),
-                iconBgColor: Colors.white,
+                backgroundColor: const Color(0xFF1E1E1E),
+                textColor: Colors.white,
+                iconBgColor: const Color(0xFF2A2A2A),
               ),
             ),
           ],
@@ -346,13 +353,12 @@ class _HomeTabState extends State<HomeTab> {
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFFE5E5EB)),
+        side: const BorderSide(color: Color(0xFF2A2A2A)),
       ),
-      color: Colors.white,
+      color: const Color(0xFF1E1E1E),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
-          // Open details modal
           InvoiceDetailModal.show(context, invoice, onActionComplete: _loadData);
         },
         child: Padding(
@@ -360,7 +366,7 @@ class _HomeTabState extends State<HomeTab> {
           child: Column(
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.between,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Text(
@@ -368,6 +374,7 @@ class _HomeTabState extends State<HomeTab> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
+                        color: Colors.white,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -378,7 +385,7 @@ class _HomeTabState extends State<HomeTab> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF4F46E5),
+                      color: Color(0xFF8B5CF6), // Neon Purple
                       fontFamily: 'Outfit',
                     ),
                   ),
@@ -386,32 +393,32 @@ class _HomeTabState extends State<HomeTab> {
               ),
               const SizedBox(height: 8),
               Row(
-                mainAxisAlignment: MainAxisAlignment.between,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'N° ${invoice.numero}',
                     style: const TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF5F6168),
+                      color: Color(0xFFA1A1AA),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   StatusBadge(status: invoice.statut),
                 ],
               ),
-              const Divider(height: 24, color: Color(0xFFE5E5EB)),
+              const Divider(height: 24, color: Color(0xFF2A2A2A)),
               Row(
-                mainAxisAlignment: MainAxisAlignment.between,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.shield_outlined, size: 14, color: Color(0xFF8F9199)),
+                      const Icon(Icons.shield_outlined, size: 14, color: Color(0xFFA1A1AA)),
                       const SizedBox(width: 4),
                       Text(
                         'Score de Fraude: ${invoice.fraudScore.toStringAsFixed(0)}%',
                         style: TextStyle(
                           fontSize: 12,
-                          color: invoice.fraudScore > 50 ? Colors.red : const Color(0xFF5F6168),
+                          color: invoice.fraudScore > 50 ? const Color(0xFFEF4444) : const Color(0xFFA1A1AA),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -419,13 +426,13 @@ class _HomeTabState extends State<HomeTab> {
                   ),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today_outlined, size: 12, color: Color(0xFF8F9199)),
+                      const Icon(Icons.calendar_today_outlined, size: 12, color: Color(0xFFA1A1AA)),
                       const SizedBox(width: 4),
                       Text(
                         '${invoice.dateFacture.day.toString().padLeft(2, '0')}/${invoice.dateFacture.month.toString().padLeft(2, '0')}/${invoice.dateFacture.year}',
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF8F9199),
+                          color: Color(0xFFA1A1AA),
                         ),
                       ),
                     ],
@@ -443,22 +450,22 @@ class _HomeTabState extends State<HomeTab> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 40),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E5EB)),
+        border: Border.all(color: const Color(0xFF2A2A2A)),
       ),
       child: const Column(
         children: [
-          Icon(Icons.receipt_long_rounded, size: 48, color: Color(0xFF8F9199)),
+          Icon(Icons.receipt_long_rounded, size: 48, color: Color(0xFFA1A1AA)),
           SizedBox(height: 12),
           Text(
             'Aucune facture trouvée',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           SizedBox(height: 4),
           Text(
             'Déposez des documents dans l\'onglet Capture.',
-            style: TextStyle(color: Color(0xFF8F9199), fontSize: 13),
+            style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
           ),
         ],
       ),
@@ -472,23 +479,23 @@ class _HomeTabState extends State<HomeTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.cloud_off_rounded, size: 64, color: Colors.redAccent),
+            const Icon(Icons.cloud_off_rounded, size: 64, color: Color(0xFFEF4444)),
             const SizedBox(height: 16),
             const Text(
               'Erreur de Chargement',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             const SizedBox(height: 8),
             Text(
               _error,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF5F6168), fontSize: 14),
+              style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 14),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _loadData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4F46E5),
+                backgroundColor: const Color(0xFF8B5CF6),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
               ),
               child: const Text('Réessayer', style: TextStyle(color: Colors.white)),
@@ -499,3 +506,4 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 }
+

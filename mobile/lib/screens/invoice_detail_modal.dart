@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../models/invoice.dart';
 import '../services/api_service.dart';
@@ -78,16 +79,10 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
     });
 
     try {
-      final comment = _commentController.text.trim();
-      final updated = await ApiService.updateInvoiceStatus(
-        _invoice.id,
-        newStatus,
-        comment: comment.isNotEmpty ? comment : null,
-      );
+      await ApiService.updateInvoiceStatus(_invoice.id, newStatus);
 
       if (mounted) {
         setState(() {
-          _invoice = updated;
           _isLoading = false;
           _commentController.clear();
         });
@@ -95,8 +90,8 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            backgroundColor: Colors.green,
-            content: Text('Facture mise à jour avec succès : $newStatus'),
+            backgroundColor: const Color(0xFF0D9488),
+            content: Text('Facture mise à jour avec succès : $newStatus', style: const TextStyle(color: Colors.white)),
           ),
         );
       }
@@ -117,7 +112,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFF1E1E1E),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
@@ -129,7 +124,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
       child: FractionallySizedBox(
         heightFactor: 0.8,
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator(color: Color(0xFF8B5CF6)))
             : SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -140,7 +135,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         width: 40,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE5E5EB),
+                          color: const Color(0xFF2A2A2A),
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
@@ -149,7 +144,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
 
                     // Header Info
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.between,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
@@ -162,6 +157,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                                   fontSize: 20,
                                   fontWeight: FontWeight.w800,
                                   fontFamily: 'Outfit',
+                                  color: Colors.white,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -169,7 +165,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                                 'N° ${_invoice.numero}',
                                 style: const TextStyle(
                                   fontSize: 14,
-                                  color: Color(0xFF8F9199),
+                                  color: Color(0xFFA1A1AA),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -179,7 +175,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         StatusBadge(status: _invoice.statut),
                       ],
                     ),
-                    const Divider(height: 32, color: Color(0xFFE5E5EB)),
+                    const Divider(height: 32, color: Color(0xFF2A2A2A)),
 
                     // Montants Section
                     Row(
@@ -190,7 +186,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         _buildAmountBlock('Total TTC', _invoice.montantTtc, _invoice.devise, isPrimary: true),
                       ],
                     ),
-                    const Divider(height: 32, color: Color(0xFFE5E5EB)),
+                    const Divider(height: 32, color: Color(0xFF2A2A2A)),
 
                     // IBAN & Date details
                     _buildDetailRow('IBAN Extrait', _invoice.iban.isNotEmpty ? _invoice.iban : 'Aucun'),
@@ -204,23 +200,23 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                       'Reçue le',
                       '${_invoice.dateReception.day.toString().padLeft(2, '0')}/${_invoice.dateReception.month.toString().padLeft(2, '0')}/${_invoice.dateReception.year}',
                     ),
-                    const Divider(height: 32, color: Color(0xFFE5E5EB)),
+                    const Divider(height: 32, color: Color(0xFF2A2A2A)),
 
                     // Risk indicators
                     RiskIndicator(score: _invoice.fraudScore),
                     
                     // Fraud logs details
-                    if (_invoice.fraudDetails != null && _invoice.fraudDetails!.isNotEmpty) ...[
+                    if (_invoice.fraudeAlertes != null && _invoice.fraudeAlertes!.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       const Text(
                         'Indicateurs de fraude détectés :',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5F6168)),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA)),
                       ),
                       const SizedBox(height: 6),
-                      ..._invoice.fraudDetails!.map((flag) => _buildFraudFlagItem(flag)),
+                      ..._invoice.fraudeAlertes!.map((flag) => _buildFraudFlagItem(flag)),
                     ],
                     
-                    const Divider(height: 32, color: Color(0xFFE5E5EB)),
+                    const Divider(height: 32, color: Color(0xFF2A2A2A)),
 
                     // Compliance rules checklist
                     const Text(
@@ -229,26 +225,34 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
                         fontFamily: 'Outfit',
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 10),
                     _buildComplianceSection(),
-                    const Divider(height: 32, color: Color(0xFFE5E5EB)),
+                    const Divider(height: 32, color: Color(0xFF2A2A2A)),
 
                     // Action controls for Reviewers
                     if (showActions && isPending) ...[
                       const Text(
                         'Décision & Commentaires',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _commentController,
                         maxLines: 2,
+                        style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: 'Saisissez un commentaire ou motif de rejet...',
+                          hintStyle: const TextStyle(color: Color(0xFF5F6168)),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
                           ),
                           contentPadding: const EdgeInsets.all(12),
                         ),
@@ -260,8 +264,8 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                             child: OutlinedButton(
                               onPressed: () => _handleStatusChange('rejete'),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.redAccent,
-                                side: const BorderSide(color: Colors.redAccent, width: 1.5),
+                                foregroundColor: const Color(0xFFF87171),
+                                side: const BorderSide(color: Color(0xFFF87171), width: 1.5),
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                               ),
@@ -288,7 +292,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
                       ElevatedButton(
                         onPressed: () => Navigator.pop(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4F46E5),
+                          backgroundColor: const Color(0xFF8B5CF6),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -310,7 +314,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
         Text(
           label,
           style: const TextStyle(
-            color: Color(0xFF8F9199),
+            color: Color(0xFFA1A1AA),
             fontSize: 11,
             fontWeight: FontWeight.w500,
           ),
@@ -321,7 +325,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
           style: TextStyle(
             fontSize: isPrimary ? 18 : 14,
             fontWeight: isPrimary ? FontWeight.w800 : FontWeight.bold,
-            color: isPrimary ? const Color(0xFF4F46E5) : const Color(0xFF12100F),
+            color: isPrimary ? const Color(0xFF8B5CF6) : Colors.white,
             fontFamily: 'Outfit',
           ),
         ),
@@ -338,7 +342,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
           child: Text(
             label,
             style: const TextStyle(
-              color: Color(0xFF8F9199),
+              color: Color(0xFFA1A1AA),
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
@@ -350,6 +354,7 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 13,
+              color: Colors.white,
             ),
           ),
         ),
@@ -380,9 +385,9 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
           Expanded(
             child: Text(
               description,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
-                color: Colors.grey.shade800,
+                color: Color(0xFFD4D4D8),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -393,62 +398,73 @@ class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
   }
 
   Widget _buildComplianceSection() {
-    // If compliance results are loaded
-    if (_invoice.complianceResults != null && _invoice.complianceResults!['checks'] != null) {
-      final List<dynamic> checks = _invoice.complianceResults!['checks'];
-      return Column(
-        children: checks.map<Widget>((check) {
-          final String ruleName = check['rule'] ?? 'Vérification';
-          final bool passed = check['passed'] ?? false;
-          final String message = check['message'] ?? '';
+    // Try to parse conformite_details JSON string from the backend
+    if (_invoice.conformiteDetails != null) {
+      try {
+        final dynamic parsed = _invoice.conformiteDetails is String 
+            ? jsonDecode(_invoice.conformiteDetails!)
+            : _invoice.conformiteDetails;
+        if (parsed is List) {
+          return Column(
+            children: parsed.map<Widget>((check) {
+              final String ruleName = check['rule']?.toString() ?? 'Vérification';
+              final bool passed = check['passed'] == true;
+              final String message = check['message']?.toString() ?? '';
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                  color: passed ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        ruleName,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (message.isNotEmpty)
-                        Text(
-                          message,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: passed ? Colors.grey.shade600 : const Color(0xFFEF4444),
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                      color: passed ? const Color(0xFF10B981) : const Color(0xFFF87171),
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            ruleName,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
+                          if (message.isNotEmpty)
+                            Text(
+                              message,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: passed ? const Color(0xFFA1A1AA) : const Color(0xFFF87171),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            }).toList(),
           );
-        }).toList(),
-      );
+        }
+      } catch (_) {
+        // Fall through to default display
+      }
     }
 
-    // Default static fallback display
-    return const Column(
+    // Show conformite_valide status or default static fallback
+    final bool isValid = _invoice.conformiteValide ?? true;
+    return Column(
       children: [
-        ComplianceItem(title: 'Champs obligatoires requis', passed: true),
-        ComplianceItem(title: 'Calcul de TVA cohérent (HT + TVA = TTC)', passed: true),
-        ComplianceItem(title: 'IBAN au format valide', passed: true),
-        ComplianceItem(title: 'Date de facturation valide', passed: true),
+        ComplianceItem(title: 'Conformité globale', passed: isValid),
+        const ComplianceItem(title: 'Champs obligatoires requis', passed: true),
+        const ComplianceItem(title: 'Calcul de TVA cohérent (HT + TVA = TTC)', passed: true),
+        const ComplianceItem(title: 'IBAN au format valide', passed: true),
+        const ComplianceItem(title: 'Date de facturation valide', passed: true),
       ],
     );
   }
@@ -468,7 +484,7 @@ class ComplianceItem extends StatelessWidget {
         children: [
           Icon(
             passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
-            color: passed ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+            color: passed ? const Color(0xFF10B981) : const Color(0xFFF87171),
             size: 18,
           ),
           const SizedBox(width: 8),
@@ -478,6 +494,7 @@ class ComplianceItem extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),

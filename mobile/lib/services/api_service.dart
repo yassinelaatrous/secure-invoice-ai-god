@@ -4,12 +4,12 @@ import '../models/invoice.dart';
 import 'auth_service.dart';
 
 class ApiService {
-  // Get invoices list
+  // Get invoices list — backend endpoint is /api/factures
   static Future<List<Invoice>> getInvoices() async {
     try {
       final headers = await AuthService.getAuthHeaders();
       final response = await http.get(
-        Uri.parse('${AuthService.baseUrl}/invoices'),
+        Uri.parse('${AuthService.baseUrl}/factures'),
         headers: headers,
       );
 
@@ -24,12 +24,12 @@ class ApiService {
     }
   }
 
-  // Get invoice details by id
+  // Get invoice details by id — backend endpoint is /api/factures/{id}
   static Future<Invoice> getInvoiceDetails(int id) async {
     try {
       final headers = await AuthService.getAuthHeaders();
       final response = await http.get(
-        Uri.parse('${AuthService.baseUrl}/invoices/$id'),
+        Uri.parse('${AuthService.baseUrl}/factures/$id'),
         headers: headers,
       );
 
@@ -43,11 +43,11 @@ class ApiService {
     }
   }
 
-  // Upload an invoice file/image and parse via OCR
-  static Future<Invoice> uploadInvoice(String filePath, {bool isMock = false}) async {
+  // Upload an invoice file/image and parse via OCR — backend endpoint is /api/upload
+  static Future<Map<String, dynamic>> uploadInvoice(String filePath) async {
     try {
       final token = await AuthService.getToken();
-      final uri = Uri.parse('${AuthService.baseUrl}/invoices/upload');
+      final uri = Uri.parse('${AuthService.baseUrl}/upload');
       
       final request = http.MultipartRequest('POST', uri);
       if (token != null) {
@@ -60,51 +60,46 @@ class ApiService {
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return Invoice.fromJson(jsonDecode(response.body));
+        return jsonDecode(response.body);
       } else {
-        throw Exception('Erreur lors du traitement OCR de la facture (Code ${response.statusCode}): ${response.body}');
+        throw Exception('Erreur OCR (Code ${response.statusCode}): ${response.body}');
       }
     } catch (e) {
       throw Exception('Erreur de transmission : $e');
     }
   }
 
-  // Update invoice fields
-  static Future<Invoice> updateInvoice(int id, Map<String, dynamic> fields) async {
+  // Create facture from extracted data — backend endpoint is POST /api/factures
+  static Future<Invoice> createFacture(Map<String, dynamic> factureData) async {
     try {
       final headers = await AuthService.getAuthHeaders();
-      final response = await http.put(
-        Uri.parse('${AuthService.baseUrl}/invoices/$id'),
+      final response = await http.post(
+        Uri.parse('${AuthService.baseUrl}/factures'),
         headers: headers,
-        body: jsonEncode(fields),
+        body: jsonEncode(factureData),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return Invoice.fromJson(jsonDecode(response.body));
       } else {
-        throw Exception('Erreur de mise à jour (Code ${response.statusCode})');
+        throw Exception('Erreur de création (Code ${response.statusCode})');
       }
     } catch (e) {
       throw Exception('Erreur réseau : $e');
     }
   }
 
-  // Change invoice status (valider/rejeter/archiver)
-  static Future<Invoice> updateInvoiceStatus(int id, String status, {String? comment}) async {
+  // Change invoice status — backend endpoint is PUT /api/factures/{id}/statut
+  static Future<void> updateInvoiceStatus(int id, String status) async {
     try {
       final headers = await AuthService.getAuthHeaders();
-      final response = await http.patch(
-        Uri.parse('${AuthService.baseUrl}/invoices/$id/status'),
+      final response = await http.put(
+        Uri.parse('${AuthService.baseUrl}/factures/$id/statut'),
         headers: headers,
-        body: jsonEncode({
-          'statut': status,
-          if (comment != null) 'commentaire': comment,
-        }),
+        body: jsonEncode({'statut': status}),
       );
 
-      if (response.statusCode == 200) {
-        return Invoice.fromJson(jsonDecode(response.body));
-      } else {
+      if (response.statusCode != 200) {
         throw Exception('Erreur lors du changement de statut (Code ${response.statusCode})');
       }
     } catch (e) {
@@ -112,20 +107,25 @@ class ApiService {
     }
   }
 
-  // Get KPI dashboard metrics
+  // Get dashboard stats — computed client-side from factures list
   static Future<Map<String, dynamic>> getDashboardStats() async {
     try {
-      final headers = await AuthService.getAuthHeaders();
-      final response = await http.get(
-        Uri.parse('${AuthService.baseUrl}/dashboard/stats'),
-        headers: headers,
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Erreur de statistiques (Code ${response.statusCode})');
-      }
+      final invoices = await getInvoices();
+      
+      final total = invoices.length;
+      final totalTtc = invoices.fold<double>(0, (sum, inv) => sum + inv.montantTtc);
+      final validated = invoices.where((inv) => inv.statut == 'validee' || inv.statut == 'controlee').length;
+      final pending = invoices.where((inv) => inv.statut == 'brouillon' || inv.statut == 'nouveau').length;
+      final avgFraud = total > 0 ? invoices.fold<double>(0, (sum, inv) => sum + inv.fraudScore) / total : 0.0;
+      
+      return {
+        'total_factures': total,
+        'total_montant': totalTtc,
+        'factures_validees': validated,
+        'factures_en_attente': pending,
+        'risque_moyen': avgFraud,
+        'invoices': invoices,
+      };
     } catch (e) {
       throw Exception('Erreur de connexion : $e');
     }

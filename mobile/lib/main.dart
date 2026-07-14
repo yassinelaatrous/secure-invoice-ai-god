@@ -24,36 +24,45 @@ class SecureInvoiceApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF121212),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4F46E5), // Indigo Accent
-          primary: const Color(0xFF4F46E5),
-          secondary: const Color(0xFF8B5CF6),
-          background: const Color(0xFFEAEAEE),
+          brightness: Brightness.dark,
+          seedColor: const Color(0xFF8B5CF6), // Neon Purple Accent
+          primary: const Color(0xFF8B5CF6),
+          secondary: const Color(0xFFD8B4FE),
+          surface: const Color(0xFF1E1E1E),
+          onSurface: Colors.white,
         ),
-        fontFamily: 'Inter', // Default fallback font
+        fontFamily: 'Inter',
         textTheme: const TextTheme(
-          displayLarge: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w800),
-          displayMedium: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w800),
-          displaySmall: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w800),
-          headlineLarge: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700),
-          headlineMedium: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700),
-          titleLarge: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold),
+          displayLarge: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w800, color: Colors.white),
+          displayMedium: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w800, color: Colors.white),
+          displaySmall: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w800, color: Colors.white),
+          headlineLarge: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700, color: Colors.white),
+          headlineMedium: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700, color: Colors.white),
+          titleLarge: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, color: Colors.white),
+          bodyLarge: TextStyle(color: Colors.white70),
+          bodyMedium: TextStyle(color: Colors.white70),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white,
-          focusColor: Colors.white,
+          fillColor: const Color(0xFF2A2A2A),
+          focusColor: const Color(0xFF2A2A2A),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE5E5EB)),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 2),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 2),
           ),
           labelStyle: const TextStyle(
-            color: Color(0xFF5F6168),
+            color: Color(0xFFA1A1AA),
             fontWeight: FontWeight.w500,
+          ),
+          hintStyle: const TextStyle(
+            color: Color(0xFFA1A1AA),
           ),
         ),
       ),
