@@ -1011,34 +1011,7 @@ class _HomeTabState extends State<HomeTab> {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.black.withOpacity(0.05)),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(icon, color: AppTheme.primary, size: 20),
-            if (showBadge)
-              Positioned(
-                right: 10,
-                top: 10,
-                child: Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.error,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCashPositionCard() {
+          color: Colors.white.with  Widget _buildCashPositionCard() {
     final double totalTtc = _computeTotalTtc();
     final currencyFormat = NumberFormat('#,##0', 'en_US');
     final String wholePart = currencyFormat.format(totalTtc.truncate());
@@ -1051,8 +1024,27 @@ class _HomeTabState extends State<HomeTab> {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AppTheme.primary,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0F2519), // Deepest forest green
+            Color(0xFF1C3A2A), // Dark forest green
+            Color(0xFF2E5B44), // Rich emerald green
+          ],
+        ),
         borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F2519).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.08),
+          width: 1.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1122,7 +1114,7 @@ class _HomeTabState extends State<HomeTab> {
           ),
           const SizedBox(height: 10),
 
-          // Invoice count badge (replaces hardcoded +12.4%)
+          // Invoice count badge
           Row(
             children: [
               Container(
@@ -1163,7 +1155,7 @@ class _HomeTabState extends State<HomeTab> {
           ),
           const SizedBox(height: 18),
 
-          // Bar Chart (dynamic from real data)
+          // Bar Chart
           _buildBarChart(),
           const SizedBox(height: 18),
 
@@ -1171,7 +1163,7 @@ class _HomeTabState extends State<HomeTab> {
           Divider(color: Colors.white.withOpacity(0.1), height: 1),
           const SizedBox(height: 14),
 
-          // Stats Row (computed from real data)
+          // Stats Row
           Row(
             children: [
               _StatItem(label: 'INFLOW', value: '\$${_formatCompact(inflow)}'),
@@ -1187,19 +1179,42 @@ class _HomeTabState extends State<HomeTab> {
   Widget _buildBarChart() {
     final values = _computeBarChartValues();
     return SizedBox(
-      height: 48,
+      height: 52,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: values.asMap().entries.map((entry) {
           final isLast = entry.key == values.length - 1;
+          final double heightPercent = entry.value;
           return Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2.5),
+              padding: const EdgeInsets.symmetric(horizontal: 3),
               child: Container(
-                height: 48 * entry.value,
+                height: 52 * heightPercent,
                 decoration: BoxDecoration(
-                  color: isLast ? AppTheme.accent : Colors.white.withOpacity(0.15),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                  gradient: isLast
+                      ? const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [AppTheme.accent, Color(0xFF98D930)],
+                        )
+                      : LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white.withOpacity(0.25),
+                            Colors.white.withOpacity(0.05),
+                          ],
+                        ),
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: isLast
+                      ? [
+                          BoxShadow(
+                            color: AppTheme.accent.withOpacity(0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, -2),
+                          )
+                        ]
+                      : null,
                 ),
               ),
             ),
@@ -1227,19 +1242,33 @@ class _HomeTabState extends State<HomeTab> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.black.withOpacity(0.04)),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppTheme.cardBorder, width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
-                    Icon(action.icon, size: 22, color: AppTheme.primary),
-                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: AppTheme.backgroundLight,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(action.icon, size: 20, color: AppTheme.primary),
+                    ),
+                    const SizedBox(height: 8),
                     Text(
                       action.label,
                       style: GoogleFonts.dmSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
                         color: AppTheme.primary,
                       ),
                     ),
@@ -1258,50 +1287,78 @@ class _HomeTabState extends State<HomeTab> {
     final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
 
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.5),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black.withOpacity(0.04)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.accent.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.auto_awesome_outlined, color: AppTheme.primary, size: 20),
+        border: Border.all(color: AppTheme.cardBorder, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          border: const Border(
+            left: BorderSide(color: AppTheme.accentGreen, width: 4),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentGreen.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.auto_awesome_outlined, color: AppTheme.accentGreen, size: 18),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'AI INSIGHT',
-                      style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.primary, letterSpacing: 0.8),
+                    Row(
+                      children: [
+                        Text(
+                          'AI INSIGHT',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.primary,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          timeStr,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 10,
+                            color: AppTheme.textSecondary.withOpacity(0.6),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 4),
                     Text(
-                      timeStr,
-                      style: GoogleFonts.dmSans(fontSize: 10, color: AppTheme.primary.withOpacity(0.4), fontWeight: FontWeight.bold),
+                      '"${_computeAiInsight()}"',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: AppTheme.textPrimary,
+                        height: 1.45,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '"${_computeAiInsight()}"',
-                  style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.primary.withOpacity(0.8), height: 1.4),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1309,9 +1366,16 @@ class _HomeTabState extends State<HomeTab> {
   Widget _buildInvoiceRowCard(Invoice invoice) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.6),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black.withOpacity(0.03)),
+        border: Border.all(color: AppTheme.cardBorder, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -1324,21 +1388,18 @@ class _HomeTabState extends State<HomeTab> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                // Vendor Icon
                 Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppTheme.primary.withOpacity(0.06),
+                    color: AppTheme.primary.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Center(
-                    child: Icon(Icons.business_outlined, color: AppTheme.primary.withOpacity(0.7), size: 20),
+                    child: Icon(Icons.business_outlined, color: AppTheme.primary.withOpacity(0.8), size: 20),
                   ),
                 ),
-                const SizedBox(width: 12),
-
-                // Invoice details
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1346,26 +1407,25 @@ class _HomeTabState extends State<HomeTab> {
                       Text(
                         invoice.fournisseur,
                         style: GoogleFonts.dmSans(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.primary,
+                          color: AppTheme.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 4),
                       Text(
                         'N° ${invoice.numero}',
                         style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          color: AppTheme.primary.withOpacity(0.5),
+                          fontSize: 11,
+                          color: AppTheme.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                // Amount & Status Badge
+                const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -1374,7 +1434,7 @@ class _HomeTabState extends State<HomeTab> {
                       style: GoogleFonts.dmSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: AppTheme.primary,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -1382,10 +1442,6 @@ class _HomeTabState extends State<HomeTab> {
                   ],
                 ),
               ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
