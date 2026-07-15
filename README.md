@@ -9,13 +9,15 @@ Ce projet a été conçu selon des principes de développement professionnels af
 
 ## 📸 Aperçu de l'Application (Thème Cream & Forest Green)
 
-| Écran de Connexion | Tableau de Bord | Capture OCR & Scan |
-| :---: | :---: | :---: |
-| ![Connexion](screenshots/screenshot_login.jpg) | ![Tableau de Bord](screenshots/screenshot_dashboard.jpg) | ![Capture OCR](screenshots/screenshot_capture.jpg) |
+| Écran de Connexion | Tableau de Bord | Capture OCR & Scan | Animation IA / Chargement |
+| :---: | :---: | :---: | :---: |
+| ![Connexion](screenshots/screenshot_login.png) | ![Tableau de Bord](screenshots/screenshot_dashboard.png) | ![Capture OCR](screenshots/screenshot_capture.png) | ![Animation IA](screenshots/screenshot_loading.png) |
 
-| Liste des Factures | Configuration & Profil |
-| :---: | :---: |
-| ![Liste des Factures](screenshots/screenshot_factures.jpg) | ![Profil](screenshots/screenshot_admin.jpg) |
+### 🎥 Démo Vidéo en Action (Walkthrough)
+
+Découvrez le scénario de navigation complet et l'animation personnalisée de traitement de fichiers en action :
+
+<video src="screenshots/demo.webm" width="320" height="640" controls></video>
 
 ---
 
