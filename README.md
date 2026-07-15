@@ -17,7 +17,10 @@ Ce projet a été conçu selon des principes de développement professionnels af
 
 Découvrez le scénario de navigation complet et l'animation personnalisée de traitement de fichiers en action :
 
-<video src="screenshots/demo.mp4" width="320" height="640" controls></video>
+<video src="https://github.com/yassinelaatrous/secure-invoice-ai/blob/main/screenshots/demo.mp4?raw=true" width="320" height="640" controls></video>
+
+*Si le lecteur ci-dessus ne s'affiche pas, vous pouvez visionner ou télécharger la vidéo directement ici :*  
+[▶ Cliquer ici pour lancer la vidéo de démonstration (demo.mp4)](https://github.com/yassinelaatrous/secure-invoice-ai/blob/main/screenshots/demo.mp4?raw=true)
 
 ---
 
