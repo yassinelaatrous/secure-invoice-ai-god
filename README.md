@@ -17,7 +17,7 @@ Ce projet a été conçu selon des principes de développement professionnels af
 
 Découvrez le scénario de navigation complet et l'animation personnalisée de traitement de fichiers en action :
 
-<video src="screenshots/demo.webm" width="320" height="640" controls></video>
+<video src="screenshots/demo.mp4" width="320" height="640" controls></video>
 
 ---
 
