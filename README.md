@@ -9,13 +9,13 @@ Ce projet a été conçu selon des principes de développement professionnels af
 
 ## 📸 Aperçu de l'Application (Thème Cream & Forest Green)
 
-| Écran de Connexion (Animations fluides) | Tableau de Bord (KPIs Dynamiques & Graphiques) |
-| :---: | :---: |
-| ![Connexion](screenshots/screenshot_login.png) | ![Tableau de Bord](screenshots/screenshot_dashboard.png) |
+| Écran de Connexion | Tableau de Bord | Capture OCR & Scan |
+| :---: | :---: | :---: |
+| ![Connexion](screenshots/screenshot_login.jpg) | ![Tableau de Bord](screenshots/screenshot_dashboard.jpg) | ![Capture OCR](screenshots/screenshot_capture.jpg) |
 
-| Capture OCR Interactive & Formulaire | Validation Métier (Espace Comptable) |
+| Liste des Factures | Configuration & Profil |
 | :---: | :---: |
-| ![Capture OCR](screenshots/screenshot_capture.png) | ![Imports PDF](screenshots/screenshot_admin.png) |
+| ![Liste des Factures](screenshots/screenshot_factures.jpg) | ![Profil](screenshots/screenshot_admin.jpg) |
 
 ---
 
