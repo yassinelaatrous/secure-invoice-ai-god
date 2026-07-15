@@ -1,6 +1,9 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_theme.dart';
+import 'file_fetching_loader.dart';
 
 class AiProcessingOverlay extends StatefulWidget {
   final AnimationController controller;
@@ -63,22 +66,25 @@ class _AiProcessingOverlayState extends State<AiProcessingOverlay>
   @override
   Widget build(BuildContext context) {
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
       child: Container(
-        color: const Color(0xFF0D0D1A).withAlpha(204),
+        color: AppTheme.backgroundLight.withOpacity(0.85),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Animated AI orb
-              _AnimatedAiOrb(controller: widget.controller),
+              // Custom File Fetching Loader
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 40),
+                child: FileFetchingLoader(),
+              ),
               const SizedBox(height: 32),
-              const Text(
+              Text(
                 'AI Processing',
-                style: TextStyle(
-                  fontSize: 22,
+                style: GoogleFonts.fraunces(
+                  fontSize: 24,
                   fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                  color: AppTheme.textPrimary,
                   letterSpacing: -0.5,
                 ),
               ),
@@ -88,9 +94,10 @@ class _AiProcessingOverlayState extends State<AiProcessingOverlay>
                 child: Text(
                   _steps[_currentStep],
                   key: ValueKey(_currentStep),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.white.withAlpha(128),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.textSecondary,
                   ),
                 ),
               ),
@@ -106,11 +113,11 @@ class _AiProcessingOverlayState extends State<AiProcessingOverlay>
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: _progressAnim.value,
-                          backgroundColor: Colors.white.withAlpha(26),
+                          backgroundColor: AppTheme.cardBorder,
                           valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFF7C6FF7),
+                            AppTheme.primary,
                           ),
-                          minHeight: 4,
+                          minHeight: 5,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -119,18 +126,19 @@ class _AiProcessingOverlayState extends State<AiProcessingOverlay>
                         children: [
                           Text(
                             '${(_progressAnim.value * 100).toInt()}%',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF7C6FF7),
-                              fontWeight: FontWeight.w700,
-                              fontFeatures: [FontFeature.tabularFigures()],
+                            style: GoogleFonts.dmSans(
+                              fontSize: 12,
+                              color: AppTheme.primary,
+                              fontWeight: FontWeight.w800,
+                              fontFeatures: const [FontFeature.tabularFigures()],
                             ),
                           ),
                           Text(
                             'AI Extraction',
-                            style: TextStyle(
+                            style: GoogleFonts.dmSans(
                               fontSize: 11,
-                              color: Colors.white.withAlpha(77),
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textSecondary.withOpacity(0.8),
                             ),
                           ),
                         ],
