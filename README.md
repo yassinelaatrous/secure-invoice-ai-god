@@ -1,96 +1,84 @@
-# SecureInvoice AI - Mobile Client 🚀
+# CEO-IT Mobile Client - Standalone Offline Prototype 🚀
+**Auteur & Développeur Full-Stack : Yassine Atrous**
 
-[![CI/CD Build](https://github.com/yassinelaatrous/secure-invoice-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/yassinelaatrous/secure-invoice-ai/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+Bienvenue dans le dépôt officiel de l'application mobile **CEO-IT**, une solution mobile autonome, intelligente et sécurisée de capture et de suivi de factures (OCR, conformité réglementaire et détection de fraude).
 
-Bienvenue dans **SecureInvoice AI Mobile**, l'application cliente mobile ultime de gestion de factures alimentée par l'Intelligence Artificielle. Ce projet a été repensé pour offrir une expérience utilisateur exceptionnelle utilisant un design moderne crème, vert forêt profond et vert lime (Cream & Forest Green Theme), inspiré de l'esthétique haut de gamme d'applications premium, avec des animations fluides, du verre dépoli (glassmorphism) et des composants soignés.
+Ce projet a été conçu selon des principes de développement professionnels afin de proposer un **prototype standalone haut de gamme** (Mock Sandbox) fonctionnant de manière autonome et sécurisée, sans dépendance réseau externe.
 
 ---
 
-## 📸 Aperçu de l'Application (Premium Cream & Forest Green Theme)
+## 📸 Aperçu de l'Application (Thème Cream & Forest Green)
 
-| Écran de Connexion (Design Premium & Animations) | Tableau de Bord (KPIs Réels, Graphiques & Actions) |
+| Écran de Connexion (Animations fluides) | Tableau de Bord (KPIs Dynamiques & Graphiques) |
 | :---: | :---: |
 | ![Connexion](screenshots/screenshot_login.png) | ![Tableau de Bord](screenshots/screenshot_dashboard.png) |
 
-| Capture OCR & Zones Interactives | Historique & Imports PDF |
+| Capture OCR Interactive & Formulaire | Validation Métier (Espace Comptable) |
 | :---: | :---: |
-| ![Capture OCR](screenshots/screenshot_capture.png) | ![Imports PDF](screenshots/screenshot_factures.png) |
-
-| Vue Profil & Configuration Serveur |
-| :---: |
-| ![Profil](screenshots/screenshot_admin.png) |
+| ![Capture OCR](screenshots/screenshot_capture.png) | ![Imports PDF](screenshots/screenshot_admin.png) |
 
 ---
 
-## 🌟 Fonctionnalités & "Ce qui fonctionne" (What Works)
+## 🌟 Fonctionnalités Standalone & Simulateur IA (Offline Sandbox)
 
-L'application mobile est entièrement fonctionnelle et prête pour la démonstration :
-*   **Connexion Animée (Jobsly Style)** : Écran d'accueil avec un dégradé vert épuré, un panneau de connexion blanc qui glisse vers le haut avec un effet de fondu-enchaîné, et des boutons d'accès rapide simulant des connexions sociales pour chaque rôle.
-*   **Tableau de Bord Dynamique (KPIs)** : Affichage d'indicateurs de performance clés (KPI) avec des couleurs de contraste vert/rouge/orange adaptées à l'état des factures.
-*   **Scan OCR Interactif** : Capture photo (Caméra/Galerie) envoyant le document au serveur pour extraction. L'utilisateur peut prévisualiser les zones de capture en surbrillance rouge sur l'image et ajuster les données extraites via un formulaire interactif.
-*   **Importation PDF** : Sélection de fichiers PDF locaux avec affichage d'une barre de progression de téléversement et mise à jour dynamique de l'historique des documents.
-*   **Gestion des Profils & URL API** : Liaison avec l'adresse IP locale de votre machine pour tester l'application directement sur un smartphone physique connecté au même réseau.
-
----
-
-## 📘 Documentation Technique & Choix Technologiques (Why & Why Not)
-
-Cette section détaille l'ingénierie derrière l'application mobile et justifie les décisions d'architecture pour les examinateurs techniques.
-
-### 1. Pourquoi Flutter & Dart ? (vs React Native or Native iOS/Android)
-*   **Performance Exceptionnelle (Impeller Engine)** : Flutter compile directement en code machine natif ARM et utilise Impeller pour le rendu graphique à 60/120 FPS. React Native dépend d'un pont JavaScript (bridge) ou de composants natifs via JSI, ce qui peut créer des micro-saccades sur des rendus complexes comme les tracés de zones OCR.
-*   **Code Unique pour Multi-Platforme** : Dart permet d'assurer une fidélité graphique identique au pixel près sur iOS et Android, évitant de coder deux fois l'UI complexe des boîtes de collision OCR.
-*   **Pourquoi pas Native (Swift/Kotlin) ?** : Pour un projet académique ou de démonstration (PFE), la double base de code native multiplierait le temps de développement par deux sans apporter de bénéfice de performance perceptible pour cette typologie d'application.
-
-### 2. Pourquoi une API REST classique ? (vs GraphQL)
-*   **Traitement de Fichiers Binaires** : GraphQL est idéal pour les graphes de données complexes et les requêtes spécifiques, mais il est moins adapté et plus lourd pour le téléversement de fichiers binaires bruts (images et PDFs de factures). L'utilisation d'endpoints HTTP POST `multipart/form-data` standards est plus rapide, plus simple et parfaitement gérée par la bibliothèque Dart `http`.
-
-### 3. Pourquoi SQLite pour l'évaluation ? (vs PostgreSQL)
-*   **Objectif Zéro Configuration (Instant Setup)** : Pour évaluer le projet, un examinateur ne devrait pas avoir à installer un serveur PostgreSQL local et configurer des conteneurs complexes. SQLite stocke les données dans un simple fichier local (`secure_invoice.db`), éliminant tout frottement d'installation. L'ORM SQLAlchemy utilisé dans le backend permet de basculer sur PostgreSQL en production simplement en modifiant une variable d'environnement, sans réécrire le code.
-
-### 4. Pourquoi une architecture orientée "Services" ?
-*   **Découplage UI/Logique** : Les appels API sont centralisés dans `lib/services/api_service.dart` et `auth_service.dart`. Les widgets ne font que consommer ces services. Cela permet de modifier l'adresse du serveur, d'injecter des données de mock ou d'ajuster les formats de réponse sans jamais casser la mise en page des écrans.
-
-### 5. Rôles et Permissions (RBAC)
-*   L'application gère localement le type d'utilisateur connecté (`client`, `comptable`, `admin`) :
-    *   **Client** : Peut importer et soumettre ses factures.
-    *   **Comptable** : Accède à l'historique global pour valider/rejeter les factures avec des commentaires.
-    *   **Admin** : Configure les règles de conformité et consulte les logs d'audit.
-    *   *Note de sécurité* : Ces restrictions d'interface sont doublées de vérifications strictes côté API (`require_role` dans FastAPI) pour empêcher tout contournement.
+L'application intègre des moteurs de simulation en mémoire qui reproduisent fidèlement le fonctionnement du serveur :
+*   **Authentification Multi-Rôles (RBAC)** : Boutons d'accès rapide simulant la connexion pour chaque rôle :
+    *   `client@demo.com` : Espace client (dépôt photo/PDF, liste restreinte).
+    *   `comptable@demo.com` : Espace collaborateur (contrôle de conformité, validation/rejet de factures, ajout de commentaires de révision).
+    *   `admin@demo.com` : Vue globale d'administration et configuration.
+*   **Tableau de Bord Dynamique (KPIs Réels)** : Les montants de trésorerie (Inflow/Outflow/Pending) et le nombre de factures sont **calculés dynamiquement en temps réel** à partir de la base de données locale en mémoire. Aucun chiffre n'est codé en dur !
+*   **Simulateur OCR & IA (2.0 secondes de traitement)** : Lors de la capture d'une photo ou d'un PDF, l'application simule le temps de traitement de l'API Gemini et extrait dynamiquement les métadonnées (Fournisseur, Numéro, IBAN, Montants) avec tracé des zones de délimitation (bounding boxes).
+*   **Moteur de Conformité & Risque** : Détecte les erreurs financières en local (par exemple, un écart de TVA comme sur la facture *Best Trade* ou un IBAN suspect sur *Alpha Industrie*) et calcule le score de fraude explicable associé.
 
 ---
 
-## 🛠️ Guide d'Installation Rapide (Pour Débutant)
+## 📘 Architecture Pro : Inversion de Dépendance & Service Locator
+
+Pour prouver la flexibilité du code face au jury, l'application est structurée selon les meilleurs standards de la **Clean Architecture** :
+
+```mermaid
+graph TD
+    UI[Écrans Flutter UI] -->|Appelle| Contracts[Interfaces Repository Contracts]
+    Locator[service_locator.dart] -->|Injecte| Mocks[Mock repositories]
+    Mocks -->|Simule| Database[(In-Memory Mock Database)]
+```
+
+*   **Repository Pattern (Contrats)** : [auth_repository.dart](file:///c:/plateforme/mobile/lib/repositories/auth_repository.dart) et [invoice_repository.dart](file:///c:/plateforme/mobile/lib/repositories/invoice_repository.dart) définissent les fonctions abstraites requises par l'application mobile.
+*   **Service Locator (DI)** : [service_locator.dart](file:///c:/plateforme/mobile/lib/core/service_locator.dart) injecte les dépôts de mock hors-ligne (`MockAuthRepository` et `MockInvoiceRepository`).
+*   *Avantage pour la soutenance* : Pour connecter l'application à un vrai serveur de production, il suffit de changer deux lignes de code dans le `ServiceLocator` pour brancher les dépôts HTTP (`HttpAuthRepository` et `HttpInvoiceRepository`). Le code des écrans graphiques reste inchangé.
+
+---
+
+## 🛠️ Guide de Lancement (Pour le Jury)
 
 ### Étape 1 : Prérequis
-1. Téléchargez et installez **Flutter SDK** depuis le site officiel.
-2. Téléchargez **Android Studio** et installez le plugin **Flutter** depuis les paramètres (Plugins).
-3. Assurez-vous d'avoir démarré le backend FastAPI (sur le port `8000`).
+1.  Installez le SDK **Flutter** sur votre poste de travail.
+2.  Assurez-vous de disposer d'un émulateur Android (ou iOS sur macOS) opérationnel.
 
-### Étape 2 : Configurer le serveur API
-Par défaut, l'application mobile est configurée pour pointer vers `http://10.0.2.2:8000/api` (qui est l'adresse IP de votre ordinateur vue depuis l'émulateur Android standard).
-*   Si vous testez sur un **téléphone réel** :
-    1. Connectez votre téléphone et votre ordinateur au **même réseau Wi-Fi**.
-    2. Ouvrez l'application, allez dans l'onglet **Profil > Modifier Configuration Serveur API**.
-    3. Remplacez l'IP par celle de votre ordinateur (ex: `http://192.168.1.45:8000/api`).
+### Étape 2 : Démarrage de l'application
+Ouvrez votre terminal dans le dossier `mobile/` et exécutez les commandes suivantes :
+```bash
+flutter pub get
+flutter run
+```
 
-### Étape 3 : Lancer l'application
-1. Lancez un émulateur depuis Android Studio (Device Manager).
-2. Ouvrez un terminal dans le dossier `mobile` et tapez :
-   ```bash
-   flutter pub get
-   flutter run
-   ```
-3. L'application se lance en quelques secondes sur le téléphone virtuel !
+### Étape 3 : Scénario de Démonstration (Soutenance)
+1.  **Connexion** : Cliquez sur le bouton rapide **Comptable** sur l'écran d'accueil pour vous connecter instantanément.
+2.  **Dashboard** : Présentez le graphique dynamique et les KPIs. Expliquez que ces indicateurs se mettent à jour automatiquement à chaque modification.
+3.  **Vérification de Conformité** : Cliquez sur la facture de *Best Trade* (statut en attente). Montrez l'erreur de calcul de TVA signalée en rouge par le moteur de conformité local.
+4.  **Détection de Fraude** : Cliquez sur la facture de *Alpha Industrie*. Présentez le score de risque critique (85%) déclenché par l'anomalie d'IBAN (substitution de coordonnées bancaires détectée).
+5.  **Validation Métier** : Modifiez le statut d'une facture en "Validée" ou "Rejetée", saisissez un commentaire de révision comptable et sauvegardez. Constatez la mise à jour immédiate du tableau de bord.
+6.  **Simulation OCR** : Cliquez sur le bouton central de Capture, sélectionnez une image ou un PDF de facture, et validez. Assistez à l'analyse asynchrone de 2 secondes simulant le traitement IA, puis vérifiez les données pré-remplies dans le formulaire.
 
 ---
 
-## 🧪 Tests Unitaires
-Vous pouvez exécuter les tests unitaires et d'intégration de l'interface mobile en exécutant :
+## 🧪 Tests Unitaires et de Rendu
+L'ensemble de la logique de rendu et de navigation fait l'objet de tests automatisés. Vous pouvez exécuter la suite de tests avec :
 ```bash
 flutter test
 ```
 
-## 👨‍💻 Créé pour
-**Yassine Atrous** - Prêt à livrer le projet avec une clarté et un design digne des meilleurs standards professionnels ! 🚀
+---
+
+**Développé avec passion par Yassine Atrous.** 🚀  
+*Conçu selon les standards d'ingénierie logicielle pour un rendu robuste, fluide et impressionnant.*
