@@ -1,143 +1,29 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import '../core/service_locator.dart';
 
 class AuthService {
-  static const String _tokenKey = 'access_token';
-  static const String _userKey = 'user_info';
+  static String get baseUrl => locator.authRepository.baseUrl;
   
-  // Default fallback URL
-  static String _baseUrl = 'http://10.0.2.2:8000/api'; 
-
-  static final List<String> _candidateUrls = [
-    'http://10.0.2.2:8000/api',
-    'http://localhost:8000/api',
-    'http://192.168.0.145:8000/api',
-    'http://192.168.144.1:8000/api',
-    'http://192.168.1.145:8000/api',
-  ];
-
-  static Future<void> setBaseUrl(String url) async {
-    _baseUrl = url;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('custom_base_url', url);
-  }
-
-  static String get baseUrl => _baseUrl;
-
-  // Auto-probe candidate URLs to find the active uvicorn server
-  static Future<void> discoverBaseUrl() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedUrl = prefs.getString('custom_base_url');
-      if (savedUrl != null && savedUrl.isNotEmpty) {
-        _baseUrl = savedUrl;
-        print('[AUTO-DISCOVERY] Using saved custom server URL: $_baseUrl');
-        return;
-      }
-    } catch (_) {}
-
-    print('[AUTO-DISCOVERY] Probing active backend candidate URLs...');
-    
-    // Probe candidates in parallel
-    final List<Future<String?>> probes = _candidateUrls.map((url) async {
-      try {
-        final client = http.Client();
-        final response = await client.get(
-          Uri.parse('$url/local-ip'),
-        ).timeout(const Duration(milliseconds: 1500));
-        
-        if (response.statusCode == 200) {
-          return url;
-        }
-      } catch (_) {}
-      return null;
-    }).toList();
-
-    try {
-      final results = await Future.wait(probes);
-      for (final res in results) {
-        if (res != null) {
-          _baseUrl = res;
-          print('[AUTO-DISCOVERY] Detected active backend at: $_baseUrl');
-          return;
-        }
-      }
-    } catch (e) {
-      print('[AUTO-DISCOVERY] Probe failed with error: $e');
-    }
-    print('[AUTO-DISCOVERY] No active backend detected. Falling back to default: $_baseUrl');
-  }
-
-  // Log in user — MUST use x-www-form-urlencoded for FastAPI OAuth2PasswordRequestForm
-  static Future<Map<String, dynamic>> login(String username, String password) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'username': username,
-          'password': password,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final token = data['access_token'];
-        final user = data['user'];
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_tokenKey, token);
-        await prefs.setString(_userKey, jsonEncode(user));
-
-        return {'success': true, 'user': user};
-      } else {
-        String errorMsg = 'Identifiants incorrects';
-        try {
-          errorMsg = jsonDecode(response.body)['detail'] ?? errorMsg;
-        } catch (_) {}
-        return {'success': false, 'error': errorMsg};
-      }
-    } catch (e) {
-      return {'success': false, 'error': 'Impossible de se connecter au serveur: $e'};
-    }
-  }
-
-  // Log out user
-  static Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_userKey);
-  }
-
-  // Get active session token
-  static Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
-  }
-
-  // Get current user profile info
-  static Future<Map<String, dynamic>?> getUserInfo() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userStr = prefs.getString(_userKey);
-    if (userStr != null) {
-      return jsonDecode(userStr);
-    }
-    return null;
-  }
-
-  // Check if user is logged in
-  static Future<bool> isLoggedIn() async {
-    final token = await getToken();
-    return token != null;
-  }
-
-  // Get HTTP headers with Authorization token
-  static Future<Map<String, String>> getAuthHeaders() async {
-    final token = await getToken();
-    return {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
-  }
+  static Future<void> setBaseUrl(String url) => 
+      locator.authRepository.setBaseUrl(url);
+  
+  static Future<void> discoverBaseUrl() => 
+      locator.authRepository.discoverBaseUrl();
+  
+  static Future<Map<String, dynamic>> login(String username, String password) => 
+      locator.authRepository.login(username, password);
+  
+  static Future<void> logout() => 
+      locator.authRepository.logout();
+  
+  static Future<String?> getToken() => 
+      locator.authRepository.getToken();
+  
+  static Future<Map<String, dynamic>?> getUserInfo() => 
+      locator.authRepository.getUserInfo();
+  
+  static Future<bool> isLoggedIn() => 
+      locator.authRepository.isLoggedIn();
+  
+  static Future<Map<String, String>> getAuthHeaders() => 
+      locator.authRepository.getAuthHeaders();
 }
