@@ -27,8 +27,19 @@ subprojects {
     val configureAndroid = {
         if (project.plugins.hasPlugin("com.android.application") ||
             project.plugins.hasPlugin("com.android.library")) {
-            val android = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
-            android?.compileSdkVersion(36)
+            val android = project.extensions.findByName("android")
+            if (android != null) {
+                try {
+                    // Try to invoke setCompileSdk dynamically to avoid compile-time deprecation/class errors
+                    val method = android.javaClass.getMethod("setCompileSdk", Integer::class.java)
+                    method.invoke(android, 36)
+                } catch (e: Exception) {
+                    try {
+                        val method = android.javaClass.getMethod("compileSdkVersion", Int::class.javaPrimitiveType)
+                        method.invoke(android, 36)
+                    } catch (e2: Exception) {}
+                }
+            }
         }
     }
     if (project.state.executed) {
