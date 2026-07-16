@@ -39,14 +39,11 @@ Découvrez la nouvelle refonte visuelle complète de l'application mobile **CEO-
 | ![Extraction Audit](screenshots/ai_extraction_fraud_audit.png) | ![Invoice Compliance](screenshots/invoice_details_compliance.png) | ![Notification Center](screenshots/notification_center.png) |
 | *Résultats d'extraction de métadonnées et score de risque.* | *Vue analytique : écarts de TVA, alertes IBAN et révision.* | *Centre d'alertes de sécurité et historique d'audit.* |
 
-### 🎥 Démo Vidéo en Action (Walkthrough)
+### 🎥 Démo en Action (Walkthrough)
 
 Découvrez le scénario de navigation complet et l'animation personnalisée de traitement de fichiers en action :
 
-<video src="https://i.imgur.com/QQjPnHG.mp4" width="320" height="640" controls></video>
-
-*Si le lecteur ci-dessus ne s'affiche pas, vous pouvez visionner la vidéo directement ici :*  
-[▶ Cliquer ici pour lancer la vidéo de démonstration (Imgur MP4)](https://i.imgur.com/QQjPnHG.mp4)
+![Démo Walkthrough](screenshots/demo_walkthrough.gif)
 
 ---
 
