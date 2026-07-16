@@ -23,17 +23,22 @@ class MockAuthRepository implements AuthRepository {
     await Future.delayed(const Duration(milliseconds: 600)); // Artificial latency for realism
     
     final normalizedUser = username.trim().toLowerCase();
-    if (normalizedUser == 'admin@demo.com' || 
+    
+    // Support the new sandbox role access
+    if (normalizedUser == 'admin' || 
+        normalizedUser == 'accountant' || 
+        normalizedUser == 'client' ||
+        normalizedUser == 'admin@demo.com' || 
         normalizedUser == 'comptable@demo.com' || 
         normalizedUser == 'client@demo.com') {
       
       String role = 'client';
       if (normalizedUser.startsWith('admin')) role = 'admin';
-      if (normalizedUser.startsWith('comptable')) role = 'comptable';
+      if (normalizedUser.startsWith('comptable') || normalizedUser == 'accountant') role = 'accountant';
 
       _currentUser = {
-        'email': normalizedUser,
-        'nom': normalizedUser.split('@')[0].toUpperCase(),
+        'email': '$role@demo.com',
+        'nom': role.toUpperCase(),
         'role': role,
       };
       _token = 'mock_jwt_token_for_$role';
@@ -42,7 +47,7 @@ class MockAuthRepository implements AuthRepository {
     } else {
       return {
         'success': false, 
-        'error': 'Identifiants de démonstration incorrects. Utilisez admin@demo.com, comptable@demo.com ou client@demo.com'
+        'error': 'Invalid credentials. Use Sandbox roles.'
       };
     }
   }

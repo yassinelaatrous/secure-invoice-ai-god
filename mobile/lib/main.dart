@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
 
@@ -16,6 +18,23 @@ void main() async {
   runApp(SecureInvoiceApp(isLoggedIn: loggedIn));
 }
 
+class MajesticScrollBehavior extends MaterialScrollBehavior {
+  const MajesticScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.trackpad,
+      };
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
+  }
+}
+
 class SecureInvoiceApp extends StatelessWidget {
   final bool isLoggedIn;
 
@@ -27,7 +46,8 @@ class SecureInvoiceApp extends StatelessWidget {
       title: 'SecureInvoice AI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: isLoggedIn ? const DashboardScreen() : const LoginScreen(),
+      scrollBehavior: const MajesticScrollBehavior(),
+      home: isLoggedIn ? const DashboardScreen() : const OnboardingScreen(),
     );
   }
 }

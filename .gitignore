@@ -38,3 +38,9 @@ Thumbs.db
 # Local task lists
 task.md
 
+# AI Assistant configs & workspace scratchdirs
+.agents/
+plugins/
+scratch/
+.gemini/
+

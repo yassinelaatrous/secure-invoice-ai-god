@@ -48,8 +48,14 @@ L'application simule localement les comportements attendus du serveur de manièr
 ## 🎨 3. Design Visuel Premium & Animation Personnalisée
 
 L'application adopte une esthétique soignée et professionnelle :
-*   **Palette de Couleurs** : Thème chaleureux crème (`#F0EDE4` en arrière-plan) contrasté avec un vert forêt profond (`#1C3A2A` pour les surfaces primaires) et des touches de vert lime éclatant pour les badges d'action.
+*   **Palette de Couleurs** : Thème chaleureux crème (`#FCF9F6` en arrière-plan) contrasté avec un vert forêt profond (`#012D1D` pour les surfaces primaires) et des touches de vert lime éclatant pour les badges d'action.
 *   **Typography** : DM Sans pour le corps du texte et Fraunces pour les titres de sections et d'en-têtes.
+*   **Mascotte 3D Three.js Interactive** :
+    Intégration d'un robot 3D vectoriel dynamique dans l'écran d'accueil (`mascot.html`) via le moteur local **Three.js** :
+    *   La mascotte s'anime avec des comportements réguliers (flottaison, clignement d'yeux, battements d'ailes/propulsion).
+    *   Moteur de détection de souris : la tête du robot pivote et regarde le curseur de l'utilisateur en temps réel.
+    *   Animation de bienvenue : le robot fait coucou et sourit à l'utilisateur de manière périodique (toutes les 7 secondes).
+    *   Intégration Flutter : Intégré sous forme d'iframe sécurisée avec `HtmlElementView` et enregistré de façon moderne avec `dart:ui_web` pour garantir la compatibilité web.
 *   **Animation Custom `FileFetchingLoader`** : 
     Création d'un widget personnalisé ([file_fetching_loader.dart](file:///c:/plateforme/mobile/lib/widgets/file_fetching_loader.dart)) traduisant une animation CSS de translation de fichiers :
     *   Affiche 6 cartes de fichiers en dégradé violet qui glissent de gauche à droite sur l'écran avec une transition de fondu et d'échelle (`scale`).
@@ -57,7 +63,21 @@ L'application adopte une esthétique soignée et professionnelle :
 
 ---
 
-## 💬 4. Questions-Réponses Techniques (Review de Stage)
+## 🚀 4. Nouvelles Interactions Majeures (Heavenly Interactions)
+
+Pour offrir une sensation tactile de premier ordre (sensations "célestes"), plusieurs surcouches d'interaction ont été implémentées :
+*   **Physique de Défilement Élastique (`MajesticScrollBehavior`)** :
+    Configuration globale des listes via le `scrollBehavior` de MaterialApp. Les défilements imitent le rebond naturel (Bouncing Physics) et le glissement inertiel pour un effet organique haut de gamme. Activation du support de défilement par clic-glissé de la souris (mouse drag scrolling) pour le simulateur Web.
+*   **Micro-interactions de Pression & Survol (`HeavenlyInteraction`)** :
+    Création d'un widget générique ([heavenly_interaction.dart](file:///c:/plateforme/mobile/lib/widgets/heavenly_interaction.dart)) encapsulant les boutons et les cartes tactiles. 
+    *   Lors du clic/toucher : réduction d'échelle amortie (Spring Scale Down) avec courbes bezier rapides.
+    *   Lors du survol (Hover) : zoom progressif léger et changement automatique de curseur de souris.
+*   **Transitions Horizontales Fluides (`PageView`)** :
+    Remplacement de l'empilement statique de la barre de navigation du tableau de bord par un `PageView` animé via un `PageController` avec une courbe de transition Expo amortie (`Cubic(0.16, 1, 0.3, 1)`), rendant chaque changement d'onglet majestueux.
+
+---
+
+## 💬 5. Questions-Réponses Techniques (Review de Stage)
 
 Voici comment justifier vos choix techniques devant vos collègues ou maîtres de stage :
 
@@ -67,5 +87,9 @@ Voici comment justifier vos choix techniques devant vos collègues ou maîtres d
 *   **Comment fonctionne l'injection de dépendance dans l'application ?**
     > *"Nous utilisons un Service Locator (`service_locator.dart`) qui agit comme un conteneur d'instances. Au démarrage, il instancie les dépôts mockés. Les classes de service statiques interrogent ce conteneur pour déléguer les appels de l'interface graphique. Cela évite les dépendances d'importation directes et permet de changer de source de données de manière transparente."*
 
+*   **Pourquoi l'utilisation de `dart:ui_web` et d'une iframe locale pour la mascotte 3D ?**
+    > *"Flutter Web permet l'insertion d'éléments HTML natifs via les Platform Views. Intégrer un script Three.js dans une page isolée permet de tirer profit de l'accélération matérielle GPU du navigateur pour le rendu 3D sans interférer avec le thread principal de rendu de Flutter, garantissant ainsi des performances fluides à 60 FPS sans lag."*
+
 *   **Comment l'animation `FileFetchingLoader` est-elle optimisée ?**
     > *"L'animation utilise un unique `AnimationController` pour cadencer la progression globale. Pour chaque carte de fichier, nous appliquons un décalage de phase mathématique (`delayPercent = index * 0.2`) pour déduire l'échelle, l'opacité et la position horizontale en cours. Cela permet d'obtenir un rendu ultra-fluide à 60 FPS sans surcharger le moteur graphique avec de multiples contrôleurs."*
+

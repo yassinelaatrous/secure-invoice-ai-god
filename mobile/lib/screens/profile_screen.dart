@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import 'login_screen.dart';
+import 'notification_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -16,6 +17,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _serverUrlController = TextEditingController();
   
   bool _isEditingServer = false;
+  bool _notificationsEnabled = true;
+  bool _ocrEnabled = true;
+  bool _mfaEnabled = false;
 
   @override
   void initState() {
@@ -45,324 +49,484 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: AppTheme.primary,
-        content: Text('URL du serveur configurée : ${AuthService.baseUrl}', style: GoogleFonts.dmSans(color: Colors.white)),
+        content: Text(
+          'Serveur configuré : ${AuthService.baseUrl}',
+          style: GoogleFonts.dmSans(color: Colors.white),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final String fullName = _user != null ? _user!['nom'] ?? 'Utilisateur' : 'Utilisateur';
-    final String username = _user != null ? _user!['email'] ?? '' : '';
-    final String email = _user != null ? _user!['email'] ?? '' : '';
     final String role = _user != null ? _user!['role'] ?? 'client' : 'client';
-    
-    String roleLabel = 'Client';
-    IconData roleIcon = Icons.person_rounded;
-    if (role == 'comptable') {
-      roleLabel = 'Comptable / Collaborateur';
-      roleIcon = Icons.work_outline_rounded;
-    } else if (role == 'admin') {
-      roleLabel = 'Administrateur';
-      roleIcon = Icons.admin_panel_settings_outlined;
-    }
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      appBar: AppBar(
-        title: Text('Mon Profil', style: GoogleFonts.dmSans(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
-        backgroundColor: AppTheme.backgroundLight,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Avatar card
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppTheme.cardBorder),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Custom Top App Bar (Stitch style)
+              Row(
                 children: [
                   Container(
-                    width: 72,
-                    height: 72,
-                    decoration: const BoxDecoration(
-                      color: AppTheme.primary,
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        fullName.substring(0, 1).toUpperCase(),
-                        style: GoogleFonts.fraunces(
-                          color: AppTheme.accent,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic,
-                        ),
+                      border: Border.all(color: AppTheme.cardBorder, width: 2),
+                      image: const DecorationImage(
+                        image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuCvvHJZhbJ0PcTUfHDjlcANCqwHNCwo6o3QeU5Wmmp4K5owz5g4m8t_PvzIr_-CcsUO1b-IBWs94yf6z8xT3jbJI4Xwkzw69NXtNE2njMg1V7aICuwUMH_IWMRbmsORClZ55Ql2pVE9iQ0vzedkD0AzUX48KooF347aKLSyB3MAN8zfKs4G1GUtu_VjjHl_Ojx55pLwQMbOMMUL0Pf1efNb-arO9BDvF6A8O72iwjS4uIDFBGgUpLql1zRdd3fRKenpMabMHGUsVlWy'),
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(width: 10),
                   Text(
-                    fullName,
-                    style: GoogleFonts.dmSans(
+                    'CEO-IT',
+                    style: GoogleFonts.fraunces(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.primary,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '@$username',
-                    style: GoogleFonts.dmSans(
-                      color: AppTheme.textSecondary,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppTheme.accent.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(roleIcon, size: 14, color: AppTheme.primary),
-                        const SizedBox(width: 6),
-                        Text(
-                          roleLabel,
-                          style: GoogleFonts.dmSans(
-                            color: AppTheme.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.notifications_none_rounded, color: AppTheme.primary),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const NotificationScreen()),
+                      );
+                    },
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Detail Settings Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppTheme.cardBorder),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Informations Générales',
-                    style: GoogleFonts.fraunces(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  const Divider(height: 24, color: AppTheme.cardBorder),
-                  _buildProfileRow('E-mail', email.isNotEmpty ? email : 'Non renseigné'),
-                  const SizedBox(height: 12),
-                  _buildProfileRow('Identifiant', username),
-                  const SizedBox(height: 12),
-                  _buildProfileRow('Rôle', roleLabel),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-            // Server Settings Card (Important for local mobile testing)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppTheme.cardBorder),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
+              // Role Preview Mode Section
+              Text(
+                'Role Preview Mode',
+                style: GoogleFonts.fraunces(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _buildRolePreviewButton('Client', active: role == 'client'),
+                  const SizedBox(width: 8),
+                  _buildRolePreviewButton('Accountant', active: role == 'comptable'),
+                  const SizedBox(width: 8),
+                  _buildRolePreviewButton('Admin', active: role == 'admin'),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Configuration Serveur API',
-                        style: GoogleFonts.fraunces(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 15,
-                          color: AppTheme.textPrimary,
-                        ),
-                      ),
-                      if (!_isEditingServer)
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 18, color: AppTheme.primary),
-                          onPressed: () {
-                            setState(() {
-                              _isEditingServer = true;
-                            });
-                          },
-                        ),
-                    ],
-                  ),
-                  const Divider(height: 16, color: AppTheme.cardBorder),
-                  if (_isEditingServer) ...[
-                    TextField(
-                      controller: _serverUrlController,
-                      style: GoogleFonts.dmSans(color: AppTheme.textPrimary),
-                      decoration: InputDecoration(
-                        labelText: 'Adresse IP du serveur API',
-                        labelStyle: GoogleFonts.dmSans(color: AppTheme.textSecondary),
-                        hintText: 'ex: http://192.168.1.50:8000/api',
-                        hintStyle: GoogleFonts.dmSans(color: AppTheme.textMuted),
-                        fillColor: AppTheme.surfaceCard,
-                        filled: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppTheme.cardBorder),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppTheme.cardBorder),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
+              const SizedBox(height: 24),
+
+              // System Controls Card
+              Text(
+                'System Controls',
+                style: GoogleFonts.fraunces(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.cardBorder, width: 1.2),
+                ),
+                child: Column(
+                  children: [
+                    _buildSwitchTile(
+                      title: 'Global Notifications',
+                      subtitle: 'Push alerts for all major events',
+                      value: _notificationsEnabled,
+                      onChanged: (val) => setState(() => _notificationsEnabled = val),
                     ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _isEditingServer = false;
-                              _serverUrlController.text = AuthService.baseUrl;
-                            });
-                          },
-                          child: Text('Annuler', style: GoogleFonts.dmSans(color: AppTheme.error)),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: _saveServerUrl,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: Text('Enregistrer', style: GoogleFonts.dmSans(fontWeight: FontWeight.w600)),
-                        ),
-                      ],
+                    const Divider(color: AppTheme.cardBorder, height: 1),
+                    _buildSwitchTile(
+                      title: 'Automated OCR',
+                      subtitle: 'AI-powered invoice scanning',
+                      value: _ocrEnabled,
+                      onChanged: (val) => setState(() => _ocrEnabled = val),
                     ),
-                  ] else ...[
-                    Text(
-                      AuthService.baseUrl,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
-                        color: AppTheme.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Indiquez l\'adresse IP locale du serveur uvicorn de votre ordinateur pour tester l\'application sur appareil réel.',
-                      style: GoogleFonts.dmSans(
-                        color: AppTheme.textMuted,
-                        fontSize: 11,
-                      ),
+                    const Divider(color: AppTheme.cardBorder, height: 1),
+                    _buildSwitchTile(
+                      title: 'Multi-Factor Auth',
+                      subtitle: 'Enforce high-security login',
+                      value: _mfaEnabled,
+                      onChanged: (val) => setState(() => _mfaEnabled = val),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // API Configuration Card
+              Text(
+                'API Server Connection',
+                style: GoogleFonts.fraunces(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.cardBorder, width: 1.2),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Server API URL',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        if (!_isEditingServer)
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined, size: 16, color: AppTheme.accentGreen),
+                            onPressed: () {
+                              setState(() {
+                                _isEditingServer = true;
+                              });
+                            },
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.zero,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    if (_isEditingServer) ...[
+                      TextField(
+                        controller: _serverUrlController,
+                        style: GoogleFonts.dmSans(color: AppTheme.textPrimary, fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: 'ex: http://192.168.1.50:8000/api',
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _isEditingServer = false;
+                                _serverUrlController.text = AuthService.baseUrl;
+                              });
+                            },
+                            child: Text('Annuler', style: GoogleFonts.dmSans(color: AppTheme.error, fontSize: 12)),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: _saveServerUrl,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            ),
+                            child: Text('Enregistrer', style: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 12)),
+                          ),
+                        ],
+                      ),
+                    ] else ...[
+                      Text(
+                        AuthService.baseUrl,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 13,
+                          color: AppTheme.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // User Management Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'User Management',
+                    style: GoogleFonts.fraunces(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.person_add_outlined, size: 16),
+                    label: Text(
+                      'Invite',
+                      style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w700),
+                    ),
+                    style: TextButton.styleFrom(foregroundColor: AppTheme.accentGreen),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(height: 30),
-
-            // Logout action button
-            ElevatedButton.icon(
-              onPressed: () async {
-                await AuthService.logout();
-                if (mounted) {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  );
-                }
-              },
-              icon: const Icon(Icons.logout_rounded),
-              label: Text('Se déconnecter', style: GoogleFonts.dmSans(fontWeight: FontWeight.w700)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.error,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 0,
+              const SizedBox(height: 12),
+              ListView(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildUserCard(
+                    name: 'Eleanor Vance',
+                    role: 'Senior Accountant',
+                    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDCiF6aSYBxY_6j05UUG6Jc-i5hJA0onl1Cvjq92sRSt75ArQPJtaR7cABlkNsbsTNTLfkD-NqPRdxdwqtoZvZtI2vKhpdEdjGoGBaU81VbTVzqL3p0aYTeqRzELKEubRTQzgmNYNeatdUJTINBb9Vv-Y8oCQ9uNFuH0iu1GZwykcsaO7fc5iTaVSwT8n_EOJ9BVZUot01bBvW53Dd9mX-Tuq1FmYX3Z5T_MScy2WMAuP_NHMSXxkiZ6W2Pa85pCRoBGD8YG6cN4CmI',
+                    status: 'Active',
+                  ),
+                  const SizedBox(height: 10),
+                  _buildUserCard(
+                    name: 'Marcus Sterling',
+                    role: 'Strategic Partner',
+                    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDHEdU1SJmrwFeafhnZ2HlYE7iXQRtyzzN7Cw013G0jCycFOgJHeYTVRScudthdXlLIakOux7s1g4LlgYUFti4B8z1F7OlYqA8UWGh6j1o0ufrLt9Y1-fOBY_KjAFoMaIe50sSxnGBSK-CexIusIQ0sw2HfZhuAL7fnvSQmTVeE3JeoPSFp-1mLt8d0c1-jS71BrF2tXAE9peOLAQwnt3bpXn00hEmBHN2cuEUfFFj_mYHQBviGttm5UkwKecRKswj9kRc7_l8u9cls',
+                    status: 'Active',
+                  ),
+                  const SizedBox(height: 10),
+                  _buildUserCard(
+                    name: 'Sofia Martinez',
+                    role: 'System Admin',
+                    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAI2YAuyMqEPoLqoy-JIfpP3OznRdTrVmRYEnNpmel_n8wANOQlUp7RwA4V9zHORljVFFfmRmb4wIvfVxLl8sjYkz9KQp6g2U03D5GqvFPI5IJTlS2ESVsBW7KhwJkCsWi_seSE238dRSVmBPK0qKKPo1xwSgFwC99npzMr8Rtjc4N8Wtl2m9mmR0gwmdkC1aX-vxIe0qT-CDsySWhrirPAPOWQrrAM8uMp4x9EJdOq6KlRq2LRQbscZ4g6Qabh3d-y8UFaVEZzgPSu',
+                    status: 'Pending',
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 30),
+
+              // Logout Button
+              ElevatedButton.icon(
+                onPressed: () async {
+                  await AuthService.logout();
+                  if (mounted) {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.logout_rounded, size: 18),
+                label: Text(
+                  'Se déconnecter',
+                  style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.error,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // App Version metadata
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      'Version 4.2.1-stable',
+                      style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.textMuted),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: () {},
+                          child: Text('Support', style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.accentGreen, fontWeight: FontWeight.bold)),
+                        ),
+                        const SizedBox(width: 12),
+                        TextButton(
+                          onPressed: () {},
+                          child: Text('Privacy', style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.accentGreen, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 100),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.dmSans(
-            color: AppTheme.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
+  Widget _buildRolePreviewButton(String title, {required bool active}) {
+    return Expanded(
+      child: Container(
+        height: 46,
+        decoration: BoxDecoration(
+          color: active ? AppTheme.primary : AppTheme.surfaceCard,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: active ? AppTheme.primary : AppTheme.cardBorder, width: 1.2),
+        ),
+        child: Center(
+          child: Text(
+            title,
+            style: GoogleFonts.dmSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: active ? Colors.white : AppTheme.textSecondary,
+            ),
           ),
         ),
-        Text(
-          value,
-          style: GoogleFonts.dmSans(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-            color: AppTheme.textPrimary,
+      ),
+    );
+  }
+
+  Widget _buildSwitchTile({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+          SizedBox(
+            height: 24,
+            width: 40,
+            child: Switch(
+              value: value,
+              onChanged: onChanged,
+              activeColor: Colors.white,
+              activeTrackColor: AppTheme.accentGreen,
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: AppTheme.textMuted.withOpacity(0.3),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserCard({
+    required String name,
+    required String role,
+    required String imageUrl,
+    required String status,
+  }) {
+    final bool isPending = status.toLowerCase() == 'pending';
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.cardBorder, width: 1.2),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              image: DecorationImage(
+                image: NetworkImage(imageUrl),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  role,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 11,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isPending ? AppTheme.surfaceCard : AppTheme.accentGreen.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  status,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: isPending ? AppTheme.textSecondary : AppTheme.accentGreen,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

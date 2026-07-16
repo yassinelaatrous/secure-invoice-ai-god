@@ -4,30 +4,40 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ── Brand palette ──────────────────────────────────────────────
-  static const Color primary = Color(0xFF1C3A2A); // dark forest green
-  static const Color primaryContainer = Color(0xFF2A5040); // medium forest green
+  static const Color primary = Color(0xFF012D1D); // deep forest green
+  static const Color primaryContainer = Color(0xFF1B4332); // medium forest green
   static const Color accent = Color(0xFFB8F04A); // bright lime green
-  static const Color accentGreen = Color(0xFF4CAF50);
+  static const Color accentGreen = Color(0xFF0E6C4A); // Stitch secondary green
   static const Color warning = Color(0xFFE8A020);
-  static const Color error = Color(0xFFD94040);
+  static const Color error = Color(0xFFBA1A1A); // Stitch error red
+  static const Color errorCrimson = Color(0xFFA4161A); // Stitch crimson red
+  static const Color secondary = accent;
 
   // ── Light cream surfaces ────────────────────────────────────────
-  static const Color backgroundLight = Color(0xFFF0EDE4); // cream/off-white
-  static const Color surfaceLight = Color(0xFFF7F4EC); // lighter cream
-  static const Color surfaceCard = Color(0xFFEDE9DF); // card cream
-  static const Color cardBorder = Color(0xFFDDD9CF);
+  static const Color backgroundLight = Color(0xFFFCF9F6); // Warm Off-White/Cream
+  static const Color surfaceLight = Color(0xFFFCF9F6); // Warm Off-White/Cream
+  static const Color surfaceCard = Color(0xFFF0EDEA); // Light Cream Card Container
+  static const Color surfaceCreamDark = Color(0xFFF0EDE9); // Recessed/nested card
+  static const Color cardBorder = Color(0xFFE5E2DF); // Subtle grey border
 
   // ── Dark surfaces (kept for compatibility) ──────────────────────
-  static const Color backgroundDark = Color(0xFFF0EDE4); // now maps to cream
-  static const Color surfaceDark = Color(0xFFEDE9DF);
-  static const Color surfaceVariantDark = Color(0xFFE5E1D7);
-  static const Color cardGlass = Color(0x14000000);
-  static const Color cardGlassBorder = Color(0x20000000);
+  static const Color backgroundDark = Color(0xFFFCF9F6);
+  static const Color surfaceDark = Color(0xFFF0EDEA);
+  static const Color surfaceVariantDark = Color(0xFFE5E2DF);
+  static const Color cardGlass = Color(0x0A000000);
+  static const Color cardGlassBorder = Color(0x14000000);
 
   // ── Text colors ─────────────────────────────────────────────────
-  static const Color textPrimary = Color(0xFF1A2A1E);
-  static const Color textSecondary = Color(0xFF5A6B5E);
-  static const Color textMuted = Color(0xFF8A9B8E);
+  static const Color textPrimary = Color(0xFF1A1C1B); // Deep Charcoal
+  static const Color textSecondary = Color(0xFF414844); // Muted Sage Grey
+  static const Color textMuted = Color(0xFF717973); // Light Sage outline
+
+  static TextStyle get headlineLarge => darkTheme.textTheme.headlineLarge!;
+  static TextStyle get headlineMedium => darkTheme.textTheme.headlineMedium!;
+  static TextStyle get bodyLarge => darkTheme.textTheme.bodyLarge!;
+  static TextStyle get bodyMedium => darkTheme.textTheme.bodyMedium!;
+  static TextStyle get labelLarge => darkTheme.textTheme.labelLarge!;
+  static TextStyle get labelMedium => darkTheme.textTheme.labelMedium!;
 
   static ThemeData get darkTheme => ThemeData(
     useMaterial3: true,

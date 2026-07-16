@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CEO-IT 3D Mascot</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+  <script src="three.min.js"></script>
+</head>
+<body>
+  <div id="canvas-container"></div>
+  <script>
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 7);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
+    dirLight.position.set(5, 8, 5);
+    scene.add(dirLight);
+
+    const dirLight2 = new THREE.DirectionalLight(0xa5d0b9, 0.4);
+    dirLight2.position.set(-5, -5, -2);
+    scene.add(dirLight2);
+
+    // Robot Group
+    const robot = new THREE.Group();
+    robot.position.y = -0.2;
+    scene.add(robot);
+
+    // Materials
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: 0x012D1D, // forest green
+      roughness: 0.35,
+      metalness: 0.15
+    });
+    const metalMat = new THREE.MeshStandardMaterial({
+      color: 0xD0D7D3, // light grey
+      roughness: 0.25,
+      metalness: 0.75
+    });
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0xB8F04A // lime glow
+    });
+
+    // Robot Head Group (for rotation)
+    const headGroup = new THREE.Group();
+    headGroup.position.set(0, 1.0, 0);
+    robot.add(headGroup);
+
+    // Head Mesh
+    const headGeom = new THREE.BoxGeometry(1.4, 1.0, 1.0);
+    const head = new THREE.Mesh(headGeom, bodyMat);
+    headGroup.add(head);
+
+    // Eyes
+    const eyeGeom = new THREE.SphereGeometry(0.18, 16, 16);
+    const leftEye = new THREE.Mesh(eyeGeom, glowMat);
+    leftEye.position.set(-0.35, 0.1, 0.52);
+    const rightEye = new THREE.Mesh(eyeGeom, glowMat);
+    rightEye.position.set(0.35, 0.1, 0.52);
+    headGroup.add(leftEye);
+    headGroup.add(rightEye);
+
+    // Mouth / LED Bar (comprising 5 segments that can curve to smile)
+    const mouthGroup = new THREE.Group();
+    mouthGroup.position.set(0, -0.25, 0.51);
+    headGroup.add(mouthGroup);
+
+    const mouthPixels = [];
+    const pixelGeom = new THREE.BoxGeometry(0.1, 0.08, 0.05);
+    for (let i = 0; i < 5; i++) {
+      const pixel = new THREE.Mesh(pixelGeom, glowMat);
+      pixel.position.x = (i - 2) * 0.12;
+      pixel.position.y = 0;
+      mouthGroup.add(pixel);
+      mouthPixels.push(pixel);
+    }
+
+    // Antenna
+    const antPoleGeom = new THREE.CylinderGeometry(0.03, 0.03, 0.35, 8);
+    const antPole = new THREE.Mesh(antPoleGeom, metalMat);
+    antPole.position.set(0, 0.65, 0);
+    const antTipGeom = new THREE.SphereGeometry(0.10, 16, 16);
+    const antTip = new THREE.Mesh(antTipGeom, glowMat);
+    antTip.position.set(0, 0.85, 0);
+    headGroup.add(antPole);
+    headGroup.add(antTip);
+
+    // Neck
+    const neckGeom = new THREE.CylinderGeometry(0.25, 0.3, 0.2, 16);
+    const neck = new THREE.Mesh(neckGeom, metalMat);
+    neck.position.set(0, 0.45, 0);
+    robot.add(neck);
+
+    // Body
+    const bodyGeom = new THREE.CylinderGeometry(0.7, 0.6, 1.3, 32);
+    const body = new THREE.Mesh(bodyGeom, bodyMat);
+    body.position.y = -0.3;
+    robot.add(body);
+
+    // Screen on chest
+    const screenGeom = new THREE.BoxGeometry(0.9, 0.6, 0.1);
+    const screenMesh = new THREE.Mesh(screenGeom, metalMat);
+    screenMesh.position.set(0, -0.2, 0.62);
+    robot.add(screenMesh);
+
+    // Left Arm Group
+    const leftArmGroup = new THREE.Group();
+    leftArmGroup.position.set(-0.85, 0.15, 0);
+    const armGeom = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 16);
+    const leftArm = new THREE.Mesh(armGeom, metalMat);
+    leftArm.position.y = -0.35;
+    leftArmGroup.add(leftArm);
+    
+    const clawGeom = new THREE.SphereGeometry(0.16, 16, 16);
+    const leftClaw = new THREE.Mesh(clawGeom, bodyMat);
+    leftClaw.position.set(0, -0.75, 0);
+    leftArmGroup.add(leftClaw);
+    robot.add(leftArmGroup);
+
+    // Right Arm Group
+    const rightArmGroup = new THREE.Group();
+    rightArmGroup.position.set(0.85, 0.15, 0);
+    const rightArm = new THREE.Mesh(armGeom, metalMat);
+    rightArm.position.y = -0.35;
+    rightArmGroup.add(rightArm);
+    
+    const rightClaw = new THREE.Mesh(clawGeom, bodyMat);
+    rightClaw.position.set(0, -0.75, 0);
+    rightArmGroup.add(rightClaw);
+    robot.add(rightArmGroup);
+
+    // Legs / Thruster nozzle
+    const nozzleGeom = new THREE.CylinderGeometry(0.35, 0.15, 0.4, 16);
+    const nozzle = new THREE.Mesh(nozzleGeom, metalMat);
+    nozzle.position.set(0, -1.1, 0);
+    robot.add(nozzle);
+
+    const flameGeom = new THREE.ConeGeometry(0.2, 0.5, 16);
+    const flame = new THREE.Mesh(flameGeom, glowMat);
+    flame.position.set(0, -1.5, 0);
+    flame.rotation.x = Math.PI;
+    robot.add(flame);
+
+    // Mouse tracking
+    let mouseX = 0;
+    let mouseY = 0;
+    window.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+
+    // Render loop
+    let clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const time = clock.getElapsedTime();
+      
+      // Floating/Hovering movement
+      robot.position.y = -0.2 + Math.sin(time * 2.2) * 0.15;
+      
+      // Thruster flame flickering
+      flame.scale.set(
+        0.8 + Math.sin(time * 20) * 0.2,
+        0.8 + Math.cos(time * 20) * 0.2,
+        0.8 + Math.sin(time * 20) * 0.2
+      );
+      
+      // Look at mouse cursor
+      headGroup.rotation.y = THREE.MathUtils.lerp(headGroup.rotation.y, mouseX * 0.6, 0.08);
+      headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, -mouseY * 0.4, 0.08);
+      
+      // Eye & Flame neon glow pulsing
+      const pulse = (Math.sin(time * 5.0) + 1) * 0.15 + 0.85;
+      glowMat.color.setRGB(0.72 * pulse, 0.94 * pulse, 0.29 * pulse);
+      
+      // Wave and Smile state cycles: active for 2.5 seconds every 7 seconds
+      const isWaveAndSmile = (time % 7.0) < 2.5;
+
+      // Arm waving / idle animations
+      leftArmGroup.rotation.z = (Math.sin(time * 1.5) * 0.15) - 0.2;
+      leftArmGroup.rotation.x = Math.cos(time * 1.5) * 0.08;
+      
+      if (isWaveAndSmile) {
+        // Wave right arm rapidly
+        rightArmGroup.rotation.z = THREE.MathUtils.lerp(rightArmGroup.rotation.z, 2.0 + Math.sin(time * 18.0) * 0.35, 0.15);
+        rightArmGroup.rotation.x = THREE.MathUtils.lerp(rightArmGroup.rotation.x, 0.4, 0.15);
+      } else {
+        // Standard breathing idle animation
+        rightArmGroup.rotation.z = THREE.MathUtils.lerp(rightArmGroup.rotation.z, -(Math.sin(time * 2.0) * 0.15) + 0.2, 0.1);
+        rightArmGroup.rotation.x = THREE.MathUtils.lerp(rightArmGroup.rotation.x, -Math.cos(time * 2.0) * 0.08, 0.1);
+      }
+
+      // Smoothly morph mouth pixels between horizontal line and curved smile
+      mouthPixels.forEach((pixel, idx) => {
+        let targetY = 0;
+        if (isWaveAndSmile) {
+          if (idx === 0 || idx === 4) targetY = 0.14; // corners curve high
+          else if (idx === 1 || idx === 3) targetY = 0.07; // inner mid-curve
+          else targetY = 0.0; // center stays at anchor
+        } else {
+          targetY = 0.0;
+        }
+        pixel.position.y = THREE.MathUtils.lerp(pixel.position.y, targetY, 0.12);
+      });
+      
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

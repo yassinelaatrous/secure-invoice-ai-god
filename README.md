@@ -7,11 +7,37 @@ Ce projet a été conçu selon des principes de développement professionnels af
 
 ---
 
-## 📸 Aperçu de l'Application (Thème Cream & Forest Green)
+## 📸 Galerie & Design Showcase (Redesign Premium)
 
-| Écran de Connexion | Tableau de Bord | Capture OCR & Scan | Animation IA / Chargement |
+Découvrez la nouvelle refonte visuelle complète de l'application mobile **CEO-IT**, basée sur la palette de couleurs Forest Green & Cream, avec une ergonomie et une typographie haut de gamme :
+
+### 1. Introduction & Onboarding
+
+| Logo Officiel | Écran de Bienvenue | Tour Guidé Interactif |
+| :---: | :---: | :---: |
+| ![Brand Logo](screenshots/ceo_it_brand_logo.png) | ![Welcome Screen](screenshots/premium_onboarding_experience.png) | ![Onboarding Tour](screenshots/onboarding_tour.png) |
+| *Identité de marque & design system.* | *Introduction de l'application avec notre mascotte 3D.* | *Explications interactives pour le démarrage.* |
+
+### 2. Authentification & Workspaces Dédiés (RBAC)
+
+| Authentification Sécurisée | Espace Client | Espace Collaborateur Comptable | Espace Administrateur |
 | :---: | :---: | :---: | :---: |
-| ![Connexion](screenshots/screenshot_login.png) | ![Tableau de Bord](screenshots/screenshot_dashboard.png) | ![Capture OCR](screenshots/screenshot_capture.png) | ![Animation IA](screenshots/screenshot_loading.png) |
+| ![Login Auth](screenshots/secure_login_auth.png) | ![Client Workspace](screenshots/client_workspace.png) | ![Accountant Workspace](screenshots/accountant_workspace.png) | ![Admin Workspace](screenshots/admin_role_control.png) |
+| *Portail de connexion avec sélecteurs de rôles instantanés.* | *Espace Client pour le dépôt et suivi des factures.* | *File de validation comptable et assignation clients.* | *Panneau d'administration globale et configuration serveur.* |
+
+### 3. Capture OCR Intellectuelle & Analyse IA
+
+| Écran de Scan & Capture | Dépôt de Document PDF | Animation de Reconstruction IA | Analyse en Cours (IA) |
+| :---: | :---: | :---: | :---: |
+| ![AI Capture Scan](screenshots/ai_capture_scan.png) | ![Document Deposit](screenshots/ai_capture_document_deposit.png) | ![Neural Reconstruction](screenshots/neural_ai_reconstruction.png) | ![Processing Extraction](screenshots/ai_processing_extraction.png) |
+| *Interface de numérisation de facture en direct.* | *Espace d'importation de documents PDF locaux.* | *Tracé neuronal dynamique 3D en temps réel.* | *Simulation d'extraction intelligente par l'API Gemini.* |
+
+### 4. Audit de Fraude & Détails de Conformité
+
+| Résultat d'Extraction & Audit | Détails de Facture & Conformité | Centre de Notifications |
+| :---: | :---: | :---: |
+| ![Extraction Audit](screenshots/ai_extraction_fraud_audit.png) | ![Invoice Compliance](screenshots/invoice_details_compliance.png) | ![Notification Center](screenshots/notification_center.png) |
+| *Résultats d'extraction de métadonnées et score de risque.* | *Vue analytique : écarts de TVA, alertes IBAN et révision.* | *Centre d'alertes de sécurité et historique d'audit.* |
 
 ### 🎥 Démo Vidéo en Action (Walkthrough)
 
@@ -27,6 +53,9 @@ Découvrez le scénario de navigation complet et l'animation personnalisée de t
 ## 🌟 Fonctionnalités Standalone & Simulateur IA (Offline Sandbox)
 
 L'application intègre des moteurs de simulation en mémoire qui reproduisent fidèlement le fonctionnement du serveur :
+*   **Mascotte 3D Three.js Interactive** : Intégration dans l'onboarding d'un robot 3D fluide géré en local par Three.js. La mascotte suit le curseur de la souris du regard en temps réel, sourit et fait coucou périodiquement pour accueillir chaleureusement l'utilisateur.
+*   **Micro-interactions Célestes (`HeavenlyInteraction`)** : Chaque clic et bouton du menu de navigation offre une sensation de clic haut de gamme avec une animation d'échelle réactive (Spring scale down/up) et des effets de survol délicats.
+*   **Physique de Défilement Majeure** : Intégration globale de défilement élastique à effet rebond (Bouncing Physics) et d'un support total du défilement tactile ou par clic-glissé de la souris (mouse drag).
 *   **Authentification Multi-Rôles (RBAC)** : Boutons d'accès rapide simulant la connexion pour chaque rôle :
     *   `client@demo.com` : Espace client (dépôt photo/PDF, liste restreinte).
     *   `comptable@demo.com` : Espace collaborateur (contrôle de conformité, validation/rejet de factures, ajout de commentaires de révision).
@@ -58,22 +87,23 @@ graph TD
 
 ### Étape 1 : Prérequis
 1.  Installez le SDK **Flutter** sur votre poste de travail.
-2.  Assurez-vous de disposer d'un émulateur Android (ou iOS sur macOS) opérationnel.
+2.  Assurez-vous de disposer d'un émulateur Android (ou iOS sur macOS) opérationnel, ou lancez l'application directement dans le navigateur Chrome.
 
 ### Étape 2 : Démarrage de l'application
 Ouvrez votre terminal dans le dossier `mobile/` et exécutez les commandes suivantes :
 ```bash
 flutter pub get
-flutter run
+flutter run -d chrome
 ```
 
 ### Étape 3 : Scénario de Démonstration (Soutenance)
-1.  **Connexion** : Cliquez sur le bouton rapide **Comptable** sur l'écran d'accueil pour vous connecter instantanément.
-2.  **Dashboard** : Présentez le graphique dynamique et les KPIs. Expliquez que ces indicateurs se mettent à jour automatiquement à chaque modification.
-3.  **Vérification de Conformité** : Cliquez sur la facture de *Best Trade* (statut en attente). Montrez l'erreur de calcul de TVA signalée en rouge par le moteur de conformité local.
-4.  **Détection de Fraude** : Cliquez sur la facture de *Alpha Industrie*. Présentez le score de risque critique (85%) déclenché par l'anomalie d'IBAN (substitution de coordonnées bancaires détectée).
-5.  **Validation Métier** : Modifiez le statut d'une facture en "Validée" ou "Rejetée", saisissez un commentaire de révision comptable et sauvegardez. Constatez la mise à jour immédiate du tableau de bord.
-6.  **Simulation OCR** : Cliquez sur le bouton central de Capture, sélectionnez une image ou un PDF de facture, et validez. Assistez à l'analyse asynchrone de 2 secondes simulant le traitement IA, puis vérifiez les données pré-remplies dans le formulaire.
+1.  **Mascotte Interactive** : Dès le lancement, présentez la mascotte 3D interactive, jouez avec le curseur pour montrer le tracking dynamique de regard, et observez l'animation de salut et de sourire périodique.
+2.  **Connexion** : Cliquez sur le bouton rapide **Comptable** sur l'écran d'accueil pour vous connecter instantanément.
+3.  **Dashboard** : Présentez le graphique dynamique et les KPIs. Expliquez que ces indicateurs se mettent à jour automatiquement à chaque modification.
+4.  **Vérification de Conformité** : Cliquez sur la facture de *Best Trade* (statut en attente). Montrez l'erreur de calcul de TVA signalée en rouge par le moteur de conformité local.
+5.  **Détection de Fraude** : Cliquez sur la facture de *Alpha Industrie*. Présentez le score de risque critique (85%) déclenché par l'anomalie d'IBAN (substitution de coordonnées bancaires détectée).
+6.  **Validation Métier** : Modifiez le statut d'une facture en "Validée" ou "Rejetée", saisissez un commentaire de révision comptable et sauvegardez. Constatez la mise à jour immédiate du tableau de bord.
+7.  **Simulation OCR** : Cliquez sur le bouton central de Capture, sélectionnez une image ou un PDF de facture, et validez. Assistez à l'analyse asynchrone de 2 secondes simulant le traitement IA, puis vérifiez les données pré-remplies dans le formulaire.
 
 ---
 
@@ -87,3 +117,4 @@ flutter test
 
 **Développé avec passion par Yassine Atrous.** 🚀  
 *Conçu selon les standards d'ingénierie logicielle pour un rendu robuste, fluide et impressionnant.*
+
