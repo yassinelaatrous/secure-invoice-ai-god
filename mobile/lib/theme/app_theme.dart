@@ -20,26 +20,21 @@ class AppTheme {
   static const Color surfaceCreamDark = Color(0xFFF0EDE9); // Recessed/nested card
   static const Color cardBorder = Color(0xFFE5E2DF); // Subtle grey border
 
-  // ── Dark surfaces (kept for compatibility) ──────────────────────
-  static const Color backgroundDark = Color(0xFFFCF9F6);
-  static const Color surfaceDark = Color(0xFFF0EDEA);
-  static const Color surfaceVariantDark = Color(0xFFE5E2DF);
-  static const Color cardGlass = Color(0x0A000000);
-  static const Color cardGlassBorder = Color(0x14000000);
+
 
   // ── Text colors ─────────────────────────────────────────────────
   static const Color textPrimary = Color(0xFF1A1C1B); // Deep Charcoal
   static const Color textSecondary = Color(0xFF414844); // Muted Sage Grey
   static const Color textMuted = Color(0xFF717973); // Light Sage outline
 
-  static TextStyle get headlineLarge => darkTheme.textTheme.headlineLarge!;
-  static TextStyle get headlineMedium => darkTheme.textTheme.headlineMedium!;
-  static TextStyle get bodyLarge => darkTheme.textTheme.bodyLarge!;
-  static TextStyle get bodyMedium => darkTheme.textTheme.bodyMedium!;
-  static TextStyle get labelLarge => darkTheme.textTheme.labelLarge!;
-  static TextStyle get labelMedium => darkTheme.textTheme.labelMedium!;
+  static TextStyle get headlineLarge => creamTheme.textTheme.headlineLarge!;
+  static TextStyle get headlineMedium => creamTheme.textTheme.headlineMedium!;
+  static TextStyle get bodyLarge => creamTheme.textTheme.bodyLarge!;
+  static TextStyle get bodyMedium => creamTheme.textTheme.bodyMedium!;
+  static TextStyle get labelLarge => creamTheme.textTheme.labelLarge!;
+  static TextStyle get labelMedium => creamTheme.textTheme.labelMedium!;
 
-  static ThemeData get darkTheme => ThemeData(
+  static ThemeData get creamTheme => ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
     colorScheme: const ColorScheme.light(
@@ -179,5 +174,5 @@ class AppTheme {
     ),
   );
 
-  static ThemeData get lightTheme => darkTheme;
+  static ThemeData get lightTheme => creamTheme;
 }

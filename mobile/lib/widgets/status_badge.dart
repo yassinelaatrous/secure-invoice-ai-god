@@ -80,7 +80,7 @@ class StatusBadge extends StatelessWidget {
       case 'captured':
       case 'controlee':
       case 'reviewed':
-        return _StatusConfig(AppTheme.primary, Colors.white);
+        return _StatusConfig(AppTheme.primary, AppTheme.primary);
       case 'en_verification':
         return _StatusConfig(const Color(0xFF2196F3), const Color(0xFF2196F3));
       default:

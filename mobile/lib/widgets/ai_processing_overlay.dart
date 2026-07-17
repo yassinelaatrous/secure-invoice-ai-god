@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,9 +6,7 @@ import '../theme/app_theme.dart';
 import 'file_fetching_loader.dart';
 
 class AiProcessingOverlay extends StatefulWidget {
-  final AnimationController controller;
-
-  const AiProcessingOverlay({super.key, required this.controller});
+  const AiProcessingOverlay({super.key});
 
   @override
   State<AiProcessingOverlay> createState() => _AiProcessingOverlayState();

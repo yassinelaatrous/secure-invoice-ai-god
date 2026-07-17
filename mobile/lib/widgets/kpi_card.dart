@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class KpiCard extends StatelessWidget {
   final String title;
@@ -28,7 +29,7 @@ class KpiCard extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFE5E7EB),
+          color: AppTheme.cardBorder,
           width: 1,
         ),
         boxShadow: [
@@ -76,7 +77,6 @@ class KpiCard extends StatelessWidget {
                     color: textColor,
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    fontFamily: 'Outfit',
                   ),
                 ),
               ],

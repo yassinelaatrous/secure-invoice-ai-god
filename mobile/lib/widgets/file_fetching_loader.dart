@@ -98,14 +98,14 @@ class _FileFetchingLoaderState extends State<FileFetchingLoader>
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            Color(0xFFB324DB),
-            Color(0xFFAC8DCB),
+            Color(0xFF012D1D),
+            Color(0xFF0E6C4A),
           ],
         ),
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFB324DB).withOpacity(0.3),
+            color: const Color(0xFF012D1D).withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

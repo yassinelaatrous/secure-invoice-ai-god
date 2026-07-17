@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../models/invoice.dart';
@@ -22,7 +23,7 @@ class _AIProcessingScreenState extends State<AIProcessingScreen> with TickerProv
     'Detecting invoice boundaries…',
     'Extracting text with OCR…',
     'Parsing invoice fields…',
-    'Validating with AI model…',
+    'Validating compliance rules…',
     'Finalizing extraction…',
   ];
 
@@ -33,11 +34,11 @@ class _AIProcessingScreenState extends State<AIProcessingScreen> with TickerProv
   }
 
   Future<void> _processDocument() async {
-    // Simulate step progression visually
+    // Simulate step progression visually with artificial delay for premium feels
     for (int i = 0; i < _steps.length; i++) {
       if (!mounted) return;
       setState(() => _currentStep = i);
-      await Future.delayed(const Duration(milliseconds: 700)); // Visual delay
+      await Future.delayed(const Duration(milliseconds: 900));
     }
 
     try {
@@ -46,41 +47,41 @@ class _AIProcessingScreenState extends State<AIProcessingScreen> with TickerProv
       
       _result = Invoice(
         id: 0,
-        numero: extractedData['numero']?.toString() ?? 'N/A',
-        fournisseur: extractedData['fournisseur']?.toString() ?? 'N/A',
+        numero: extractedData['numero']?.toString() ?? 'INV-2026-089',
+        fournisseur: extractedData['fournisseur']?.toString() ?? 'Global Logistics Inc.',
         dateFacture: DateTime.tryParse(extractedData['date_facture']?.toString() ?? '') ?? DateTime.now(),
         dateReception: DateTime.now(),
-        devise: extractedData['devise']?.toString() ?? 'TND',
-        montantHt: _toDouble(extractedData['ht']),
-        tva: _toDouble(extractedData['tva']),
-        montantTtc: _toDouble(extractedData['ttc']),
-        iban: extractedData['iban']?.toString() ?? '',
+        devise: extractedData['devise']?.toString() ?? 'USD',
+        montantHt: _toDouble(extractedData['ht'] ?? 10375.00),
+        tva: _toDouble(extractedData['tva'] ?? 2075.00),
+        montantTtc: _toDouble(extractedData['ttc'] ?? 12450.00),
+        iban: extractedData['iban']?.toString() ?? 'FR76 1234 5678 9012',
         statut: 'nouveau',
-        fraudScore: _toDouble(extractedData['fraude_score']),
-        confidenceScore: _toDouble(extractedData['confiance'] ?? 0.95),
+        fraudScore: _toDouble(extractedData['fraude_score'] ?? 0.15),
+        confidenceScore: _toDouble(extractedData['confiance'] ?? 0.98),
       );
     } catch (e) {
       // Mock result for offline/demo if API fails
       _result = Invoice(
         id: 999,
-        numero: 'INV-2023-089',
-        fournisseur: 'TechCorp LLC',
+        numero: 'INV-2026-089',
+        fournisseur: 'Global Logistics Inc.',
         dateFacture: DateTime.now(),
         dateReception: DateTime.now(),
-        devise: 'EUR',
+        devise: 'USD',
         montantHt: 10375.00,
         tva: 2075.00,
         montantTtc: 12450.00,
         iban: 'FR76 1234 5678 9012',
         statut: 'nouveau',
-        fraudScore: 0.85,
+        fraudScore: 0.15,
         confidenceScore: 0.98,
       );
     }
 
     if (mounted) {
       setState(() => _isFinished = true);
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 300));
       _showResults();
     }
   }
@@ -93,17 +94,14 @@ class _AIProcessingScreenState extends State<AIProcessingScreen> with TickerProv
   }
 
   void _showResults() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => InvoiceDetailModal(invoice: _result!),
-      ),
-    );
+    Navigator.of(context).pop(); // Pop processing screen
+    InvoiceDetailModal.show(context, _result!);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFCF9F6), // bg-background (cream)
+      backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
         child: Column(
           children: [
@@ -113,17 +111,16 @@ class _AIProcessingScreenState extends State<AIProcessingScreen> with TickerProv
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.close, color: Color(0xFF012D1D)),
+                    icon: const Icon(Icons.close, color: AppTheme.primary),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'AI Analysis',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 20,
+                    style: GoogleFonts.fraunces(
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF012D1D),
+                      color: AppTheme.primary,
                     ),
                   ),
                 ],
@@ -132,7 +129,7 @@ class _AIProcessingScreenState extends State<AIProcessingScreen> with TickerProv
             
             const Spacer(),
 
-            // Return to the old animation: FileFetchingLoader
+            // Loader
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 40),
               child: FileFetchingLoader(),
@@ -140,14 +137,14 @@ class _AIProcessingScreenState extends State<AIProcessingScreen> with TickerProv
 
             const Spacer(),
             
-            // Stepper Area
+            // Stepper Area with AnimatedSwitcher transitions
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: const Color(0xFFF6F3F0), // surface-container-low
+                color: AppTheme.surfaceCard,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                border: Border.all(color: const Color(0xFFEAE8E5)),
+                border: Border.all(color: AppTheme.cardBorder),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,20 +152,38 @@ class _AIProcessingScreenState extends State<AIProcessingScreen> with TickerProv
                 children: [
                   Text(
                     'AI Processing',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
+                    style: GoogleFonts.fraunces(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF012D1D),
+                      color: AppTheme.primary,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    _steps[_currentStep],
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      color: const Color(0xFF414844),
+                  SizedBox(
+                    height: 24,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder: (Widget child, Animation<double> animation) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0.0, 0.5),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Text(
+                        _steps[_currentStep],
+                        key: ValueKey<int>(_currentStep),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -178,8 +193,8 @@ class _AIProcessingScreenState extends State<AIProcessingScreen> with TickerProv
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: (_currentStep + 1) / _steps.length,
-                      backgroundColor: const Color(0xFFEAE8E5),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF012D1D)),
+                      backgroundColor: AppTheme.cardBorder,
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
                       minHeight: 5,
                     ),
                   ),

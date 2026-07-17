@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/invoice.dart';
+import '../theme/app_theme.dart';
+import '../widgets/heavenly_interaction.dart';
 
-class InvoiceDetailModal extends StatelessWidget {
+class InvoiceDetailModal extends StatefulWidget {
   final Invoice invoice;
 
   const InvoiceDetailModal({Key? key, required this.invoice}) : super(key: key);
@@ -17,14 +19,154 @@ class InvoiceDetailModal extends StatelessWidget {
   }
 
   @override
+  State<InvoiceDetailModal> createState() => _InvoiceDetailModalState();
+}
+
+class _InvoiceDetailModalState extends State<InvoiceDetailModal> {
+  bool _isZoomed = false;
+  bool _isExpanded = false;
+
+  void _validateInvoice() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppTheme.backgroundLight,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              const Icon(Icons.check_circle_outline, size: 64, color: AppTheme.accentGreen),
+              const SizedBox(height: 16),
+              Text(
+                'Invoice Validated',
+                style: GoogleFonts.fraunces(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Invoice ${widget.invoice.numero} has been approved successfully.',
+                style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (mounted) {
+        Navigator.pop(context); // Close dialog
+        Navigator.pop(context); // Close modal sheet
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.accentGreen,
+            content: Text('Invoice ${widget.invoice.numero} marked as validated.'),
+          ),
+        );
+      }
+    });
+  }
+
+  void _rejectInvoice() {
+    final commentController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppTheme.backgroundLight,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Reject Invoice',
+            style: GoogleFonts.fraunces(fontWeight: FontWeight.bold, color: AppTheme.primary),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Please specify the reason for rejecting invoice ${widget.invoice.numero}.',
+                style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: commentController,
+                style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.textPrimary),
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'e.g. Mismatched total amounts, blurry scanning, wrong IBAN...',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel', style: GoogleFonts.dmSans(color: AppTheme.textSecondary)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final comment = commentController.text.trim();
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context); // Close sheet modal
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: AppTheme.error,
+                    content: Text(
+                      'Invoice rejected: ${comment.isNotEmpty ? comment : "No comment specification"}',
+                      style: GoogleFonts.dmSans(color: Colors.white),
+                    ),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.error,
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
+              child: Text('Submit Rejection', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    ).then((_) => commentController.dispose());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Hardcoded demo values matching mockup screenshot
-    const double riskScore = 75.0; 
-    const Color riskColor = Color(0xFFA4161A); // error-crimson
+    double calculatedRisk = widget.invoice.fraudScore;
+    if (calculatedRisk < 0) calculatedRisk = 0;
+    if (calculatedRisk <= 1.0 && calculatedRisk > 0.0) {
+      calculatedRisk = calculatedRisk * 100.0;
+    }
+    if (calculatedRisk > 100.0) {
+      calculatedRisk = 100.0;
+    }
+    final double riskScore = calculatedRisk;
+    Color riskColor;
+    String riskText = 'Low Risk';
+
+    if (riskScore >= 70.0) {
+      riskColor = AppTheme.error;
+      riskText = 'Critical Risk';
+    } else if (riskScore >= 40.0) {
+      riskColor = Colors.orange[800]!;
+      riskText = 'Medium Risk';
+    } else {
+      riskColor = AppTheme.accentGreen;
+      riskText = 'Low Risk';
+    }
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFFFCF9F6), // bg-background
+        color: AppTheme.backgroundLight,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
@@ -34,7 +176,7 @@ class InvoiceDetailModal extends StatelessWidget {
         bottom: MediaQuery.of(context).viewInsets.bottom + 20,
       ),
       child: FractionallySizedBox(
-        heightFactor: 0.9,
+        heightFactor: _isExpanded ? 0.98 : 0.9,
         child: Column(
           children: [
             // Grab handle
@@ -43,7 +185,7 @@ class InvoiceDetailModal extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFFE5E2DF),
+                color: AppTheme.cardBorder,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -53,15 +195,15 @@ class InvoiceDetailModal extends StatelessWidget {
               onTap: () => Navigator.pop(context),
               child: Row(
                 children: [
-                  const Icon(Icons.arrow_back, color: Color(0xFF012D1D), size: 18),
+                  const Icon(Icons.arrow_back, color: AppTheme.primary, size: 18),
                   const SizedBox(width: 8),
                   Text(
                     'Back to Invoices',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.dmSans(
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF414844),
-                      letterSpacing: 0.05 * 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textSecondary,
+                      letterSpacing: 0.6,
                     ),
                   ),
                 ],
@@ -79,37 +221,37 @@ class InvoiceDetailModal extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Invoice #INV-2024-082',
-                        style: GoogleFonts.inter(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF012D1D),
+                        'Invoice #${widget.invoice.numero}',
+                        style: GoogleFonts.fraunces(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primary,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           Text(
-                            'Best Trade Corp',
-                            style: GoogleFonts.inter(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1C1C1A),
+                            widget.invoice.fournisseur,
+                            style: GoogleFonts.fraunces(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFA0F4C8).withOpacity(0.3), // secondary-container
+                              color: AppTheme.accentGreen.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               'Verified Vendor',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.dmSans(
                                 fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF005236),
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.accentGreen,
                               ),
                             ),
                           ),
@@ -128,7 +270,7 @@ class InvoiceDetailModal extends StatelessWidget {
                 child: Column(
                   children: [
                     // Risk Assessment Circular Gauge Card
-                    _buildRiskGaugeCard(riskScore, riskColor),
+                    _buildRiskGaugeCard(riskScore, riskColor, riskText),
                     const SizedBox(height: 16),
 
                     // Extracted Fields & Confidence
@@ -136,12 +278,14 @@ class InvoiceDetailModal extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Fraud Analysis Explanation Card
-                    _buildFraudExplanationCard(),
-                    const SizedBox(height: 16),
+                    if (riskScore >= 40.0) ...[
+                      _buildFraudExplanationCard(riskScore, riskColor),
+                      const SizedBox(height: 16),
+                    ],
 
-                    // Invoice Visual Scan Mockup
+                    // Invoice Visual Scan Card
                     _buildVisualScanCard(),
-                    const SizedBox(height: 100), // padding for sticky bottom
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
@@ -151,30 +295,36 @@ class InvoiceDetailModal extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(top: 16),
               decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: Color(0xFFE5E2DF))),
+                border: Border(top: BorderSide(color: AppTheme.cardBorder)),
               ),
               child: Column(
                 children: [
                   SizedBox(
                     width: double.infinity,
                     height: 52,
-                    child: ElevatedButton.icon(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.check_circle, color: Colors.white),
-                      label: Text(
-                        'Validate Invoice',
-                        style: GoogleFonts.inter(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF012D1D),
-                        shape: RoundedRectangleBorder(
+                    child: HeavenlyInteraction(
+                      onTap: _validateInvoice,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        elevation: 0,
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.check_circle, color: Colors.white),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Validate Invoice',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -182,21 +332,28 @@ class InvoiceDetailModal extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     height: 52,
-                    child: OutlinedButton.icon(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.block, color: Color(0xFFA4161A)),
-                      label: Text(
-                        'Reject with Comment',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFFA4161A),
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFA4161A)),
-                        shape: RoundedRectangleBorder(
+                    child: HeavenlyInteraction(
+                      onTap: _rejectInvoice,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppTheme.error),
                           borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.block, color: AppTheme.error),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Reject with Comment',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.error,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -210,17 +367,17 @@ class InvoiceDetailModal extends StatelessWidget {
     );
   }
 
-  Widget _buildRiskGaugeCard(double score, Color color) {
+  Widget _buildRiskGaugeCard(double score, Color color, String riskText) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEAE8E5)),
+        border: Border.all(color: AppTheme.cardBorder),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1A1C1B).withOpacity(0.03),
+            color: AppTheme.primary.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -230,11 +387,11 @@ class InvoiceDetailModal extends StatelessWidget {
         children: [
           Text(
             'Risk Assessment',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.dmSans(
               fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF717973),
-              letterSpacing: 0.05 * 12,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textMuted,
+              letterSpacing: 0.6,
             ),
           ),
           const SizedBox(height: 16),
@@ -247,7 +404,7 @@ class InvoiceDetailModal extends StatelessWidget {
                 child: CircularProgressIndicator(
                   value: score / 100,
                   strokeWidth: 8,
-                  backgroundColor: const Color(0xFFEAE8E5),
+                  backgroundColor: AppTheme.surfaceCreamDark,
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                 ),
               ),
@@ -256,17 +413,17 @@ class InvoiceDetailModal extends StatelessWidget {
                 children: [
                   Text(
                     '${score.toInt()}%',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.dmSans(
                       fontSize: 24,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                       color: color,
                     ),
                   ),
                   Text(
-                    'High Risk',
-                    style: GoogleFonts.inter(
+                    riskText,
+                    style: GoogleFonts.dmSans(
                       fontSize: 10,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.bold,
                       color: color,
                     ),
                   ),
@@ -276,11 +433,13 @@ class InvoiceDetailModal extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'High risk detected in VAT reconciliation and bank details.',
+            score >= 40.0
+                ? 'High risk anomalies detected in ledger details. Audit verification required.'
+                : 'All invoice compliance rules parsed successfully.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.dmSans(
               fontSize: 14,
-              color: const Color(0xFF414844),
+              color: AppTheme.textSecondary,
             ),
           ),
         ],
@@ -294,30 +453,30 @@ class InvoiceDetailModal extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E2DF)),
+        border: Border.all(color: AppTheme.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'EXTRACTED FIELDS & CONFIDENCE',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.dmSans(
               fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF717973),
-              letterSpacing: 0.05 * 12,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textMuted,
+              letterSpacing: 0.6,
             ),
           ),
           const SizedBox(height: 16),
-          _buildExtractedRow('Vendor', 'Best Trade Corp', '99%', const Color(0xFFB7E4C7), const Color(0xFF0E6C4A), Icons.check_circle),
-          const Divider(height: 24, color: Color(0xFFE5E2DF)),
-          _buildExtractedRow('IBAN', 'IE 45 BKRY 9001 2345 6789 01', '65%', const Color(0xFFFFE0B2), Colors.orange[800]!, Icons.warning),
-          const Divider(height: 24, color: Color(0xFFE5E2DF)),
-          _buildExtractedRow('VAT Amount', '€2,614.50', '40%', const Color(0xFFFFDAD6), const Color(0xFFA4161A), Icons.error),
-          const Divider(height: 24, color: Color(0xFFE5E2DF)),
-          _buildExtractedRow('Total HT', '€9,835.50', '98%', const Color(0xFFB7E4C7), const Color(0xFF0E6C4A), Icons.check_circle),
-          const Divider(height: 24, color: Color(0xFFE5E2DF)),
-          _buildExtractedRow('Total TTC', '€12,450.00', '99%', const Color(0xFFB7E4C7), const Color(0xFF0E6C4A), Icons.check_circle),
+          _buildExtractedRow('Vendor', widget.invoice.fournisseur, '99%', AppTheme.accentGreen.withValues(alpha: 0.15), AppTheme.accentGreen, Icons.check_circle),
+          const Divider(height: 24, color: AppTheme.cardBorder),
+          _buildExtractedRow('IBAN', widget.invoice.iban.isNotEmpty ? widget.invoice.iban : 'MOCK IBAN FR76...', '65%', Colors.orange[100]!, Colors.orange[850]!, Icons.warning),
+          const Divider(height: 24, color: AppTheme.cardBorder),
+          _buildExtractedRow('VAT Amount', '${widget.invoice.devise} ${widget.invoice.tva.toStringAsFixed(2)}', '95%', AppTheme.accentGreen.withValues(alpha: 0.15), AppTheme.accentGreen, Icons.check_circle),
+          const Divider(height: 24, color: AppTheme.cardBorder),
+          _buildExtractedRow('Total HT', '${widget.invoice.devise} ${widget.invoice.montantHt.toStringAsFixed(2)}', '98%', AppTheme.accentGreen.withValues(alpha: 0.15), AppTheme.accentGreen, Icons.check_circle),
+          const Divider(height: 24, color: AppTheme.cardBorder),
+          _buildExtractedRow('Total TTC', '${widget.invoice.devise} ${widget.invoice.montantTtc.toStringAsFixed(2)}', '99%', AppTheme.accentGreen.withValues(alpha: 0.15), AppTheme.accentGreen, Icons.check_circle),
         ],
       ),
     );
@@ -333,12 +492,12 @@ class InvoiceDetailModal extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: const Color(0xFF414844)),
+                style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 4),
               Text(
                 value,
-                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF1C1C1A)),
+                style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
               ),
             ],
           ),
@@ -355,7 +514,7 @@ class InvoiceDetailModal extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 confidence,
-                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: badgeText),
+                style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.bold, color: badgeText),
               ),
             ],
           ),
@@ -364,13 +523,13 @@ class InvoiceDetailModal extends StatelessWidget {
     );
   }
 
-  Widget _buildFraudExplanationCard() {
+  Widget _buildFraudExplanationCard(double score, Color color) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFDAD6).withOpacity(0.3), // error-container/40
+        color: AppTheme.error.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFDAD6)),
+        border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,10 +537,10 @@ class InvoiceDetailModal extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFA4161A).withOpacity(0.1),
+              color: AppTheme.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.policy, color: Color(0xFFA4161A), size: 20),
+            child: const Icon(Icons.policy, color: AppTheme.error, size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -389,26 +548,26 @@ class InvoiceDetailModal extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Fraud Analysis Explanation',
-                  style: GoogleFonts.inter(
+                  'Anomaly Alert Details',
+                  style: GoogleFonts.fraunces(
                     fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFA4161A),
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.error,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'The system has flagged this invoice as High Risk (75%) due to the following critical anomalies detected during extraction:',
-                  style: GoogleFonts.inter(
+                  'The invoice contains features flagged as unusual (${score.toInt()}% severity score):',
+                  style: GoogleFonts.dmSans(
                     fontSize: 14,
-                    color: const Color(0xFF1C1C1A),
+                    color: AppTheme.textPrimary,
                     height: 1.4,
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildBulletPoint('Bank account mismatch detected:', ' The extracted IBAN (IE 45...) differs from the verified primary account stored in the vendor profile for Best Trade Corp.'),
+                _buildBulletPoint('IBAN mismatch check:', ' Extracted IBAN is not matches with vendor directory records.'),
                 const SizedBox(height: 8),
-                _buildBulletPoint('VAT Calculation Error:', ' The extracted VAT amount (21%) does not match the expected sum of itemized lines. Expected: €2,490.00 vs Extracted: €2,614.50.'),
+                _buildBulletPoint('OCR confidence alert:', ' Certain characters have medium extraction thresholds (65% on bank credentials).'),
               ],
             ),
           ),
@@ -421,13 +580,13 @@ class InvoiceDetailModal extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('• ', style: TextStyle(fontSize: 14, color: Color(0xFF414844))),
+        const Text('• ', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF414844), height: 1.4),
+              style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.textSecondary, height: 1.4),
               children: [
-                TextSpan(text: boldPrefix, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1C1C1A))),
+                TextSpan(text: boldPrefix, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                 TextSpan(text: text),
               ],
             ),
@@ -442,38 +601,54 @@ class InvoiceDetailModal extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E2DF)),
+        border: Border.all(color: AppTheme.cardBorder),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: const Color(0xFFEAE8E5), // surface-container-high
+            color: AppTheme.surfaceCreamDark,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'INVOICE VISUAL SCAN',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.dmSans(
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF414844),
-                    letterSpacing: 0.05 * 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textSecondary,
+                    letterSpacing: 0.6,
                   ),
                 ),
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.zoom_in, color: Color(0xFF414844), size: 20),
-                      onPressed: () {},
+                      icon: Icon(
+                        _isZoomed ? Icons.zoom_out : Icons.zoom_in,
+                        color: AppTheme.textSecondary,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isZoomed = !_isZoomed;
+                        });
+                      },
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.zero,
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.open_in_full, color: Color(0xFF414844), size: 20),
-                      onPressed: () {},
+                      icon: Icon(
+                        _isExpanded ? Icons.close_fullscreen : Icons.open_in_full,
+                        color: AppTheme.textSecondary,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isExpanded = !_isExpanded;
+                        });
+                      },
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.zero,
                     ),
@@ -482,79 +657,82 @@ class InvoiceDetailModal extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            height: 256,
-            color: const Color(0xFFF8FAFC), // slate-50
-            child: Center(
-              child: Container(
-                width: 192,
-                height: 240,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    // Mock invoice layout lines
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(width: 48, height: 16, color: const Color(0xFFF1F5F9)),
-                        const SizedBox(height: 16),
-                        Container(width: double.infinity, height: 8, color: const Color(0xFFF8FAFC)),
-                        const SizedBox(height: 6),
-                        Container(width: 120, height: 8, color: const Color(0xFFF8FAFC)),
-                        const SizedBox(height: 6),
-                        Container(width: double.infinity, height: 8, color: const Color(0xFFF8FAFC)),
-                        const Spacer(),
-                        Container(height: 1, color: const Color(0xFFF1F5F9)),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(width: 32, height: 8, color: const Color(0xFFF1F5F9)),
-                            Container(width: 48, height: 16, color: const Color(0xFFE2E8F0)),
-                          ],
-                        ),
-                      ],
-                    ),
-                    // Red highlight overlay
-                    Positioned(
-                      top: 96,
-                      left: 16,
-                      right: 16,
-                      height: 32,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFA4161A).withOpacity(0.1),
-                          border: Border.all(color: const Color(0xFFA4161A), width: 2),
-                          borderRadius: BorderRadius.circular(4),
+          AnimatedScale(
+            scale: _isZoomed ? 1.5 : 1.0,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            child: Container(
+              height: 256,
+              color: const Color(0xFFF8FAFC),
+              child: Center(
+                child: Container(
+                  width: 192,
+                  height: 240,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(width: 48, height: 16, color: const Color(0xFFF1F5F9)),
+                          const SizedBox(height: 16),
+                          Container(width: double.infinity, height: 8, color: const Color(0xFFF8FAFC)),
+                          const SizedBox(height: 6),
+                          Container(width: 120, height: 8, color: const Color(0xFFF8FAFC)),
+                          const SizedBox(height: 6),
+                          Container(width: double.infinity, height: 8, color: const Color(0xFFF8FAFC)),
+                          const Spacer(),
+                          Container(height: 1, color: const Color(0xFFF1F5F9)),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(width: 32, height: 8, color: const Color(0xFFF1F5F9)),
+                              Container(width: 48, height: 16, color: const Color(0xFFE2E8F0)),
+                            ],
+                          ),
+                        ],
+                      ),
+                      // Highlights
+                      Positioned(
+                        top: 96,
+                        left: 16,
+                        right: 16,
+                        height: 32,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.error.withValues(alpha: 0.1),
+                            border: Border.all(color: AppTheme.error, width: 2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                       ),
-                    ),
-                    // Orange highlight overlay
-                    Positioned(
-                      bottom: 40,
-                      left: 16,
-                      right: 16,
-                      height: 24,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
-                          border: Border.all(color: Colors.orange, width: 2),
-                          borderRadius: BorderRadius.circular(4),
+                      Positioned(
+                        bottom: 40,
+                        left: 16,
+                        right: 16,
+                        height: 24,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.1),
+                            border: Border.all(color: Colors.orange, width: 2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

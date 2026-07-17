@@ -2,18 +2,155 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../notification_screen.dart';
 import '../../widgets/fade_in_slide.dart';
-
 import '../../widgets/heavenly_interaction.dart';
+import '../../theme/app_theme.dart';
+import '../../services/auth_service.dart';
+import '../invoice_detail_modal.dart';
+import '../../models/invoice.dart';
 
-class AdminWorkspace extends StatelessWidget {
+class AdminWorkspace extends StatefulWidget {
   final VoidCallback onScanPressed;
-  
+
   const AdminWorkspace({Key? key, required this.onScanPressed}) : super(key: key);
+
+  @override
+  State<AdminWorkspace> createState() => _AdminWorkspaceState();
+}
+
+class _AdminWorkspaceState extends State<AdminWorkspace> {
+  String _userName = 'Admin';
+  
+  final List<Map<String, dynamic>> _activities = [
+    {
+      'id': 1,
+      'fournisseur': 'Global Logistics Inc.',
+      'numero': 'INV-2026-004',
+      'date': 'Today, 10:24 AM',
+      'amount': 1240.00,
+      'status': 'validee',
+      'icon': Icons.receipt_long,
+      'riskScore': 12.0,
+    },
+    {
+      'id': 2,
+      'fournisseur': 'Cloud Systems SA',
+      'numero': 'INV-2026-003',
+      'date': 'Yesterday, 4:45 PM',
+      'amount': 842.20,
+      'status': 'brouillon',
+      'icon': Icons.description,
+      'riskScore': 45.0,
+    },
+    {
+      'id': 3,
+      'fournisseur': 'Office Supplies Corp',
+      'numero': 'INV-2026-002',
+      'date': 'Jul 12, 09:12 AM',
+      'amount': 156.00,
+      'status': 'rejete',
+      'icon': Icons.request_quote,
+      'riskScore': 85.0,
+    },
+    {
+      'id': 4,
+      'fournisseur': 'Apex Tech Solutions',
+      'numero': 'INV-2026-001',
+      'date': 'Jul 10, 02:30 PM',
+      'amount': 4500.00,
+      'status': 'controlee',
+      'icon': Icons.business,
+      'riskScore': 22.0,
+    }
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  void _loadUserInfo() async {
+    final info = await AuthService.getUserInfo();
+    if (info != null && info['nom'] != null) {
+      setState(() {
+        _userName = info['nom'];
+        if (_userName.toUpperCase() == 'ADMIN') {
+          _userName = 'Administrator';
+        }
+      });
+    }
+  }
+
+  void _showActivityDetail(Map<String, dynamic> act) {
+    final invoice = Invoice(
+      id: act['id'],
+      numero: act['numero'],
+      fournisseur: act['fournisseur'],
+      dateFacture: DateTime.now().subtract(const Duration(days: 2)),
+      dateReception: DateTime.now(),
+      devise: 'USD',
+      montantHt: act['amount'] * 0.8,
+      tva: act['amount'] * 0.2,
+      montantTtc: act['amount'],
+      iban: 'FR76 3000 6000 0123 4567 8901 234',
+      statut: act['status'],
+      fraudScore: act['riskScore'] / 100.0,
+      confidenceScore: 0.96,
+    );
+    InvoiceDetailModal.show(context, invoice);
+  }
+
+  void _showAllActivities() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.backgroundLight,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'All Activities',
+                style: GoogleFonts.fraunces(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.separated(
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: _activities.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final act = _activities[index];
+                    return HeavenlyInteraction(
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showActivityDetail(act);
+                      },
+                      child: _buildActivityItemContent(act),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFCF9F6), // bg-background
+      backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -29,7 +166,7 @@ class AdminWorkspace extends StatelessWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF012D1D).withOpacity(0.1), width: 2),
+                      border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1), width: 2),
                       image: const DecorationImage(
                         image: NetworkImage(
                           'https://lh3.googleusercontent.com/aida-public/AB6AXuCvvHJZhbJ0PcTUfHDjlcANCqwHNCwo6o3QeU5Wmmp4K5owz5g4m8t_PvzIr_-CcsUO1b-IBWs94yf6z8xT3jbJI4Xwkzw69NXtNE2njMg1V7aICuwUMH_IWMRbmsORClZ55Ql2pVE9iQ0vzedkD0AzUX48KooF347aKLSyB3MAN8zfKs4G1GUtu_VjjHl_Ojx55pLwQMbOMMUL0Pf1efNb-arO9BDvF6A8O72iwjS4uIDFBGgUpLql1zRdd3fRKenpMabMHGUsVlWy',
@@ -41,11 +178,10 @@ class AdminWorkspace extends StatelessWidget {
                   const SizedBox(width: 12),
                   Text(
                     'CEO-IT',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.fraunces(
                       fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF012D1D),
-                      letterSpacing: -0.01 * 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primary,
                     ),
                   ),
                   const Spacer(),
@@ -56,7 +192,7 @@ class AdminWorkspace extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.notifications, color: Color(0xFF414844)),
+                      icon: const Icon(Icons.notifications, color: AppTheme.textSecondary),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -77,20 +213,20 @@ class AdminWorkspace extends StatelessWidget {
                   children: [
                     Text(
                       'WELCOME BACK',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.dmSans(
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF414844),
-                        letterSpacing: 0.05 * 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textMuted,
+                        letterSpacing: 1.2,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Hello, Yassine',
-                      style: GoogleFonts.inter(
+                      'Hello, $_userName',
+                      style: GoogleFonts.fraunces(
                         fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1A1C1B),
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                   ],
@@ -105,12 +241,12 @@ class AdminWorkspace extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF6F3F0), // surface-container-low
+                    color: const Color(0xFFF6F3F0),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFEAE8E5)),
+                    border: Border.all(color: AppTheme.cardBorder),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF1A1C1B).withOpacity(0.05),
+                        color: AppTheme.textPrimary.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -123,11 +259,11 @@ class AdminWorkspace extends StatelessWidget {
                         children: [
                           Text(
                             'Total Inflow',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.dmSans(
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF19724F), // on-secondary-container
-                              letterSpacing: 0.05 * 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.accentGreen,
+                              letterSpacing: 1.2,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -137,19 +273,19 @@ class AdminWorkspace extends StatelessWidget {
                             children: [
                               Text(
                                 '\$42,850',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.dmSans(
                                   fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF012D1D),
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primary,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 '+12.5%',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.dmSans(
                                   fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF0E6C4A), // secondary
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.accentGreen,
                                 ),
                               ),
                             ],
@@ -164,7 +300,7 @@ class AdminWorkspace extends StatelessWidget {
                           child: const Icon(
                             Icons.payments,
                             size: 80,
-                            color: Color(0xFF012D1D),
+                            color: AppTheme.primary,
                           ),
                         ),
                       ),
@@ -183,28 +319,28 @@ class AdminWorkspace extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFFFFF), // surface-container-lowest
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFEAE8E5)),
+                          border: Border.all(color: AppTheme.cardBorder),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Outflow',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.dmSans(
                                 fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF717973), // outline
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textMuted,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '\$12,400',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.dmSans(
                                 fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1A1C1B),
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -214,8 +350,8 @@ class AdminWorkspace extends StatelessWidget {
                                 height: 4,
                                 child: LinearProgressIndicator(
                                   value: 0.45,
-                                  backgroundColor: Color(0xFFF0EDE5),
-                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFA4161A)), // error-crimson
+                                  backgroundColor: AppTheme.surfaceCreamDark,
+                                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.error),
                                 ),
                               ),
                             ),
@@ -229,28 +365,28 @@ class AdminWorkspace extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFFFFF), // surface-container-lowest
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFEAE8E5)),
+                          border: Border.all(color: AppTheme.cardBorder),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Pending',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.dmSans(
                                 fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF717973), // outline
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textMuted,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '\$8,210',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.dmSans(
                                 fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1A1C1B),
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -260,8 +396,8 @@ class AdminWorkspace extends StatelessWidget {
                                 height: 4,
                                 child: LinearProgressIndicator(
                                   value: 0.25,
-                                  backgroundColor: Color(0xFFF0EDE5),
-                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0E6C4A)), // secondary
+                                  backgroundColor: AppTheme.surfaceCreamDark,
+                                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.accentGreen),
                                 ),
                               ),
                             ),
@@ -277,53 +413,36 @@ class AdminWorkspace extends StatelessWidget {
               FadeInSlide(
                 delay: const Duration(milliseconds: 400),
                 child: Container(
-                  height: 220,
+                  height: 240,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF012D1D), // primary
+                    color: AppTheme.primary,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  padding: const EdgeInsets.all(24),
-                  child: Stack(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Cashflow Analytics',
-                            style: GoogleFonts.inter(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Visualizing last 30 days performance',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFFA5D0B9), // primary-fixed-dim
-                            ),
-                          ),
-                          const Spacer(),
-                          const _CashflowChart(),
-                        ],
-                      ),
-                      Positioned(
-                        right: -30,
-                        top: -30,
-                        child: Opacity(
-                          opacity: 0.2,
-                          child: Container(
-                            width: 120,
-                            height: 120,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xFFA0F4C8), // secondary-fixed
-                            ),
-                          ),
+                      Text(
+                        'Cashflow Analytics',
+                        style: GoogleFonts.fraunces(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Visualizing last 30 days performance',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.accent.withValues(alpha: 0.8),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Expanded(
+                        child: _CashflowChart(),
                       ),
                     ],
                   ),
@@ -332,93 +451,94 @@ class AdminWorkspace extends StatelessWidget {
               const SizedBox(height: 24),
 
               FadeInSlide(
-                delay: const Duration(milliseconds: 500),
+                delay: const Duration(milliseconds: 480),
                 child: HeavenlyInteraction(
-                  onTap: onScanPressed,
+                  onTap: widget.onScanPressed,
                   scaleDown: 0.96,
                   hoverScale: 1.02,
-                  child: SizedBox(
+                  child: Container(
                     width: double.infinity,
                     height: 52,
-                    child: ElevatedButton.icon(
-                      onPressed: null, // Let HeavenlyInteraction handle the tap gesture
-                      icon: const Icon(Icons.add_a_photo, color: Colors.white),
-                      label: Text(
-                        'Scan New Invoice',
-                        style: GoogleFonts.inter(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primary.withValues(alpha: 0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF012D1D),
-                        disabledBackgroundColor: const Color(0xFF012D1D), // Keep color when disabled
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.add_a_photo, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Scan New Invoice',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                        elevation: 4,
-                      ),
+                      ],
                     ),
                   ),
                 ),
               ),
               const SizedBox(height: 32),
 
-              // Recent Activity
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Activity',
-                    style: GoogleFonts.inter(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1A1C1B),
+              // Recent Activity Header
+              FadeInSlide(
+                delay: const Duration(milliseconds: 520),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Recent Activity',
+                      style: GoogleFonts.fraunces(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'View All',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF0E6C4A),
+                    HeavenlyInteraction(
+                      onTap: _showAllActivities,
+                      child: Text(
+                        'View All',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.accentGreen,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
 
-              _buildActivityItem(
-                title: 'Global Logistics Inc.',
-                subtitle: 'Today, 10:24 AM',
-                amount: '\$1,240.00',
-                status: 'Validated',
-                statusBgColor: const Color(0xFFB7E4C7).withOpacity(0.2), // muted-sage
-                statusTextColor: const Color(0xFF0E6C4A),
-                icon: Icons.receipt_long,
+              // Activities List with Staggered animations
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: 3,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final act = _activities[index];
+                  return FadeInSlide(
+                    delay: Duration(milliseconds: 550 + (index * 80)),
+                    child: HeavenlyInteraction(
+                      onTap: () => _showActivityDetail(act),
+                      child: _buildActivityItemContent(act),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: 12),
-              _buildActivityItem(
-                title: 'Cloud Systems SA',
-                subtitle: 'Yesterday, 4:45 PM',
-                amount: '\$842.20',
-                status: 'Pending',
-                statusBgColor: const Color(0xFFEAE8E5), // surface-container-high
-                statusTextColor: const Color(0xFF414844),
-                icon: Icons.description,
-              ),
-              const SizedBox(height: 12),
-              _buildActivityItem(
-                title: 'Office Supplies Corp',
-                subtitle: 'Nov 12, 09:12 AM',
-                amount: '\$156.00',
-                status: 'Rejected',
-                statusBgColor: const Color(0xFFFFDAD6), // error-container (fallbacks to container error red)
-                statusTextColor: const Color(0xFFA4161A), // error-crimson
-                icon: Icons.request_quote,
-              ),
-              const SizedBox(height: 100), // Padding to avoid overlap with bottom nav
+              const SizedBox(height: 100),
             ],
           ),
         ),
@@ -426,21 +546,31 @@ class AdminWorkspace extends StatelessWidget {
     );
   }
 
-  Widget _buildActivityItem({
-    required String title,
-    required String subtitle,
-    required String amount,
-    required String status,
-    required Color statusBgColor,
-    required Color statusTextColor,
-    required IconData icon,
-  }) {
+  Widget _buildActivityItemContent(Map<String, dynamic> act) {
+    Color badgeBg;
+    Color badgeText;
+    String statusStr = 'Pending';
+    
+    if (act['status'] == 'validee') {
+      badgeBg = AppTheme.accentGreen.withValues(alpha: 0.1);
+      badgeText = AppTheme.accentGreen;
+      statusStr = 'Validated';
+    } else if (act['status'] == 'rejete') {
+      badgeBg = AppTheme.errorCrimson.withValues(alpha: 0.1);
+      badgeText = AppTheme.errorCrimson;
+      statusStr = 'Rejected';
+    } else {
+      badgeBg = AppTheme.surfaceCreamDark;
+      badgeText = AppTheme.textSecondary;
+      statusStr = 'Pending';
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF), // surface-container-lowest
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEAE8E5)),
+        border: Border.all(color: AppTheme.cardBorder),
       ),
       child: Row(
         children: [
@@ -448,10 +578,10 @@ class AdminWorkspace extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFFF0EDE5), // surface-container
+              color: AppTheme.surfaceCreamDark,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: const Color(0xFF012D1D)),
+            child: Icon(act['icon'] as IconData, color: AppTheme.primary),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -459,20 +589,19 @@ class AdminWorkspace extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xFF1A1C1B),
+                  act['fournisseur'] as String,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  subtitle,
-                  style: GoogleFonts.inter(
+                  act['date'] as String,
+                  style: GoogleFonts.dmSans(
                     fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF717973),
+                    color: AppTheme.textMuted,
                   ),
                 ),
               ],
@@ -482,26 +611,26 @@ class AdminWorkspace extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                amount,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF1A1C1B),
+                '\$${(act['amount'] as double).toStringAsFixed(2)}',
+                style: GoogleFonts.dmSans(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
-                  color: statusBgColor,
+                  color: badgeBg,
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Text(
-                  status,
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: statusTextColor,
+                  statusStr,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: badgeText,
                   ),
                 ),
               ),
@@ -523,6 +652,10 @@ class _CashflowChart extends StatefulWidget {
 class _CashflowChartState extends State<_CashflowChart> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  int? _tappedBarIndex;
+
+  final List<double> _chartValues = [4200, 6800, 8500, 12750, 3900, 2200, 4500];
+  final List<String> _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   @override
   void initState() {
@@ -543,48 +676,127 @@ class _CashflowChartState extends State<_CashflowChart> with SingleTickerProvide
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildBar(0.30 * _animation.value, isHighlight: false),
-            _buildBar(0.45 * _animation.value, isHighlight: false),
-            _buildBar(0.60 * _animation.value, isHighlight: false),
-            _buildBar(0.85 * _animation.value, isHighlight: true),
-            _buildBar(0.55 * _animation.value, isHighlight: false),
-            _buildBar(0.70 * _animation.value, isHighlight: false),
-            _buildBar(0.95 * _animation.value, isHighlight: true, hasGlow: true),
-          ],
-        );
-      },
-    );
-  }
+    const double maxVal = 15000.0;
+    const double chartMaxHeight = 110.0;
 
-  Widget _buildBar(double heightFactor, {required bool isHighlight, bool hasGlow = false}) {
-    return Container(
-      width: 24,
-      height: 96 * heightFactor,
-      decoration: BoxDecoration(
-        color: isHighlight
-            ? const Color(0xFFB8F04A).withOpacity(0.8) // accent
-            : const Color(0xFFA5D0B9).withOpacity(0.2), // primary-fixed-dim
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(2)),
-        border: isHighlight
-            ? const Border(top: BorderSide(color: Color(0xFFA0F4C8), width: 2)) // secondary-fixed
-            : null,
-        boxShadow: hasGlow
-            ? [
-                BoxShadow(
-                  color: const Color(0xFFA0F4C8).withOpacity(0.3),
-                  blurRadius: 15,
-                  spreadRadius: 2,
-                )
-              ]
-            : null,
-      ),
+    return Stack(
+      children: [
+        // Y-axis and Grid lines
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(4, (index) {
+            final val = ((3 - index) * 5).toString();
+            return Row(
+              children: [
+                SizedBox(
+                  width: 26,
+                  child: Text(
+                    '\$${val}k',
+                    style: GoogleFonts.dmSans(color: Colors.white38, fontSize: 8),
+                    textAlign: TextAlign.end,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    height: 0.5,
+                    color: Colors.white10,
+                  ),
+                ),
+              ],
+            );
+          }),
+        ),
+
+        // Tooltip Overlay
+        if (_tappedBarIndex != null)
+          Positioned(
+            top: 2,
+            left: 50,
+            right: 10,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.accent,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${_days[_tappedBarIndex!]}: \$${_chartValues[_tappedBarIndex!].toInt()} Inflow',
+                  style: GoogleFonts.dmSans(
+                    color: AppTheme.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        // Bars & X-Axis Labels
+        Positioned.fill(
+          left: 34,
+          child: AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: List.generate(_chartValues.length, (index) {
+                  final rawHeight = (_chartValues[index] / maxVal) * chartMaxHeight;
+                  final height = rawHeight * _animation.value;
+                  final isTapped = _tappedBarIndex == index;
+
+                  return GestureDetector(
+                    onTapDown: (_) {
+                      setState(() {
+                        _tappedBarIndex = index;
+                      });
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          width: 18,
+                          height: height.clamp(4.0, chartMaxHeight),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                isTapped ? AppTheme.accent : AppTheme.accent.withValues(alpha: 0.9),
+                                AppTheme.accent.withValues(alpha: 0.2),
+                              ],
+                            ),
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                            boxShadow: isTapped
+                                ? [
+                                    BoxShadow(
+                                      color: AppTheme.accent.withValues(alpha: 0.5),
+                                      blurRadius: 8,
+                                    )
+                                  ]
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _days[index],
+                          style: GoogleFonts.dmSans(
+                            color: isTapped ? Colors.white : Colors.white54,
+                            fontSize: 9,
+                            fontWeight: isTapped ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

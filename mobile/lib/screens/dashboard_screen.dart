@@ -10,6 +10,7 @@ import 'workspaces/client_workspace.dart';
 import 'message_center_screen.dart';
 
 import '../widgets/heavenly_interaction.dart';
+import '../widgets/fade_in_slide.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -92,10 +93,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: tabs,
+      body: FadeInSlide(
+        duration: const Duration(milliseconds: 600),
+        child: PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: tabs,
+        ),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -103,7 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primary.withOpacity(0.04), // shadow-[0_-4px_16px_rgba(26,28,27,0.04)]
+              color: AppTheme.primary.withValues(alpha: 0.04), // shadow-[0_-4px_16px_rgba(26,28,27,0.04)]
               blurRadius: 16,
               offset: const Offset(0, -4),
             )
@@ -144,9 +148,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       hoverScale: 1.05,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.secondary.withOpacity(0.2) : Colors.transparent, // bg-secondary-container equivalent
+          color: isActive ? AppTheme.secondary.withValues(alpha: 0.2) : Colors.transparent, // bg-secondary-container equivalent
           borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
